@@ -12,7 +12,7 @@ failure, installation, or test so the project retains its lessons.
 
 - Project: **ZM Checkpoint** for Call of Duty: Black Ops II Zombies on Plutonium T6.
 - Workspace: `C:\Users\User\Documents\Projects\Bo2 Zombie Plutonium`
-- Current source/package version: **0.4.10-alpha**; latest published version at task start **0.4.9-alpha**; locally installed metadata was **0.4.9-alpha** at the initial read. No project installer was run by the agent.
+- Current source/package and GitHub release version: **0.4.10-alpha**; locally installed metadata remains **0.4.9-alpha**. No project installer was run by the agent.
 - Current date of this handoff: **2026-10-28**
 - The project is a Git repository with public origin `https://github.com/PourquoiPasMoi/zm-checkpoint`.
 - The standalone mod and companion packages are installed locally.
@@ -1009,3 +1009,13 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   has 20 entries and excludes saves. Installed metadata is 0.4.9-alpha and
   all three save hashes match their baseline. No local install is authorized
   by this task.
+
+- **Published (2026-10-28):** GitHub release
+  `https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.10-alpha`
+  contains `zm_checkpoint-0.4.10-alpha.zip` (80,656 bytes; SHA-256
+  `A807DCDDD3D64B9023CB89CB478AF062D41320D565E7706A0A6D8DA13B56531E`).
+  The installed 0.4.9 updater returned
+  `UPDATE_AVAILABLE|0.4.9-alpha|0.4.10-alpha`. All three checkpoint hashes
+  still match their baseline. Next: owner installs via the updater, confirms
+  UNLOAD row and U prompt appear only after successful installation, then
+  unloads and reloads the mod. The new UI is **not yet verified in-game**.

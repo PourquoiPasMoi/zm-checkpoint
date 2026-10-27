@@ -23,11 +23,13 @@ semantics.
   unload command. Complete mod-folder ZIP has 20 entries (80,656 bytes), no
   `scriptdata`, saves, or development caches. Installed metadata remains
   0.4.9-alpha and all three existing checkpoint hashes match their baseline.
-  GitHub publication pending.
+  GitHub release 0.4.10-alpha published with the ZIP and matching SHA-256;
+  installed updater returned `UPDATE_AVAILABLE|0.4.9-alpha|0.4.10-alpha`.
 - In-game result: Not yet tested. The user screenshot shows the previous panel
   with Install Update, Not Now and Back; no post-install Unload is present.
-- Remaining risk/next step: publish without installing locally, then test the
-  successful-install state, both unload controls, and reloading the mod.
+- Remaining risk/next step: owner installs 0.4.10 through the updater, tests
+  that both Unload controls appear only after success, and reloads the mod.
+  No local 0.4.10 install was performed by this work session.
 
 ## 0.4.9-alpha — 2026-10-28
 
