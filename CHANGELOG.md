@@ -568,11 +568,13 @@ semantics.
 - Validation: modified Lua and all six generated GSC scripts parsed; Build.ps1
   completed; release ZIP contains mod.json and IWD, with no scriptdata or
   checkpoint files. Every installed 0.4.4 file matched its baseline hash after
-  packaging. GitHub upload pending.
+  packaging. GitHub release 0.4.5-alpha published with the ZIP asset. The installed
+  0.4.4 updater returned `UPDATE_AVAILABLE|0.4.4-alpha|0.4.5-alpha`; every
+  installed file still matched its pre-publication hash.
 - In-game result: **Verified in-game:** 0.4.4-alpha displayed the up-to-date
   status. 0.4.5 download/install path: Not yet tested.
-- Remaining risk/next step: publish release 0.4.5-alpha while keeping this PC
-  on installed 0.4.4-alpha, then test the in-game update flow.
+- Remaining risk/next step: test the in-game download/install from local
+  0.4.4-alpha to published 0.4.5-alpha. No local install was performed.
 
 ## 0.4.4-alpha — 2026-10-28
 

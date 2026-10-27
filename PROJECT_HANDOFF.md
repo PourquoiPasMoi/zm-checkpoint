@@ -913,3 +913,10 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   and reload. Before publishing, compare every installed file hash against
   `.cache/publish-045-installed-before.json`. Do not install 0.4.5 locally as
   part of publishing. Once the user completes the update test, record result.
+
+- **Published (2026-10-28):** GitHub release
+  `https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.5-alpha`
+  contains `zm_checkpoint-0.4.5-alpha.zip`. The installed 0.4.4 updater now
+  reports `UPDATE_AVAILABLE|0.4.4-alpha|0.4.5-alpha`. Every installed file,
+  including checkpoint saves, matched its pre-publication SHA-256 baseline.
+  Next: user tests the in-game download and install; do not pre-install 0.4.5.
