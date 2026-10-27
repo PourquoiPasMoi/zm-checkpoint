@@ -569,11 +569,13 @@ semantics.
 - Validation: modified Lua and all six generated GSC scripts parsed; Build.ps1
   completed; release ZIP contains mod.json and IWD with no scriptdata or saves.
   Every installed 0.4.6 file matched its baseline hash after packaging.
-  GitHub upload pending.
+  GitHub release 0.4.7-alpha published with the ZIP asset. The installed
+  0.4.6 updater returned `UPDATE_AVAILABLE|0.4.6-alpha|0.4.7-alpha`; every
+  installed file still matched its pre-publication hash.
 - In-game result: **Verified in-game:** 0.4.6 body text was oversized and
   nearly overlapped disabled buttons. 0.4.7 appearance: Not yet tested.
-- Remaining risk/next step: publish 0.4.7-alpha and test update/download from
-  local 0.4.6-alpha. Do not install 0.4.7 locally before that test.
+- Remaining risk/next step: test the in-game download/install from local
+  0.4.6-alpha to published 0.4.7-alpha. No local install was performed.
 
 ## 0.4.6-alpha — 2026-10-28
 

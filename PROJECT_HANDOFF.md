@@ -943,3 +943,10 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   height to 28, uses the default font for body, and shortens checking/install
   messages. Build and publish as a new release without running Install.ps1;
   keep every installed file at 0.4.6 for the user to test download/install.
+
+- **Published (2026-10-28):** GitHub release
+  `https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.7-alpha`
+  contains `zm_checkpoint-0.4.7-alpha.zip`. Installed 0.4.6 updater reports
+  `UPDATE_AVAILABLE|0.4.6-alpha|0.4.7-alpha`; every installed file, including
+  checkpoints, matched its pre-publication SHA-256 baseline. Next: user tests
+  in-game Install and visual appearance; do not pre-install 0.4.7.
