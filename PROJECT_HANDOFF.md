@@ -12,7 +12,7 @@ failure, installation, or test so the project retains its lessons.
 
 - Project: **ZM Checkpoint** for Call of Duty: Black Ops II Zombies on Plutonium T6.
 - Workspace: `C:\Users\User\Documents\Projects\Bo2 Zombie Plutonium`
-- Current source/package version: **0.4.9-alpha**; latest published version at task start **0.4.8-alpha**; local installed metadata was **0.4.8-alpha** at the last read during this task. No project installer was run by the agent.
+- Current source/package and GitHub release version: **0.4.9-alpha**; local installed metadata was **0.4.8-alpha** at the final read during this task. No project installer was run by the agent.
 - Current date of this handoff: **2026-10-28**
 - The project is a Git repository with public origin `https://github.com/PourquoiPasMoi/zm-checkpoint`.
 - The standalone mod and companion packages are installed locally.
@@ -985,3 +985,12 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   user-side update; this session did not run Install.ps1 or copy to the game.
   All three `scriptdata` save hashes stayed unchanged. The 0.4.9 release is
   intentionally left uninstalled locally.
+
+- **Published (2026-10-28):** GitHub release
+  `https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.9-alpha`
+  contains the full `zm_checkpoint-0.4.9-alpha.zip` (80,224 bytes; SHA-256
+  `EF6675E1921D02BD54E2F4812570A8590A11B9B0BC7C905132B4F33BF038AC5C`).
+  The installed 0.4.8 updater returned
+  `UPDATE_AVAILABLE|0.4.8-alpha|0.4.9-alpha`. Next: owner installs via the
+  updater, unloads/reloads ZM Checkpoint, and tests R Refresh on the updater
+  page. This feature is **not yet verified in-game**.

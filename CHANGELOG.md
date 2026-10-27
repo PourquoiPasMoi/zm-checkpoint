@@ -23,11 +23,13 @@ semantics.
   excludes `scriptdata`, `.sav`, `.cache`, and `.tools`. All three existing
   checkpoint hashes matched their baseline. Installed metadata was 0.4.7-alpha
   at task start and 0.4.8-alpha at final check; the agent did not install it.
-  GitHub publication pending.
+  GitHub release 0.4.9-alpha published with the ZIP and matching SHA-256;
+  installed updater returned `UPDATE_AVAILABLE|0.4.8-alpha|0.4.9-alpha`.
 - In-game result: Not yet tested. The user supplied a screenshot of the native
   Mods menu's R Refresh prompt as the visual reference.
-- Remaining risk/next step: publish without local installation, then test R
-  from the updater page and verify a fresh result appears.
+- Remaining risk/next step: owner installs 0.4.9 via the updater, unloads and
+  reloads the mod, then tests R from the updater page and verifies a fresh
+  result appears. No local 0.4.9 install was performed.
 
 ## 0.4.8-alpha — 2026-10-28
 
