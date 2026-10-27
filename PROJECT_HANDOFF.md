@@ -837,3 +837,10 @@ the existing Build.ps1 and Install.ps1 workflow, validate changes, and document
 all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
 ```
 
+- **Published to GitHub (2026-10-28):** public repository
+  `https://github.com/PourquoiPasMoi/zm-checkpoint`; source is on `main` and
+  release `0.4.2-alpha` includes `dist/zm_checkpoint-0.4.2-alpha.zip`, the
+  complete standalone mod folder. Future update requests should rebuild the
+  folder ZIP, push source, and update the matching release asset; this workflow
+  is recorded in `AGENTS.md`. No general reuse license has been selected; see
+  `LICENSE-NOTICE.md`.

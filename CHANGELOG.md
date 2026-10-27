@@ -439,3 +439,21 @@ semantics.
 - Used a legacy file API that was later found incompatible with current
   Plutonium builds.
 
+### 2026-10-28 — Publish source repository and shareable release
+
+- Request: create a GitHub repository, upload the project and final distributable,
+  and record the rule for updating future releases on request.
+- Change or investigation: created public `PourquoiPasMoi/zm-checkpoint`, pushed
+  the source and project docs to `main`, added a no-license notice (no general
+  reuse license selected), and documented the owner-requested release update
+  workflow in `AGENTS.md`. Published `0.4.2-alpha` with the complete standalone
+  mod-folder ZIP as the release asset.
+- Files affected: repository initialization; README.md, AGENTS.md,
+  LICENSE-NOTICE.md; release ZIP `dist/zm_checkpoint-0.4.2-alpha.zip`.
+- Validation: confirmed release/tag and downloadable asset via GitHub CLI;
+  local ZIP generated from the complete `dist/zm_checkpoint` contents, which
+  excludes `.sav` files and `scriptdata`.
+- In-game result: Not applicable; publication only.
+- Remaining risk/next step: source is public; ask before applying a different
+  reuse license because none has been chosen. Future release updates are
+  documented and will be made when requested.
