@@ -37,27 +37,47 @@ LUI.createMenu.ZMCheckpointUpdaterInfo = function ( controller )
 	menu:addElement( actions )
 	local install = actions:addButton( "INSTALL UPDATE", "Download and install the latest ZM Checkpoint release." )
 	local later = actions:addButton( "NOT NOW", "Keep the current version." )
+	local back = actions:addButton( "BACK", "Return to the Zombies menu." )
 	install:setActionEventName( "zmcp_update_install" )
 	later:setActionEventName( "zmcp_update_later" )
+	back:setActionEventName( "zmcp_update_back" )
 	install:disable()
 	later:disable()
+	back:disable()
+	back:setAlpha( 0 )
+	local choiceMode = "checking"
+	local function showBack()
+		install:disable()
+		later:disable()
+		if choiceMode ~= "back" then
+			install:processEvent( { name = "lose_focus" } )
+			later:processEvent( { name = "lose_focus" } )
+			back:setAlpha( 1 )
+			back:enable()
+			back:processEvent( { name = "gain_focus" } )
+			choiceMode = "back"
+		end
+	end
 	menu:registerEventHandler( "zmcp_update_install", function ()
 		if menu.zmcpInstallRequested then return end
 		menu.zmcpInstallRequested = true
 		install:disable()
 		later:disable()
+		back:disable()
+		back:setAlpha( 0 )
+		choiceMode = "installing"
 		status:setText( "Installing update..." )
 		body:setText( "Downloading and installing..." )
 		Engine.Exec( controller, "zmcp_update_install_20261028\n" )
 	end )
 	menu:registerEventHandler( "zmcp_update_later", function () menu:goBack() end )
+	menu:registerEventHandler( "zmcp_update_back", function () menu:goBack() end )
 	menu:registerEventHandler( "zmcp_update_refresh", function ()
 		Engine.Exec( controller, "exec zmcp_update_status.cfg\n" )
 		local state = UIExpression.DvarString( nil, "zmcp_update_state" )
 		local version = UIExpression.DvarString( nil, "zmcp_update_version" ) or ""
 		if state == "up_to_date" then
-			install:disable()
-			later:disable()
+			showBack()
 			status:setText( "Latest version installed." )
 			body:setText( "Installed: " .. version )
 		elseif state == "update_available" then
@@ -66,9 +86,12 @@ LUI.createMenu.ZMCheckpointUpdaterInfo = function ( controller )
 			if not menu.zmcpInstallRequested then
 				install:enable()
 				later:enable()
-				if not menu.zmcpChoicesShown then
-					menu.zmcpChoicesShown = true
+				if choiceMode ~= "update_available" then
+					back:processEvent( { name = "lose_focus" } )
+					back:disable()
+					back:setAlpha( 0 )
 					install:processEvent( { name = "gain_focus" } )
+					choiceMode = "update_available"
 				end
 			end
 		elseif state == "installing" then
@@ -77,13 +100,11 @@ LUI.createMenu.ZMCheckpointUpdaterInfo = function ( controller )
 			status:setText( "Installing update..." )
 			body:setText( "Downloading and installing..." )
 		elseif state == "installed" then
-			install:disable()
-			later:disable()
+			showBack()
 			status:setText( "Update installed: " .. version )
 			body:setText( "Unload and reload the mod from the Mods menu." )
 		elseif state == "error" then
-			install:disable()
-			later:disable()
+			showBack()
 			status:setText( "Update check failed." )
 			body:setText( "Check your connection and try again." )
 		end

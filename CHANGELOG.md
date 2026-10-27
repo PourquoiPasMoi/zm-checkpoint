@@ -4,6 +4,29 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.8-alpha — 2026-10-28
+
+### 2026-10-28 — Focus Back when the updater is current
+
+- Request: stop the disabled NOT NOW button blinking when no update exists;
+  show a selected BACK choice and publish without installing locally.
+- Change or investigation: the 0.4.7 panel disabled update choices while
+  leaving NOT NOW focused. Added a BACK row that appears and gains focus for
+  up-to-date, installed, and error results. The update choices remain greyed
+  out when already current. Recorded the owner's remote-release-only workflow.
+- Files affected: updater Lua, mod.json, AGENTS.md, README.md, PROJECT_HANDOFF.md,
+  CHANGELOG.md, built release package.
+- Validation: updater Lua parsed; all six generated GSC files parsed; Build.ps1
+  succeeded; IWD contains the new Back/focus code. Release ZIP has 20 entries,
+  including the complete mod folder, and no `scriptdata`, `.sav`, `.cache` or
+  `.tools`. The installed mod remained 0.4.7-alpha, and all three existing
+  checkpoint hashes matched the pre-build baseline. GitHub publication pending.
+- In-game result: **Verified in-game:** 0.4.7 update installed and smaller text
+  appears clearly in the supplied screenshot; the disabled NOT NOW row blinks.
+  0.4.8 focus behavior: Not yet tested.
+- Remaining risk/next step: publish 0.4.8 without touching the local game, then
+  test its in-game update and the up-to-date Back row after mod reload.
+
 ## 0.4.3-alpha — 2026-10-28
 
 ### 2026-10-28 — In-game update request bridge

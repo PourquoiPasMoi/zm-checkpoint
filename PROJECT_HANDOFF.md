@@ -12,9 +12,9 @@ failure, installation, or test so the project retains its lessons.
 
 - Project: **ZM Checkpoint** for Call of Duty: Black Ops II Zombies on Plutonium T6.
 - Workspace: `C:\Users\User\Documents\Projects\Bo2 Zombie Plutonium`
-- Current source/package version: **0.4.7-alpha** (GitHub release candidate); local installed version intentionally **0.4.6-alpha**
+- Current source/package version: **0.4.8-alpha**; local installed version **0.4.7-alpha**, intentionally left unchanged for the next in-game update test.
 - Current date of this handoff: **2026-10-28**
-- The project directory is currently **not a Git repository**.
+- The project is a Git repository with public origin `https://github.com/PourquoiPasMoi/zm-checkpoint`.
 - The standalone mod and companion packages are installed locally.
 - 0.4.2 moves the per-player remaining-enemy HUD to the upper-left safe area
   (x=12, y=10, left aligned), red RGB (0.85, 0.08, 0.05). Font size 1.6,
@@ -950,3 +950,14 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   `UPDATE_AVAILABLE|0.4.6-alpha|0.4.7-alpha`; every installed file, including
   checkpoints, matched its pre-publication SHA-256 baseline. Next: user tests
   in-game Install and visual appearance; do not pre-install 0.4.7.
+
+- **Verified in-game (user screenshot, 2026-10-28):** the in-game update path
+  installed 0.4.7-alpha, and the smaller panel text is legible. Installed
+  `mods/zm_checkpoint/mod.json` also reports 0.4.7-alpha. In the up-to-date
+  state, disabled NOT NOW still held focus and blinked. The 0.4.8-alpha menu
+  explicitly removes focus from both disabled update choices and focuses a new
+  BACK choice; the Back choice also appears after installed/error states.
+  **Validated statically:** Lua parser, build, package inspection. The new
+  focus behavior awaits an in-game check. The owner requests that future
+  releases be pushed to GitHub without installing into the local game;
+  the owner will run the update script. Preserve this workflow.

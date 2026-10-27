@@ -149,3 +149,8 @@ then create or update the matching version tag/release and attach the ZIP. Keep
 the release version aligned with `mod.json`; update the README release link and
 record the publication in `CHANGELOG.md` and `PROJECT_HANDOFF.md`. Never include
 `.cache`, `.tools`, installed game data, or `scriptdata` checkpoint files.
+
+The owner installs future releases through the updater. Publish requested
+updates to GitHub without running `tools/Install.ps1` or copying the new build
+into the local Plutonium game, unless the owner explicitly asks for a local
+install. Do not treat a release request as local-install permission.
