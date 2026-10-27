@@ -4,6 +4,31 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.9-alpha — 2026-10-28
+
+### 2026-10-28 — Add native R Refresh to the updater page
+
+- Request: add the Mods-menu-style R Refresh prompt to the update page so it
+  checks GitHub again; keep the full project history current.
+- Change or investigation: reused the stock T6 `alt1` ButtonPrompt with the R
+  key hint and wired it to the updater's existing request marker. The panel
+  returns to Checking, then reads the new result. Refresh is ignored during
+  installation. README and handoff now describe this behavior and the ongoing
+  GitHub-only release workflow.
+- Files affected: updater Lua, mod.json, README.md, PROJECT_HANDOFF.md,
+  CHANGELOG.md, generated release package.
+- Validation: updater Lua parsed; all six generated GSC files parsed;
+  Build.ps1 succeeded. IWD contains the Refresh prompt, event handler, and
+  request call. The complete mod-folder ZIP has 20 entries (80,224 bytes) and
+  excludes `scriptdata`, `.sav`, `.cache`, and `.tools`. All three existing
+  checkpoint hashes matched their baseline. Installed metadata was 0.4.7-alpha
+  at task start and 0.4.8-alpha at final check; the agent did not install it.
+  GitHub publication pending.
+- In-game result: Not yet tested. The user supplied a screenshot of the native
+  Mods menu's R Refresh prompt as the visual reference.
+- Remaining risk/next step: publish without local installation, then test R
+  from the updater page and verify a fresh result appears.
+
 ## 0.4.8-alpha — 2026-10-28
 
 ### 2026-10-28 — Focus Back when the updater is current

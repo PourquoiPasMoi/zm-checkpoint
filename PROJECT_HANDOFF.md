@@ -12,7 +12,7 @@ failure, installation, or test so the project retains its lessons.
 
 - Project: **ZM Checkpoint** for Call of Duty: Black Ops II Zombies on Plutonium T6.
 - Workspace: `C:\Users\User\Documents\Projects\Bo2 Zombie Plutonium`
-- Current source/package and GitHub release version: **0.4.8-alpha**; local installed version **0.4.7-alpha**, intentionally left unchanged for the next in-game update test.
+- Current source/package version: **0.4.9-alpha**; latest published version at task start **0.4.8-alpha**; local installed metadata was **0.4.8-alpha** at the last read during this task. No project installer was run by the agent.
 - Current date of this handoff: **2026-10-28**
 - The project is a Git repository with public origin `https://github.com/PourquoiPasMoi/zm-checkpoint`.
 - The standalone mod and companion packages are installed locally.
@@ -278,6 +278,7 @@ That content is invalid by design. The matching `zmcp_has_<map>` and
 | `tools/Test-CoopLobby.lua` | Executable Lua tests for the shipped lobby checks and launch action. |
 | `src/ui/ui/t6/menus/zmcheckpointmenu.lua` | Shared map registry, save action, Resume action, and lobby button construction. |
 | `src/ui/ui/t6/menus/zmcheckpointingame.lua` | Hooks the stock/class pause menu and adds **SAVE & EXIT**. |
+| `src/ui/ui/t6/menus/zmcheckpointupdater.lua` | In-game update panel, native R Refresh prompt, status polling, and Install/Not Now/Back focus. |
 | `src/ui/ui/t6/menus/privateonlinegamelobby.lua` | Stock private lobby entry point with the Resume hook loaded last. |
 | `src/ui/ui_mp/t6/hud/ingamemenus.lua` | Stock in-game loader with the checkpoint hook loaded last. |
 | `cfg/zm_checkpoint.cfg` | Legacy diagnostic key binds. |
@@ -971,3 +972,16 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   All three existing `scriptdata` checkpoint hashes still match the session
   baseline. Next: owner downloads 0.4.8 through the updater, unloads/reloads
   the mod, and confirms only BACK holds focus when already current.
+
+- **Validated statically (2026-10-28):** 0.4.9-alpha adds the stock T6
+  `CoD.ButtonPrompt.new("alt1", ..., "R")` Refresh prompt to the updater page.
+  Pressing R resets the panel to Checking and emits the same request marker
+  as opening the page, so the background watcher runs a new GitHub check.
+  Refresh is ignored while an installation is in progress. The owner still
+  installs releases via the updater; do not run Install.ps1 during publishing.
+  The new prompt and recheck behavior need an in-game test after mod reload.
+  During 0.4.9 packaging, installed `mod.json` changed from 0.4.7-alpha at
+  task start to 0.4.8-alpha at the final check, apparently from an independent
+  user-side update; this session did not run Install.ps1 or copy to the game.
+  All three `scriptdata` save hashes stayed unchanged. The 0.4.9 release is
+  intentionally left uninstalled locally.
