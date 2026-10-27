@@ -1,0 +1,441 @@
+# Changelog
+
+All notable ZM Checkpoint changes and important test results are recorded here.
+The package is experimental, so versions before a stable release use alpha
+semantics.
+
+## 0.4.2-alpha — 2026-10-28
+
+### 2026-10-28 — Red upper-left zombie counter
+
+- Request: move the counter to the top-left, slightly higher, and make it red.
+- Change or investigation: left safe-area anchor, x=12/y=10 instead of centered
+  y=24; red RGB (0.85, 0.08, 0.05). Size and toggle unchanged.
+- Files affected: shared zm_checkpoint.gsc, mod.json, README.md,
+  PROJECT_HANDOFF.md, CHANGELOG.md, generated packages and installed copies.
+- Validation: all six generated GSC files parsed; Build.ps1 and Install.ps1
+  passed. Six-map hashes match in raw, standalone and three companion mods;
+  IWD entries inspected; ZIP contains no checkpoint/scriptdata files.
+  Buried/TranZit saves matched baseline. Nuketown hash check detected a newer
+  valid round-2 checkpoint with END; likely runtime activity (not confirmed).
+  Installer does not write saves; retained the current file without rollback.
+- In-game result: screenshot verifies the prior top-center counter is visible;
+  exact loaded map/mod unconfirmed. New styling: Not yet tested.
+- Remaining risk/next step: start a new match and check position/color;
+  no full restart needed from 0.4.1. Toggle/count accuracy and co-op still need
+  testing. Package: dist/zm_checkpoint-0.4.2-alpha.zip.
+
+## 0.4.1-alpha — 2026-10-27
+
+### 2026-10-27 — Small toggleable remaining-zombies counter
+
+- Request: add a compact BO2-style top-center round counter, toggled with 0;
+  keep work brief. User deferred co-op testing to 2026-10-28.
+- Change or investigation: native per-client numeric HUD, default font at 1.6,
+  warm white with subtle red glow, top offset 24; refresh every 0.2 seconds.
+  Uses stock round_wait's alive plus unspawned count, clamps at zero, hides
+  while dead/spectating or co-op restoration is pending. Individual visibility
+  resets each match. Lua binds 0 and KP_INS to a notifyonplayercommand toggle;
+  diagnostic cfg contains the same bindings. No save format or co-op changes.
+- Files affected: shared GSC, zmcheckpointingame.lua, cfg/zm_checkpoint.cfg,
+  mod.json, README.md, PROJECT_HANDOFF.md and CHANGELOG.md.
+- Validation (completed 2026-10-28): all six generated GSC files and modified
+  Lua passed parsing; Build.ps1 and Install.ps1 completed. Installed map-script
+  coverage and IWD toggle bindings were inspected. All three existing saves
+  retained their SHA-256 hashes. Standalone and three companion mods updated;
+  shareable package: `dist/zm_checkpoint-0.4.1-alpha.zip`.
+- In-game result: Not yet tested.
+- Remaining risk/next step: reload mod, start a new match, check position,
+  count decreasing to zero and both toggle keys. Special rounds/custom enemy
+  controllers require gameplay confirmation. Co-op test remains deferred.
+
+## 0.4.0-alpha — 2026-10-27
+
+### 2026-10-27 — Host-stored exact-team co-op checkpoint test build
+
+- Request: implement the approved host-stored complete checkpoint approach.
+- Change or investigation: added an independent 2–4-player Classic/Survival
+  path, original-host authorization, normalized string XUID roster, per-player
+  records, shared world restore, context/settings checks and co-op Resume page.
+  Two generation slots protect the previous complete write; a consumption
+  receipt prevents replay of older consumed generations. Invalid identity/API
+  data, roster mismatch and readiness timeouts fail closed. Stock round_think
+  is held until restore completes; a watchdog handles stalled restoration.
+  Each player opens pause once per match to send the versioned UI handshake.
+  Co-op sessions cannot write solo slots after guests leave. Co-op quests and
+  character reconstruction are explicitly outside this version's guarantee.
+- Files affected: shared GSC, new `zm_checkpoint_coop.gsc`, menu/in-game Lua,
+  new `zmcheckpointcoop.lua`, Build.ps1, mod.json, README.md, COOP_TEST_PLAN.md,
+  tools/Test-CoopLobby.lua, PROJECT_HANDOFF.md and CHANGELOG.md.
+- Validation: all six generated GSCs and three UI Lua files parse; Build/Install
+  PowerShell parsers pass; 23 engine-mocked tests of the actual Lua lobby/action
+  pass (including 2/3/4 players, order/name changes, replacement/missing/extra
+  players, host/context mismatch, numeric IDs and unavailable API). Built IWD
+  contains six Lua files. Installed standalone, six shared raw scripts and three
+  companions; installed script/IWD hashes match. All three existing checkpoint
+  hashes are unchanged. Package has no scriptdata or saves. Shareable standalone
+  ZIP: `dist/zm_checkpoint-0.4.0-alpha.zip`.
+- In-game result: Not yet tested. No multiplayer runtime or visual UI result is
+  claimed. Static references establish candidate APIs, not their current runtime
+  ID equivalence or synchronization behavior.
+- Remaining risk/next step: reload the mod on all PCs, start with two-player
+  Nuketown and follow COOP_TEST_PLAN.md. Verify lobby/GSC XUID equivalence,
+  round startup, separate player inventory, disconnect recovery and repeat saves.
+  LAN identities, custom round controllers, map-exclusive systems and damaged
+  consumption receipts retain documented limitations. No automatic restart.
+
+## 0.3.4-alpha — 2026-10-25
+
+### 2026-10-27 — Assess same-host, exact-roster co-op checkpoints
+
+- Request: assess host-only Save & Exit and a separate co-op Resume tab gated
+  by the original host, exact players/count and map, with each player's save
+  stored locally and identity bound to Plutonium accounts.
+- Change or investigation: inspected current GSC/Lua and installed standalone
+  metadata/six scripts. Confirmed single-player records/guards and no client
+  storage protocol. Documented an expected roster-bound design, host-authoritative
+  storage alternative, distributed-save acknowledgement requirement, and the
+  official LAN username-derived GUID limitation. Online identity APIs and lobby
+  equivalence remain unverified; no implementation was attempted.
+- Files affected: PROJECT_HANDOFF.md and CHANGELOG.md only.
+- Validation: source and installed-state inspection; read-only checkpoint hash
+  inventory found three standalone saves. No checkpoint or installed files were
+  written. Parsers/build/install not applicable to documentation-only changes.
+- In-game result: Not yet tested.
+- Remaining risk/next step: isolated two-PC identity, host detection, lobby
+  roster and client-local persistence probe before promising the complete design.
+  Keep solo behavior unchanged; no restart required for this investigation.
+
+### 2026-10-25 — Add the first Buried quest milestone adapter
+
+- Request: implement Phase 1/Buried only, preserve stable quest progress safely,
+  retain format-3 compatibility, document the stock milestone evidence before
+  coding, build and install a ready-to-test package, and preserve every current
+  checkpoint file.
+- Change or investigation:
+  - inspected the installed 0.3.3 baseline and all three standalone checkpoint
+    files; confirmed the Buried round-9 save has no quest record;
+  - audited both Buried branches and the ordered sidequest stages against the
+    pinned stock reconstruction and added the milestone/side-effect/reset table
+    to `MAP_STATE_AUDIT.md` before source edits;
+  - added optional `QUEST,1,zm_buried,<branch>,tower` serialization and strict
+    duplicate/schema/map/branch/milestone validation without changing overall
+    checkpoint format version 3;
+  - skipped Buried `sq_*` and `ftl_*` flags in generic flag save/replay so
+    incomplete quest flags do not bypass stock side effects;
+  - added an early Buried-only restore phase that rebuilds the selected stock
+    tower effects and removes consumed tower parts before setting the branch
+    flag. A failed early setup leaves the checkpoint unconsumed;
+  - added a Build.ps1 guard against Buried stock externals leaking into other
+    generated map scripts. No Die Rise, TranZit, Mob, or Origins quest adapter
+    was added.
+- Files affected: `src/scripts/zm/zm_nuked/zm_checkpoint.gsc`,
+  `tools/Build.ps1`, `src/ui/ui/t6/menus/zmcheckpointmenu.lua`, `mod.json`,
+  `README.md`, `MAP_STATE_AUDIT.md`, `PROJECT_HANDOFF.md`, and `CHANGELOG.md`.
+- Validation: all six generated GSC files passed bundled T6 PC parsing; the
+  modified Lua menu and both PowerShell scripts passed their parsers; package
+  inspection confirmed map-exclusive externals are confined to matching outputs
+  and the IWD contains the expected UI files. Version 0.3.4 was installed to
+  standalone, six shared raw map folders, and all three companion mods. All
+  three existing standalone checkpoint hashes matched before and after install;
+  the package contains no checkpoint files or `scriptdata` directory.
+- In-game result: Not yet tested.
+- Remaining risk/next step: test the Maxis and Richtofen tower milestones in
+  separate Buried matches, saving immediately after tower construction and
+  before amplifier progress. Use a separate active-mod save slot so the existing
+  standalone Buried round-9 checkpoint is not replaced. Reload Plutonium or the
+  selected mod for the updated UI, then start a new match for the GSC changes.
+
+## 0.3.3-alpha — 2026-10-25
+
+### 2026-10-25 — Add staged Easter-egg persistence plan
+
+- Request: create a durable plan file and a safe continuation prompt so a new
+  chat can continue Easter-egg support without damaging known-good behavior.
+- Change or investigation:
+  - added `EASTER_EGG_PERSISTENCE_PLAN.md` with the approved optional typed
+    record design, phased restore order, common framework, map-by-map roadmap,
+    required test matrix, validation gates, and rollback rules;
+  - constrained the immediate coding scope to Buried and required a stock-script
+    milestone/side-effect table before implementation;
+  - linked the plan from the handoff, README, and map-state audit;
+  - updated the handoff continuation prompt to require the plan and Phase 1
+    scope.
+- Files affected: `EASTER_EGG_PERSISTENCE_PLAN.md`, `PROJECT_HANDOFF.md`,
+  `README.md`, `MAP_STATE_AUDIT.md`, and `CHANGELOG.md`.
+- Validation: documentation-only review; links, required headings, current
+  version, pinned reference commit, and Phase 1 scope checked.
+- In-game result: Not applicable; no source, build, package, installed file, or
+  checkpoint changed.
+- Remaining risk/next step: a new chat should implement Phase 1/Buried only,
+  stop after static validation and installation, and wait for milestone-by-
+  milestone in-game evidence before expanding the guarantee.
+
+### 2026-10-25 — Define safe Easter-egg checkpoint architecture
+
+- Request: explain why complete Easter-egg progress is not yet guaranteed and
+  determine whether it can be supported safely.
+- Change or investigation:
+  - inspected the reconstructed quest entry points for TranZit, Die Rise, Mob
+    of the Dead, Buried, and Origins;
+  - bounded literal-flag inventory found 2 quest-related names in TranZit, 34 in
+    Die Rise, 54 in Mob, 34 in Buried, and 56 in Origins, excluding dynamically
+    generated names and non-flag state;
+  - confirmed TranZit's active route uses nested `level.sq_progress` arrays,
+    entity references, and counters rather than a single quest flag;
+  - confirmed the other maps combine flags with physical models/triggers,
+    carried pieces, player or afterlife state, moving systems, arrays, and live
+    waiter threads;
+  - defined a versioned per-map `QUEST` record design: save stable completed
+    milestones and typed durable items, replay stock side effects, and restart
+    only the unfinished step rather than restoring live threads;
+  - retained the existing limitation instead of implementing unsafe blanket
+    flag replay.
+- Files affected: `MAP_STATE_AUDIT.md`, `PROJECT_HANDOFF.md`, `CHANGELOG.md`,
+  and `README.md`.
+- Validation: source search and control-flow inspection against the pinned
+  reconstructed stock-script checkout; documentation links and counts checked.
+- In-game result: Not yet tested; investigation/design only, with no runtime or
+  installed-file change.
+- Remaining risk/next step: implement and test the first versioned quest adapter
+  on Buried, preserving completed milestones while restarting the active
+  incomplete step. Expand to Die Rise, TranZit, Mob, and Origins only after each
+  map's stock side effects are reconstructed and tested.
+
+### 2026-10-25 — Preserve released Arthur/Leroy state on Buried
+
+- Request: after a Buried Resume restored doors, debris, inventory, and other
+  world progress correctly, keep Arthur outside his cell near the location and
+  state where Save & Exit occurred; also investigate equivalent special actors
+  and Easter-egg/secret progression on every stock map.
+- Change or investigation:
+  - inspected the installed round-9 Buried checkpoint and confirmed it contained
+    `jail_door1` and the other opened paths but no actor state;
+  - traced the stock `_zm_ai_sloth.gsc` spawn/state machine: every new match
+    creates Arthur at `sloth_idle_pos` in `jail_idle`, independently of the
+    physical jail-door flag;
+  - added an optional Buried `SLOTH` record containing released status, origin,
+    angles, prior state name, and booze/release context;
+  - added a Buried-only restore adapter that waits for the stock actor, restores
+    the open-cell context, teleports him to the saved transform, and calls the
+    stock stable `roam` state rather than resuming unsafe mid-animation states;
+  - audited all six reconstructed stock-map script sets for allied map actors;
+    Arthur was the only persistent map-specific AI assigned to the allied team.
+    Bus/driver, hostile bosses, robots, elevators, and afterlife actors require
+    different state models and are not treated as Arthur equivalents;
+  - audited quest scripts and confirmed that complete Easter-egg continuation
+    spans flags, mutable `level` fields, arrays, models, carried parts, character
+    identity, and active waiter threads. Existing entity-backed flags remain
+    covered, but full quest continuity is retained as an explicit limitation
+    rather than being falsely claimed;
+  - kept checkpoint format version 3. The new record is optional, so old saves
+    remain readable, although a pre-0.3.3 save has no Arthur position to restore.
+- Files affected: `src/scripts/zm/zm_nuked/zm_checkpoint.gsc`,
+  `tools/Build.ps1`, `src/ui/ui/t6/menus/zmcheckpointmenu.lua`, `mod.json`,
+  `README.md`, `MAP_STATE_AUDIT.md`, `PROJECT_HANDOFF.md`, and `CHANGELOG.md`.
+- Validation:
+  - all six generated map GSC files passed bundled `gsc-tool` T6 PC parsing;
+  - modified Lua and both PowerShell scripts passed their parsers;
+  - package inspection confirmed the Arthur external/restore functions exist
+    only in `zm_buried`, while all readers accept the optional record;
+  - the first package guard also rejected the harmless generic `SLOTH` reader.
+    That attempt was replaced with a guard against actual Buried externals and
+    functions, after which all six builds passed;
+  - version `0.3.3-alpha` was built and installed to standalone, six shared raw
+    map folders, and all three current companion mods;
+  - the installed IWD contains UI version `0.3.3`;
+  - Buried and Nuketown checkpoint hashes remained unchanged. The TranZit slot
+    advanced during this work from a valid round-5 file to a valid round-7 file;
+    the package contains no `scriptdata` and the installer has no checkpoint
+    write/delete operation, so the newer runtime save was preserved rather than
+    rolled back. A final reinstall then preserved all three current checkpoint
+    hashes exactly.
+- In-game result: **Verified in-game:** 0.3.2 Buried restored common doors,
+  debris, and world unlocks, but Arthur returned to his cell. **Not yet tested:**
+  the 0.3.3 Arthur record and restore path.
+- Remaining risk/next step: fully reload the mod, create a new 0.3.3 Buried
+  checkpoint after releasing Arthur, then Resume it and confirm he appears near
+  the saved location and continues roaming. Do not use the existing round-9
+  checkpoint as proof because it predates the `SLOTH` record. Full Easter-egg
+  progression still requires separate map-specific milestone adapters and
+  in-game tests.
+
+## 0.3.2-alpha — 2026-10-25
+
+### 2026-10-25 — Preserve scripted map unlocks and TranZit vault state
+
+- Request: preserve the TranZit bank vault after Resume and find a systematic
+  way to retain opened doors/unlocks across the six stock maps without requiring
+  the user to discover every mismatch manually.
+- Change or investigation:
+  - confirmed from the stock TranZit script reconstruction that
+    `town_bunker_door` is an explosive-damage-driven scripted mover, not a
+    common `zombie_door`/`zombie_debris` blocker;
+  - changed the shared collector to enumerate every live map entity and capture
+    its set `script_flag`, instead of inspecting only normal door/debris arrays;
+    the inventory is refreshed immediately before writing so later-spawned map
+    entities are included;
+  - added a TranZit-only restore block that replays the vault door's stock
+    explosive-damage event, including rotation, map flag, and path connection;
+  - audited the other stock map scripts for the same geometry-first pattern and
+    added Buried-only physical replay for collapsing passages,
+    Arthur-opened barricades, and the courtyard/maze fountains;
+  - generalized `Build.ps1` map-only block stripping for Nuketown, TranZit, and
+    Buried so no map-specific references leak into another map's linker input;
+  - added `MAP_STATE_AUDIT.md` with the evidence base, coverage matrix, known
+    limits, and required workflow for future map-state mismatches;
+  - kept checkpoint format version 3, so existing valid saves remain readable.
+- Files affected: `src/scripts/zm/zm_nuked/zm_checkpoint.gsc`,
+  `tools/Build.ps1`, `mod.json`, `README.md`, `MAP_STATE_AUDIT.md`,
+  `PROJECT_HANDOFF.md`, and `CHANGELOG.md`.
+- Validation:
+  - all six generated map GSC files passed bundled `gsc-tool` T6 PC parsing;
+  - `Build.ps1` and `Install.ps1` passed PowerShell parser validation;
+  - package inspection confirmed all six outputs contain the shared entity
+    collector, only `zm_transit` contains `town_bunker_door`, only `zm_buried`
+    contains its three special-state target names, and only `zm_nuked` contains
+    `zm_nuked_perks` references;
+  - version `0.3.2-alpha` was built and installed to standalone, shared raw map
+    scripts, and all three existing companion mods;
+  - the existing Nuketown and TranZit checkpoint files retained identical SHA-256
+    hashes across installation.
+- In-game result: **Verified in-game** before the fix: TranZit 0.3.1 restored
+  round, weapons, score, and player position correctly, but an opened bank vault
+  returned closed. **Not yet tested:** the 0.3.2 vault and Buried physical replay
+  paths.
+- Remaining risk/next step: create a new 0.3.2 TranZit checkpoint after opening
+  the vault, Resume it, and confirm the vault is open. The checkpoint created
+  under 0.3.1 cannot contain the newly collected vault flag. Complex dynamic
+  systems listed in `MAP_STATE_AUDIT.md` remain intentionally unclaimed until
+  dedicated adapters and in-game evidence exist.
+
+## 0.3.1-alpha — 2026-10-24
+
+### 2026-10-24 — Consume resumed checkpoints and isolate map externals
+
+- Request: prevent a dead resumed run from leaving an infinite Resume loop, and
+  fix TranZit failing before start with unresolved Nuketown perk functions.
+- Change or investigation:
+  - successful restoration now overwrites the checkpoint with `CONSUMED` and
+    clears its map-specific Resume dvars;
+  - a defensive watcher performs the same invalidation at stock
+    `pre_end_game`/`end_game`;
+  - restoration/perk-schedule threads terminate on `end_game`;
+  - `Build.ps1` strips marked Nuketown-only blocks from every non-Nuketown map
+    output while preserving the full adapter for `zm_nuked`;
+  - reviewed stock `_zm.gsc` evidence confirming solo death notifies
+    `pre_end_game` immediately before `end_game`.
+  - the first strip-regex used `\s` around marker lines and also consumed the
+    following line's indentation. Package inspection caught this before handoff;
+    it was replaced with horizontal-space-only matching and the generated output
+    was rebuilt, reparsed, and reinstalled.
+- Files affected: `src/scripts/zm/zm_nuked/zm_checkpoint.gsc`,
+  `tools/Build.ps1`, `src/ui/ui/t6/menus/zmcheckpointmenu.lua`, `mod.json`,
+  `AGENTS.md`, `README.md`, `PROJECT_HANDOFF.md`, and `CHANGELOG.md`.
+- Validation:
+  - Nuketown and generated TranZit GSC both passed the bundled T6 parser;
+  - the modified Lua menu passed `luaparse`;
+  - modified PowerShell scripts passed parser validation;
+  - generated TranZit contains no Nuketown perk external references;
+  - version `0.3.1-alpha` was built and installed to the standalone and three
+    companion mods;
+  - all five installed generic map scripts have the same hash and zero
+    `zm_nuked_perks` references; the installed Nuketown script has its separate
+    adapter-bearing hash;
+  - the pre-existing round-4 Nuketown file was preserved by installation.
+- In-game result: not yet tested. The original stale Resume remains until it is
+  resumed once with 0.3.1 (then consumed) or manually cleared in-game.
+- Remaining risk/next step: fully reload Plutonium/mod, retest the existing
+  Nuketown Resume followed by death, and separately launch TranZit. Record
+  whether the process-close symptom recurs; no matching Plutonium application
+  fault or usable `console_zm.log` was retained for the earlier close.
+
+## 0.3.0-alpha — 2026-10-24
+
+### 2026-10-24 — Persistent project memory
+
+- Request: create complete continuation documentation and ensure future agents
+  keep it current after every fix, failure, change, installation, and test.
+- Change: added `PROJECT_HANDOFF.md`, this changelog, and project-level
+  `AGENTS.md` rules with a required documentation workflow and end-of-task
+  checklist.
+- Files affected: `AGENTS.md`, `PROJECT_HANDOFF.md`, `CHANGELOG.md`, `README.md`.
+- Validation: documentation links and required sections were inspected locally.
+- In-game result: not applicable; documentation-only change.
+- Remaining risk/next step: future agents must obey `AGENTS.md` and continue
+  recording the five pending multi-map in-game tests.
+
+### Added
+
+- Shared checkpoint support for all six stock physical Zombies maps:
+  TranZit, Nuketown, Die Rise, Mob of the Dead, Buried, and Origins.
+- A separate checkpoint filename and archived Resume metadata for each map.
+- Map-aware Resume labels in the private lobby.
+- Six-map deployment in both the build and installation scripts.
+- Multi-map documentation, limitations, test plan, and project handoff.
+
+### Changed
+
+- The GSC adapter now derives its current map from `mapname`.
+- The save header validates against the current map dynamically.
+- Nuketown perk-machine serialization and restoration run only on Nuketown.
+- Pause-menu support checks the shared supported-map registry.
+- User-facing messages and diagnostic controls are map-neutral.
+
+### Verified
+
+- GSC parsing, Lua parsing, and PowerShell parsing succeeded.
+- All six build outputs and raw install targets were present.
+- Standalone and companion mods contained the six scripts and checkpoint IWD.
+- Existing Nuketown round-4 checkpoint remained intact.
+
+### Known limitations
+
+- The five newly added maps still require systematic in-game validation.
+- Map-exclusive systems are not fully serialized.
+- TranZit, Town, Farm, and Bus Depot currently share one `zm_transit` slot.
+
+## 0.2.6 — 2026-10-24
+
+- Reinserted the native Resume button at the top of the lobby's own vertical
+  list, directly above **START MATCH**.
+- Kept normal mouse, keyboard, controller, focus, and hint behavior.
+- Made the button conditional on a valid archived checkpoint flag.
+- In-game result: the native lobby Resume button worked successfully.
+
+## 0.2.5 — 2026-10-24
+
+- Changed Resume to use the private lobby's `xpartygo` launch path.
+- Removed the raw `map zm_nuked` launch behavior.
+- Fixed the loaded map having no round HUD, no round controller, and no zombies.
+- In-game result: Nuketown restored into a live saved round successfully.
+
+## 0.2.4 — 2026-10-24
+
+- Attached Resume after private-lobby construction to avoid stock/custom menu
+  scripts that cache or replace `PopulateButtons_Project_Zombie`.
+- Added compatibility behavior for installed custom pause-menu variants.
+
+## 0.2.3 — 2026-10-24
+
+- Improved Resume visibility by using persisted checkpoint metadata instead of
+  relying only on inconsistent frontend `ui_mapname` state.
+- Continued iterative work on positioning Resume in the stock lobby.
+
+## 0.2.2 — 2026-10-24
+
+- Replaced the rejected legacy file API with Plutonium's supported `fs_*` API:
+  `fs_fopen`, `fs_writeline`, `fs_readline`, `fs_fclose`, and `fs_testfile`.
+- Fixed the in-game **Checkpoint file could not be opened** failure.
+- In-game result: checkpoint save completed and exited to the lobby.
+
+## 0.2.1 and earlier — prototype
+
+- Created the initial solo Nuketown checkpoint serializer.
+- Added legacy F5/F6/F8/F9 diagnostics.
+- Added player, inventory, perk, common persistent-flag, and Nuketown
+  perk-machine state.
+- Added early pause-menu **SAVE & EXIT** and lobby Resume experiments.
+- Used a legacy file API that was later found incompatible with current
+  Plutonium builds.
+
