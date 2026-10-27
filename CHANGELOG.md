@@ -4,6 +4,34 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.3-alpha — 2026-10-28
+
+### 2026-10-28 — In-game update request bridge
+
+- Request: find a way to launch update checks from the in-game button, using
+  the Plutonium shell or REA if needed.
+- Change or investigation: the button now emits a unique console-log marker.
+  A per-user Windows scheduled task watches the log and launches the updater
+  window when it sees the marker. Fixed the updater to include GitHub
+  prereleases, compare version numbers, and copy package-owned files without
+  moving/deleting `scriptdata`. The local 0.4.3 package includes the watcher.
+  A prior manual handoff popup was replaced with a brief checking message.
+- Files affected: updater Lua, Windows updater scripts, new watcher and bridge
+  installer, Build.ps1, mod.json, README.md, PROJECT_HANDOFF.md, CHANGELOG.md.
+- Validation: built and installed 0.4.3 locally; six GSC and all Lua parsed;
+  modified PowerShell scripts parsed; installed IWD contains the marker; the
+  bridge task reports Running; updater check returns UP_TO_DATE for local
+  0.4.3 against published 0.4.2; save hashes matched before and after install.
+  REA opened shipped t6zm.exe but native analysis was unavailable because no
+  provider is configured. `openurl` string/ShellExecute import alone cannot
+  prove a launch command.
+- In-game result: Not yet tested. Previous screenshot verified the button and
+  manual popup; new click-to-Windows handoff awaits test after mod reload.
+- Remaining risk/next step: click CHECK FOR UPDATES after reload and confirm
+  the companion window opens. If absent, inspect console_zm.log for marker and
+  scheduled task status. GitHub release still 0.4.2-alpha; local 0.4.3-alpha
+  is not published.
+
 ## 0.4.2-alpha — 2026-10-28
 
 ### 2026-10-28 — Red upper-left zombie counter
@@ -457,3 +485,116 @@ semantics.
 - Remaining risk/next step: source is public; ask before applying a different
   reuse license because none has been chosen. Future release updates are
   documented and will be made when requested.
+### 2026-10-28 — Fix updater menu package installation
+
+- Request: investigate why the user could not see the update entry in-game.
+- Change or investigation: confirmed installed `zz_zm_checkpoint.iwd` lacked the
+  new main-lobby hook. `Build.ps1` staged sources but incorrectly moved the
+  temporary ZIP onto the `.iwd` path only when the target already existed; the
+  packaging sequence did not ensure the correct archive reached the standalone
+  install. Fixed the build to copy and replace the IWD explicitly, and included
+  the mainlobby hook in the archive. Rebuilt and reinstalled 0.4.3-alpha.
+- Files affected: `tools/Build.ps1`, `src/ui/ui/t6/menus/mainlobby.lua`,
+  `src/ui/ui/t6/menus/zmcheckpointmenu.lua`,
+  `src/ui/ui/t6/menus/zmcheckpointupdater.lua`, companion updater scripts,
+  generated and installed package.
+- Validation: PowerShell parser checks passed. Inspected built and installed
+  IWD entries; both include `ui/t6/mainlobby.lua` with the CHECK FOR UPDATES
+  action. Build/install completed. The user had observed no menu entry before
+  this correction. Existing save files were not modified by the installer.
+- In-game result: Awaiting user confirmation after unload/reload of the mod.
+- Remaining risk/next step: fully unload/reload the selected mod to clear LUI
+  cache, then inspect Zombies main menu. The entry only appears when `fs_game`
+  equals `mods/zm_checkpoint`; companion-loaded total conversion mods will not
+  show it yet. The T6 UI opens an updater information popup; Windows updater
+  still must be started manually because the game offers no supported process
+  launch API. Latest local package: `dist/zm_checkpoint-0.4.3-alpha.zip`.
+### 2026-10-28 — Fit updater popup text to its panel
+
+- Request: inspect screenshots showing the update entry and its popup after click.
+- Change or investigation: screenshot 2 confirms the entry appears below Mods;
+  screenshot 1 shows the long default-font message spilling below the small
+  popup. Replaced it with a normal large popup and a separate condensed-font
+  status/body layout sized to stay inside the panel.
+- Files affected: `src/ui/ui/t6/menus/zmcheckpointupdater.lua`, rebuilt and
+  installed `zz_zm_checkpoint.iwd`, and `dist/zm_checkpoint-0.4.3-alpha.zip`.
+- Validation: all Lua sources parsed; inspected the rebuilt popup source in the
+  IWD; installer completed; pre/post standalone save hashes matched.
+- In-game result: Not yet tested; screenshots verified the old overflow and the
+  main-menu entry's visibility.
+- Remaining risk/next step: unload/reload ZM Checkpoint and verify the popup
+  layout in-game. The updater must still be launched manually from Windows.
+- Additional validation: isolated synthetic console-log marker launched a
+  harmless companion through the watcher. This does not prove the T6 button
+  writes the marker in-game.
+- Corrected the post-install prompt to ask for manual unload/reload; the prior
+  Yes/No wording implied an action the Windows companion could not perform
+  safely. Rebuilt and reinstalled the package after this correction.
+### 2026-10-28 — Fix blank updater terminal and missing result
+
+- Request: the in-game update button opened a blank PowerShell terminal that
+  stayed running, with no "up to date" message.
+- Change or investigation: user screenshots show the standalone
+  `mods/zm_checkpoint` main menu; `storage/t6/main/console_zm.log` contained
+  `Unknown command "echo"`. The old menu sent `echo`, so the watcher never saw
+  its marker, and the scheduled watcher itself had a visible console. Switched
+  to a unique intentionally unknown command that T6 logs, made the scheduled
+  watcher start through a hidden WScript wrapper, changed the check-only script
+  from `exit` to `return`, and made the window show an error dialog on failure.
+- Files affected: updater Lua; watcher, updater and bridge installer scripts;
+  new `Launch-UpdateBridge.vbs`; Build.ps1; installed IWD and companion files.
+- Validation: modified Lua and PowerShell parsed; Build/Install completed;
+  before/after checkpoint hashes matched. The Windows PowerShell 5.1 script
+  returned `UP_TO_DATE|0.4.3-alpha` and control returned to its caller. An
+  isolated synthetic `Unknown command "zmcp_update_request_20261028"` log line
+  launched the companion successfully. Updated bridge task is running.
+- In-game result: **Verified in-game failure:** old button produced no result
+  and left a blank terminal; exact loaded mod `mods/zm_checkpoint`, main menu.
+  Corrected button-to-dialog behavior: Not yet tested in-game.
+- Remaining risk/next step: unload/reload the mod to refresh LUI, click CHECK
+  FOR UPDATES and confirm the small Windows "up to date" dialog appears and
+  dismisses cleanly. The old blank terminal can be closed; the new watcher
+  should remain hidden. Local 0.4.3 build remains unpublished.
+## 0.4.5-alpha — 2026-10-28
+
+### 2026-10-28 — Publish a small updater test release
+
+- Request: make a small visible change and publish it to GitHub without
+  installing it on the current PC, so the in-game update flow can be tested.
+- Change or investigation: shorten the up-to-date panel text to "Latest
+  version installed" and "Installed: <version>"; bump package version.
+- Files affected: updater Lua, mod.json, README.md, PROJECT_HANDOFF.md,
+  CHANGELOG.md, built package and GitHub release.
+- Validation: modified Lua and all six generated GSC scripts parsed; Build.ps1
+  completed; release ZIP contains mod.json and IWD, with no scriptdata or
+  checkpoint files. Every installed 0.4.4 file matched its baseline hash after
+  packaging. GitHub upload pending.
+- In-game result: **Verified in-game:** 0.4.4-alpha displayed the up-to-date
+  status. 0.4.5 download/install path: Not yet tested.
+- Remaining risk/next step: publish release 0.4.5-alpha while keeping this PC
+  on installed 0.4.4-alpha, then test the in-game update flow.
+
+## 0.4.4-alpha — 2026-10-28
+
+### 2026-10-28 — Show update result inside the game
+
+- Request: replace the Windows "up to date" popup with a result in the existing
+  ZM Checkpoint updater panel.
+- Change or investigation: the Windows companion writes `zmcp_update_status.cfg`
+  to both T6 `main` and the standalone mod folder. The game panel polls it with
+  the normal `exec` command and updates its status to latest version, update
+  available, installed, or error. The Windows check no longer shows a dialog
+  when already up to date; the Yes/No install prompt remains for an available
+  update. The watcher sets checking before starting the check.
+- Files affected: updater Lua, status/window/watcher scripts, Build.ps1,
+  mod.json, README.md, PROJECT_HANDOFF.md, CHANGELOG.md; local package/install.
+- Validation: modified Lua and PowerShell parsed; Build/Install completed;
+  direct installed Windows companion wrote `up_to_date` and `0.4.4-alpha` to the
+  status CFG; existing save hashes matched before/after. Scheduled bridge
+  restarted. The game-side `exec` status refresh still needs an in-game check.
+- In-game result: Not yet tested for the new panel status. The previous
+  click-to-Windows dialog was verified by the user.
+- Remaining risk/next step: unload/reload mod, click CHECK FOR UPDATES, verify
+  the panel changes from Checking to latest-version text and no Windows dialog
+  appears. Local 0.4.4-alpha is newer than the published 0.4.2-alpha release.
+

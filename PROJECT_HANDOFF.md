@@ -12,7 +12,7 @@ failure, installation, or test so the project retains its lessons.
 
 - Project: **ZM Checkpoint** for Call of Duty: Black Ops II Zombies on Plutonium T6.
 - Workspace: `C:\Users\User\Documents\Projects\Bo2 Zombie Plutonium`
-- Current package version: **0.4.2-alpha**
+- Current source/package version: **0.4.5-alpha** (GitHub release candidate); local installed version intentionally **0.4.4-alpha**
 - Current date of this handoff: **2026-10-28**
 - The project directory is currently **not a Git repository**.
 - The standalone mod and companion packages are installed locally.
@@ -844,3 +844,72 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   folder ZIP, push source, and update the matching release asset; this workflow
   is recorded in `AGENTS.md`. No general reuse license has been selected; see
   `LICENSE-NOTICE.md`.
+- 2026-10-28 updater menu diagnosis: the installed IWD was stale because the
+  build did not reliably replace the target archive. Build now explicitly
+  replaces `zz_zm_checkpoint.iwd` and embeds the mainlobby hook. Rebuilt and
+  reinstalled 0.4.3-alpha; both generated and installed archives contain the
+  hook. User screenshot confirms the mod is loaded but did not show the entry
+  before this fix. **In-game:** awaiting reload/confirmation. The entry is
+  limited to `mods/zm_checkpoint`; companion mods are not detected. The popup
+  currently hands off to manually run the Windows updater script; seamless
+  launch remains unsupported in T6 LUI.
+- 2026-10-28 popup layout correction: screenshots confirm the update button is
+  visible below Mods, while the popup's oversized default-font message overflowed
+  its small frame. Replaced it with a large popup and short condensed-font text
+  rows. Rebuilt/reinstalled package 0.4.3-alpha; Lua parsing passed and save
+  hashes were unchanged. **In-game:** new layout awaits confirmation after LUI
+  reload. Click still gives instructions; no direct Windows updater launch.
+
+- **Validated statically and installed (2026-10-28):** 0.4.3-alpha adds a
+  console-log bridge for CHECK FOR UPDATES. The Windows scheduled task
+  `ZM Checkpoint Update Bridge` is running under the current user and watches
+  `storage/t6/main/console_zm.log` for `ZMCP_UPDATE_REQUEST_20261028` emitted
+  by the in-game button. It launches the update window on detection. The
+  companion uses GitHub's releases list (which includes prereleases) and
+  copies package-owned files while preserving `scriptdata`. The installed IWD
+  contains the marker; six GSC and all Lua parsed; build/install passed;
+  before/after save hashes matched. **In-game:** the actual click-to-companion
+  handoff is not yet tested. Local ZIP is `dist/zm_checkpoint-0.4.3-alpha.zip`;
+  GitHub still publishes 0.4.2-alpha. Reload mod UI before testing.
+- REA investigation: opened the shipped `t6zm.exe` (SHA-256
+  `2aff340f22f0c68bf46511c7bbc6167e4bb84524817f54cae08e8f60e6f9afc3`).
+  Its string table contains `openurl` and it imports `ShellExecuteA`, but no
+  configured REA native provider could resolve call sites, so these do not
+  establish a usable console command. The log bridge avoids depending on
+  an unverified native command. Do not claim direct T6 process launch.
+- Bridge verification update: an isolated synthetic Plutonium console-log marker
+  launched a harmless companion script successfully. This validates the Windows
+  watcher/launch path; whether T6 writes the marker on an actual button press
+  remains unverified until the user reloads the mod and clicks it.
+- The update window now gives accurate manual unload/reload instructions after
+  installation. It does not close or restart Plutonium automatically; the
+  earlier Yes/No prompt incorrectly implied it could unload the active mod.
+- **Verified in-game failure (2026-10-28, standalone `mods/zm_checkpoint`,
+  main menu):** CHECK FOR UPDATES opened a blank, persistent PowerShell window
+  and showed no status. Log text was `Unknown command "echo"`; T6 rejected the
+  old signal command. Fixed the menu to send the unique unknown command
+  `zmcp_update_request_20261028`, which appears in the log and is watched by a
+  hidden WScript-launched PowerShell task. The updater's check-only path now
+  returns to the window caller, allowing the "up to date" dialog, with an error
+  dialog on failures. PowerShell 5.1 output and isolated log-trigger test pass;
+  installed saves kept exact hashes. **In-game:** corrected flow needs a click
+  after unload/reload. Close the old visible watcher terminal manually; do not
+  close/restart Plutonium automatically.
+- **Validated statically and installed (2026-10-28):** local 0.4.4-alpha moves
+  the normal up-to-date result into the in-game updater panel. The companion
+  writes `zmcp_update_status.cfg` under both `storage/t6/main` and
+  `mods/zm_checkpoint`, while the panel polls it through T6 `exec` and updates
+  its status text. The installed companion wrote `up_to_date` for local
+  0.4.4-alpha; Lua/PowerShell parsed, build/install passed, save hashes stayed
+  unchanged, bridge restarted. **In-game:** panel refresh/CFG lookup remains
+  unverified. GitHub release is still 0.4.2-alpha.
+
+
+- **2026-10-28 update-download test preparation:** user screenshot verifies in-game
+  0.4.4-alpha updater reports latest version in its panel. 0.4.5-alpha changes
+  only the up-to-date wording to short lines. It is built for a GitHub release
+  without running Install.ps1: the current PC must remain on installed
+  0.4.4-alpha so the user can check available-update, download/install, status,
+  and reload. Before publishing, compare every installed file hash against
+  `.cache/publish-045-installed-before.json`. Do not install 0.4.5 locally as
+  part of publishing. Once the user completes the update test, record result.
