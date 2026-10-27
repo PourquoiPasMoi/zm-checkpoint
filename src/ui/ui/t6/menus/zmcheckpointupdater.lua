@@ -1,11 +1,15 @@
 -- Companion updater information popup.
 local C = CoD.ZMCheckpointMenu
-C.OpenUpdater = function ( menu, event )
-	local controller = event.controller or menu.m_ownerController or 0
+local requestUpdateCheck = function ( controller )
 	Engine.SetDvar( "zmcp_update_state", "checking" )
 	Engine.SetDvar( "zmcp_update_version", "" )
 	-- T6 logs an unknown command; echo itself is unsupported here.
 	Engine.Exec( controller, "zmcp_update_request_20261028\n" )
+end
+
+C.OpenUpdater = function ( menu, event )
+	local controller = event.controller or menu.m_ownerController or 0
+	requestUpdateCheck( controller )
 	menu:openPopup( "ZMCheckpointUpdaterInfo", controller )
 end
 
@@ -15,6 +19,10 @@ LUI.createMenu.ZMCheckpointUpdaterInfo = function ( controller )
 	menu:addLargePopupBackground()
 	menu:addTitle( "ZM CHECKPOINT UPDATER" )
 	menu:addBackButton()
+	-- Match the stock Mods/Server Browser R Refresh prompt and key binding.
+	local refreshPrompt = CoD.ButtonPrompt.new( "alt1", Engine.Localize( "MENU_REFRESH" ), menu,
+		"button_prompt_refresh", false, false, false, false, "R" )
+	menu:addRightButtonPrompt( refreshPrompt )
 
 	local status = LUI.UIText.new()
 	status:setLeftRight( true, true, 0, 0 )
@@ -58,6 +66,13 @@ LUI.createMenu.ZMCheckpointUpdaterInfo = function ( controller )
 			choiceMode = "back"
 		end
 	end
+	menu:registerEventHandler( "button_prompt_refresh", function ()
+		if menu.zmcpInstallRequested then return end
+		showBack()
+		status:setText( "Checking for updates..." )
+		body:setText( "Checking GitHub for a new version..." )
+		requestUpdateCheck( controller )
+	end )
 	menu:registerEventHandler( "zmcp_update_install", function ()
 		if menu.zmcpInstallRequested then return end
 		menu.zmcpInstallRequested = true
@@ -100,10 +115,12 @@ LUI.createMenu.ZMCheckpointUpdaterInfo = function ( controller )
 			status:setText( "Installing update..." )
 			body:setText( "Downloading and installing..." )
 		elseif state == "installed" then
+			menu.zmcpInstallRequested = false
 			showBack()
 			status:setText( "Update installed: " .. version )
 			body:setText( "Unload and reload the mod from the Mods menu." )
 		elseif state == "error" then
+			menu.zmcpInstallRequested = false
 			showBack()
 			status:setText( "Update check failed." )
 			body:setText( "Check your connection and try again." )
