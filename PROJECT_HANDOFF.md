@@ -12,7 +12,7 @@ failure, installation, or test so the project retains its lessons.
 
 - Project: **ZM Checkpoint** for Call of Duty: Black Ops II Zombies on Plutonium T6.
 - Workspace: `C:\Users\User\Documents\Projects\Bo2 Zombie Plutonium`
-- Current source/package and GitHub release version: **0.4.9-alpha**; local installed metadata was **0.4.8-alpha** at the final read during this task. No project installer was run by the agent.
+- Current source/package version: **0.4.10-alpha**; latest published version at task start **0.4.9-alpha**; locally installed metadata was **0.4.9-alpha** at the initial read. No project installer was run by the agent.
 - Current date of this handoff: **2026-10-28**
 - The project is a Git repository with public origin `https://github.com/PourquoiPasMoi/zm-checkpoint`.
 - The standalone mod and companion packages are installed locally.
@@ -278,7 +278,7 @@ That content is invalid by design. The matching `zmcp_has_<map>` and
 | `tools/Test-CoopLobby.lua` | Executable Lua tests for the shipped lobby checks and launch action. |
 | `src/ui/ui/t6/menus/zmcheckpointmenu.lua` | Shared map registry, save action, Resume action, and lobby button construction. |
 | `src/ui/ui/t6/menus/zmcheckpointingame.lua` | Hooks the stock/class pause menu and adds **SAVE & EXIT**. |
-| `src/ui/ui/t6/menus/zmcheckpointupdater.lua` | In-game update panel, native R Refresh prompt, status polling, and Install/Not Now/Back focus. |
+| `src/ui/ui/t6/menus/zmcheckpointupdater.lua` | In-game update panel, native R Refresh and post-install U Unload prompts, status polling, and Install/Not Now/Unload/Back focus. |
 | `src/ui/ui/t6/menus/privateonlinegamelobby.lua` | Stock private lobby entry point with the Resume hook loaded last. |
 | `src/ui/ui_mp/t6/hud/ingamemenus.lua` | Stock in-game loader with the checkpoint hook loaded last. |
 | `cfg/zm_checkpoint.cfg` | Legacy diagnostic key binds. |
@@ -994,3 +994,18 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   `UPDATE_AVAILABLE|0.4.8-alpha|0.4.9-alpha`. Next: owner installs via the
   updater, unloads/reloads ZM Checkpoint, and tests R Refresh on the updater
   page. This feature is **not yet verified in-game**.
+
+- **Validated statically (2026-10-28):** 0.4.10-alpha offers an UNLOAD row
+  between NOT NOW and BACK plus the native-style U Unload prompt only when an
+  install initiated in the currently open updater page reports `installed`.
+  Both call the stock Mods menu command `Engine.Exec(0, 'loadmod ""')` to unload
+  the active mod; the owner must then load ZM Checkpoint again from Mods.
+  The same native Mods source shows U uses `alt1` and R uses `alt2`, so the
+  updater's R prompt was corrected to `alt2` while adding U. The new row and
+  prompt are hidden until this page completes an install and during a later
+  check; they return after that check finishes unless a newer update is found.
+  Updater Lua and all six built GSC scripts parsed; Build.ps1 succeeded;
+  the IWD contains the U/R prompts and both unload actions. The release ZIP
+  has 20 entries and excludes saves. Installed metadata is 0.4.9-alpha and
+  all three save hashes match their baseline. No local install is authorized
+  by this task.

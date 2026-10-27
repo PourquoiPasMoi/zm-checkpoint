@@ -19,9 +19,11 @@ LUI.createMenu.ZMCheckpointUpdaterInfo = function ( controller )
 	menu:addLargePopupBackground()
 	menu:addTitle( "ZM CHECKPOINT UPDATER" )
 	menu:addBackButton()
-	-- Match the stock Mods/Server Browser R Refresh prompt and key binding.
-	local refreshPrompt = CoD.ButtonPrompt.new( "alt1", Engine.Localize( "MENU_REFRESH" ), menu,
-		"button_prompt_refresh", false, false, false, false, "R" )
+	-- Match the stock Mods menu's U Unload and R Refresh prompt bindings.
+	local unloadPrompt = CoD.ButtonPrompt.new( "alt1", Engine.Localize( "MENU_UNLOAD" ), menu,
+		"button_prompt_unload", false, nil, false, nil, "U" )
+	local refreshPrompt = CoD.ButtonPrompt.new( "alt2", Engine.Localize( "MENU_REFRESH" ), menu,
+		"button_prompt_refresh", false, nil, false, nil, "R" )
 	menu:addRightButtonPrompt( refreshPrompt )
 
 	local status = LUI.UIText.new()
@@ -41,22 +43,42 @@ LUI.createMenu.ZMCheckpointUpdaterInfo = function ( controller )
 	menu:addElement( body )
 	local actions = CoD.ButtonList.new( { leftAnchor = true, rightAnchor = false,
 		left = 0, right = 500, topAnchor = true, bottomAnchor = false,
-		top = 270, bottom = 370 } )
+		top = 270, bottom = 440 } )
 	menu:addElement( actions )
 	local install = actions:addButton( "INSTALL UPDATE", "Download and install the latest ZM Checkpoint release." )
 	local later = actions:addButton( "NOT NOW", "Keep the current version." )
+	local unload = actions:addButton( "UNLOAD", "Unload ZM Checkpoint so the new version can be loaded." )
 	local back = actions:addButton( "BACK", "Return to the Zombies menu." )
 	install:setActionEventName( "zmcp_update_install" )
 	later:setActionEventName( "zmcp_update_later" )
+	unload:setActionEventName( "zmcp_update_unload" )
 	back:setActionEventName( "zmcp_update_back" )
 	install:disable()
 	later:disable()
+	unload:disable()
+	unload:setAlpha( 0 )
 	back:disable()
 	back:setAlpha( 0 )
 	local choiceMode = "checking"
+	local function setUnloadVisible( visible )
+		if menu.zmcpUnloadVisible == visible then return end
+		menu.zmcpUnloadVisible = visible
+		menu.rightButtonPromptBar:removeAllChildren()
+		if visible then
+			unload:setAlpha( 1 )
+			unload:enable()
+			menu:addRightButtonPrompt( unloadPrompt )
+		else
+			unload:disable()
+			unload:setAlpha( 0 )
+		end
+		menu:addRightButtonPrompt( refreshPrompt )
+	end
 	local function showBack()
 		install:disable()
 		later:disable()
+		if choiceMode == "installed" then unload:processEvent( { name = "lose_focus" } ) end
+		setUnloadVisible( false )
 		if choiceMode ~= "back" then
 			install:processEvent( { name = "lose_focus" } )
 			later:processEvent( { name = "lose_focus" } )
@@ -66,6 +88,26 @@ LUI.createMenu.ZMCheckpointUpdaterInfo = function ( controller )
 			choiceMode = "back"
 		end
 	end
+	local function showInstalled()
+		install:disable()
+		later:disable()
+		if choiceMode ~= "installed" then
+			install:processEvent( { name = "lose_focus" } )
+			later:processEvent( { name = "lose_focus" } )
+			back:processEvent( { name = "lose_focus" } )
+			back:setAlpha( 1 )
+			back:enable()
+			setUnloadVisible( true )
+			unload:processEvent( { name = "gain_focus" } )
+			choiceMode = "installed"
+		end
+	end
+	local function unloadMod()
+		if not menu.zmcpUpdateInstalled then return end
+		if Dvar.fs_game:get() ~= "" then Engine.Exec( 0, 'loadmod ""' ) end
+	end
+	menu:registerEventHandler( "button_prompt_unload", unloadMod )
+	menu:registerEventHandler( "zmcp_update_unload", unloadMod )
 	menu:registerEventHandler( "button_prompt_refresh", function ()
 		if menu.zmcpInstallRequested then return end
 		showBack()
@@ -76,8 +118,10 @@ LUI.createMenu.ZMCheckpointUpdaterInfo = function ( controller )
 	menu:registerEventHandler( "zmcp_update_install", function ()
 		if menu.zmcpInstallRequested then return end
 		menu.zmcpInstallRequested = true
+		menu.zmcpUpdateInstalled = false
 		install:disable()
 		later:disable()
+		setUnloadVisible( false )
 		back:disable()
 		back:setAlpha( 0 )
 		choiceMode = "installing"
@@ -92,7 +136,7 @@ LUI.createMenu.ZMCheckpointUpdaterInfo = function ( controller )
 		local state = UIExpression.DvarString( nil, "zmcp_update_state" )
 		local version = UIExpression.DvarString( nil, "zmcp_update_version" ) or ""
 		if state == "up_to_date" then
-			showBack()
+			if menu.zmcpUpdateInstalled then showInstalled() else showBack() end
 			status:setText( "Latest version installed." )
 			body:setText( "Installed: " .. version )
 		elseif state == "update_available" then
@@ -102,6 +146,8 @@ LUI.createMenu.ZMCheckpointUpdaterInfo = function ( controller )
 				install:enable()
 				later:enable()
 				if choiceMode ~= "update_available" then
+					if choiceMode == "installed" then unload:processEvent( { name = "lose_focus" } ) end
+					setUnloadVisible( false )
 					back:processEvent( { name = "lose_focus" } )
 					back:disable()
 					back:setAlpha( 0 )
@@ -115,13 +161,14 @@ LUI.createMenu.ZMCheckpointUpdaterInfo = function ( controller )
 			status:setText( "Installing update..." )
 			body:setText( "Downloading and installing..." )
 		elseif state == "installed" then
+			if menu.zmcpInstallRequested then menu.zmcpUpdateInstalled = true end
 			menu.zmcpInstallRequested = false
-			showBack()
+			if menu.zmcpUpdateInstalled then showInstalled() else showBack() end
 			status:setText( "Update installed: " .. version )
-			body:setText( "Unload and reload the mod from the Mods menu." )
+			body:setText( "Choose UNLOAD, then reload the mod from Mods." )
 		elseif state == "error" then
 			menu.zmcpInstallRequested = false
-			showBack()
+			if menu.zmcpUpdateInstalled then showInstalled() else showBack() end
 			status:setText( "Update check failed." )
 			body:setText( "Check your connection and try again." )
 		end

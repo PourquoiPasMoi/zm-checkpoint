@@ -4,6 +4,31 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.10-alpha — 2026-10-28
+
+### 2026-10-28 — Offer Unload after an in-game update
+
+- Request: show a Mods-style U Unload shortcut and an UNLOAD row between NOT NOW
+  and BACK, only after this updater page installs an update.
+- Change or investigation: copied the stock Mods menu's `alt1` U Unload and
+  `alt2` R Refresh prompt bindings. A successful install from this page reveals
+  the UNLOAD row and U prompt and focuses Unload. Both invoke the stock
+  `loadmod ""` command. They stay hidden on open, during checks, when already
+  current, and during installation. Refresh preserves the post-install option
+  after the new result arrives.
+- Files affected: updater Lua, mod.json, README.md, PROJECT_HANDOFF.md,
+  CHANGELOG.md, generated release package.
+- Validation: updater Lua and all six built GSC scripts parsed; Build.ps1
+  succeeded; IWD contains both prompts, both Unload events, and the stock
+  unload command. Complete mod-folder ZIP has 20 entries (80,656 bytes), no
+  `scriptdata`, saves, or development caches. Installed metadata remains
+  0.4.9-alpha and all three existing checkpoint hashes match their baseline.
+  GitHub publication pending.
+- In-game result: Not yet tested. The user screenshot shows the previous panel
+  with Install Update, Not Now and Back; no post-install Unload is present.
+- Remaining risk/next step: publish without installing locally, then test the
+  successful-install state, both unload controls, and reloading the mod.
+
 ## 0.4.9-alpha — 2026-10-28
 
 ### 2026-10-28 — Add native R Refresh to the updater page
