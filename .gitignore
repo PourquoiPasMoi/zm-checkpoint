@@ -1,0 +1,7 @@
+dist/
+.tools/
+.cache/
+*.log
+*.sav
+
+parsed/

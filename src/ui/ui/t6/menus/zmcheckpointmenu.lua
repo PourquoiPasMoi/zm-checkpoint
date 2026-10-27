@@ -169,3 +169,8 @@ end
 
 C.HookLobby()
 require( "T6.Menus.ZMCheckpointCoop" )
+require( "T6.Menus.ZMCheckpointUpdater" )
+
+
+
+

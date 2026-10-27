@@ -57,6 +57,13 @@ Copy-Item -LiteralPath (Join-Path $projectRoot 'mod.json') -Destination (Join-Pa
 Copy-Item -LiteralPath (Join-Path $projectRoot 'cfg\zm_checkpoint.cfg') -Destination (Join-Path $outputRoot 'zm_checkpoint.cfg') -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'THIRD_PARTY_NOTICES.md') -Destination (Join-Path $outputRoot 'THIRD_PARTY_NOTICES.md') -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'COOP_TEST_PLAN.md') -Destination (Join-Path $outputRoot 'COOP_TEST_PLAN.md') -Force
+Copy-Item -LiteralPath (Join-Path $projectRoot 'LICENSE-NOTICE.md') -Destination (Join-Path $outputRoot 'LICENSE-NOTICE.md') -Force
+Copy-Item -LiteralPath (Join-Path $projectRoot 'README.md') -Destination (Join-Path $outputRoot 'README.md') -Force
+Copy-Item -LiteralPath (Join-Path $projectRoot 'tools\Update-ZMCheckpoint.ps1') -Destination (Join-Path $outputRoot 'Update-ZMCheckpoint.ps1') -Force
+Copy-Item -LiteralPath (Join-Path $projectRoot 'tools\Update-ZMCheckpoint-Window.ps1') -Destination (Join-Path $outputRoot 'Update-ZMCheckpoint-Window.ps1') -Force
+Copy-Item -LiteralPath (Join-Path $projectRoot 'tools\Watch-ZMCheckpointUpdates.ps1') -Destination (Join-Path $outputRoot 'Watch-ZMCheckpointUpdates.ps1') -Force
+Copy-Item -LiteralPath (Join-Path $projectRoot 'tools\Launch-UpdateBridge.vbs') -Destination (Join-Path $outputRoot 'Launch-UpdateBridge.vbs') -Force
+Copy-Item -LiteralPath (Join-Path $projectRoot 'tools\Update-ZMCheckpoint-Status.ps1') -Destination (Join-Path $outputRoot 'Update-ZMCheckpoint-Status.ps1') -Force
 
 $uiStage = Join-Path $distRoot '.zm_checkpoint_iwd'
 $zipPath = Join-Path $distRoot 'zz_zm_checkpoint.zip'
@@ -77,9 +84,15 @@ if (Test-Path -LiteralPath $iwdPath) {
 New-Item -ItemType Directory -Force -Path $uiStage | Out-Null
 Copy-Item -LiteralPath (Join-Path $projectRoot 'src\ui\ui') -Destination (Join-Path $uiStage 'ui') -Recurse -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'src\ui\ui_mp') -Destination (Join-Path $uiStage 'ui_mp') -Recurse -Force
+Copy-Item -LiteralPath (Join-Path $projectRoot 'src\ui\ui\t6\menus\mainlobby.lua') -Destination (Join-Path $uiStage 'ui\t6\mainlobby.lua') -Force
 Compress-Archive -Path (Join-Path $uiStage '*') -DestinationPath $zipPath -CompressionLevel Optimal
-Move-Item -LiteralPath $zipPath -Destination $iwdPath
+Copy-Item -LiteralPath $zipPath -Destination $iwdPath -Force
+Remove-Item -LiteralPath $zipPath -Force
 Remove-Item -LiteralPath $uiStage -Recurse -Force
 
 Write-Host "Built ZM Checkpoint at $outputRoot"
+
+
+
+
 
