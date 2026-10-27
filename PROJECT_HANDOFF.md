@@ -12,7 +12,7 @@ failure, installation, or test so the project retains its lessons.
 
 - Project: **ZM Checkpoint** for Call of Duty: Black Ops II Zombies on Plutonium T6.
 - Workspace: `C:\Users\User\Documents\Projects\Bo2 Zombie Plutonium`
-- Current source/package version: **0.4.8-alpha**; local installed version **0.4.7-alpha**, intentionally left unchanged for the next in-game update test.
+- Current source/package and GitHub release version: **0.4.8-alpha**; local installed version **0.4.7-alpha**, intentionally left unchanged for the next in-game update test.
 - Current date of this handoff: **2026-10-28**
 - The project is a Git repository with public origin `https://github.com/PourquoiPasMoi/zm-checkpoint`.
 - The standalone mod and companion packages are installed locally.
@@ -961,3 +961,13 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   focus behavior awaits an in-game check. The owner requests that future
   releases be pushed to GitHub without installing into the local game;
   the owner will run the update script. Preserve this workflow.
+
+- **Published (2026-10-28):** GitHub release
+  `https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.8-alpha`
+  contains `zm_checkpoint-0.4.8-alpha.zip` (79,999 bytes; SHA-256
+  `8F09B2D8EF2FC8F47941C86BE262C9FBBA7B4B36AA2FA4CC009342F2BA0BE090`).
+  Source was pushed before the release. Installed 0.4.7 updater returned
+  `UPDATE_AVAILABLE|0.4.7-alpha|0.4.8-alpha`; no local install was run.
+  All three existing `scriptdata` checkpoint hashes still match the session
+  baseline. Next: owner downloads 0.4.8 through the updater, unloads/reloads
+  the mod, and confirms only BACK holds focus when already current.

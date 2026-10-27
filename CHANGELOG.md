@@ -20,12 +20,15 @@ semantics.
   succeeded; IWD contains the new Back/focus code. Release ZIP has 20 entries,
   including the complete mod folder, and no `scriptdata`, `.sav`, `.cache` or
   `.tools`. The installed mod remained 0.4.7-alpha, and all three existing
-  checkpoint hashes matched the pre-build baseline. GitHub publication pending.
+  checkpoint hashes matched the pre-build baseline. GitHub release
+  `0.4.8-alpha` contains the 79,999-byte ZIP with a matching SHA-256 digest;
+  installed updater check returned `UPDATE_AVAILABLE|0.4.7-alpha|0.4.8-alpha`.
 - In-game result: **Verified in-game:** 0.4.7 update installed and smaller text
   appears clearly in the supplied screenshot; the disabled NOT NOW row blinks.
   0.4.8 focus behavior: Not yet tested.
-- Remaining risk/next step: publish 0.4.8 without touching the local game, then
-  test its in-game update and the up-to-date Back row after mod reload.
+- Remaining risk/next step: use the installed updater to download 0.4.8, unload
+  and reload the mod, then verify the up-to-date Back row in-game. No local
+  install was performed by this work session.
 
 ## 0.4.3-alpha — 2026-10-28
 
