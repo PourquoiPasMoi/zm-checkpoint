@@ -4,6 +4,7 @@ $log=Join-Path $PlutoniumRoot 'main\console_zm.log'
 $updater=Join-Path $PSScriptRoot 'Update-ZMCheckpoint-Window.ps1'
 $statusScript=Join-Path $PSScriptRoot 'Update-ZMCheckpoint-Status.ps1'
 $marker='zmcp_update_request_20261028'
+$installMarker='zmcp_update_install_20261028'
 $position=if(Test-Path $log){(Get-Item $log).Length}else{0}
 while($true){
  Start-Sleep -Milliseconds 500
@@ -22,5 +23,9 @@ while($true){
  if($chunk.ToLowerInvariant().Contains($marker)){
   & $statusScript -State checking
   Start-Process -FilePath 'powershell.exe' -ArgumentList @('-NoProfile','-ExecutionPolicy','Bypass','-WindowStyle','Hidden','-File',('"'+$updater+'"')) -WindowStyle Hidden
+ }
+ if($chunk.ToLowerInvariant().Contains($installMarker)){
+  & $statusScript -State installing
+  Start-Process -FilePath 'powershell.exe' -ArgumentList @('-NoProfile','-ExecutionPolicy','Bypass','-WindowStyle','Hidden','-File',('"'+$updater+'"'),'-InstallLatest') -WindowStyle Hidden
  }
 }

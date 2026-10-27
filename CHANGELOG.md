@@ -555,6 +555,48 @@ semantics.
   FOR UPDATES and confirm the small Windows "up to date" dialog appears and
   dismisses cleanly. The old blank terminal can be closed; the new watcher
   should remain hidden. Local 0.4.3 build remains unpublished.
+## 0.4.7-alpha — 2026-10-28
+
+### 2026-10-28 — Smaller, clearer updater text for download test
+
+- Request: improve the oversized, soft-looking updater text and publish a new
+  GitHub release without changing the locally installed mod.
+- Change or investigation: T6 scales UIText by its layout height; the body
+  occupied 74 UI units. Reduced body/status heights to 28, switched the body
+  to the normal font, shortened checking/install text, and bumped the version.
+- Files affected: updater Lua, mod.json, README.md, PROJECT_HANDOFF.md,
+  CHANGELOG.md, built release package.
+- Validation: modified Lua and all six generated GSC scripts parsed; Build.ps1
+  completed; release ZIP contains mod.json and IWD with no scriptdata or saves.
+  Every installed 0.4.6 file matched its baseline hash after packaging.
+  GitHub upload pending.
+- In-game result: **Verified in-game:** 0.4.6 body text was oversized and
+  nearly overlapped disabled buttons. 0.4.7 appearance: Not yet tested.
+- Remaining risk/next step: publish 0.4.7-alpha and test update/download from
+  local 0.4.6-alpha. Do not install 0.4.7 locally before that test.
+
+## 0.4.6-alpha — 2026-10-28
+
+### 2026-10-28 — Move update confirmation into the game
+
+- Request: replace the external Windows Yes/No update prompt with an in-game
+  choice, as the status result already appears in the panel.
+- Change or investigation: added INSTALL UPDATE and NOT NOW buttons to the
+  updater panel. The Install action emits a second console-log marker; the
+  background companion downloads and installs without opening a Windows
+  prompt, and status moves through installing to installed in the game.
+- Files affected: updater Lua, watcher/status/window scripts, mod.json,
+  README.md, PROJECT_HANDOFF.md, CHANGELOG.md, generated/local install.
+- Validation: modified Lua and PowerShell parsed; Build/Install completed;
+  installed companion reported `up_to_date|0.4.6-alpha`; save hashes matched
+  before/after. Full button-to-install path awaits a newer published release.
+- In-game result: **Verified in-game:** prior 0.4.5 update-available panel and
+  external prompt appeared in the user screenshot. New in-game buttons:
+  Not yet tested.
+- Remaining risk/next step: unload/reload the mod and inspect the updated
+  panel. Publish a later version separately to test Install and Not Now.
+  Current GitHub release is 0.4.5-alpha.
+
 ## 0.4.5-alpha — 2026-10-28
 
 ### 2026-10-28 — Publish a small updater test release

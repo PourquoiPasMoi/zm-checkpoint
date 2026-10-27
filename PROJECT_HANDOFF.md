@@ -12,7 +12,7 @@ failure, installation, or test so the project retains its lessons.
 
 - Project: **ZM Checkpoint** for Call of Duty: Black Ops II Zombies on Plutonium T6.
 - Workspace: `C:\Users\User\Documents\Projects\Bo2 Zombie Plutonium`
-- Current source/package version: **0.4.5-alpha** (GitHub release candidate); local installed version intentionally **0.4.4-alpha**
+- Current source/package version: **0.4.7-alpha** (GitHub release candidate); local installed version intentionally **0.4.6-alpha**
 - Current date of this handoff: **2026-10-28**
 - The project directory is currently **not a Git repository**.
 - The standalone mod and companion packages are installed locally.
@@ -920,3 +920,26 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   reports `UPDATE_AVAILABLE|0.4.4-alpha|0.4.5-alpha`. Every installed file,
   including checkpoint saves, matched its pre-publication SHA-256 baseline.
   Next: user tests the in-game download and install; do not pre-install 0.4.5.
+
+- **Verified in-game (user screenshot, 2026-10-28):** on standalone
+  `mods/zm_checkpoint`, the in-game panel displayed "Update available:
+  0.4.5-alpha" and the external Windows Yes/No prompt opened. The installed
+  metadata now reports 0.4.5-alpha, consistent with an update having been
+  applied, but the complete download/copy/reload path was not independently
+  captured in-game.
+- **Validated statically and installed (2026-10-28):** local 0.4.6-alpha puts
+  INSTALL UPDATE and NOT NOW in the same in-game panel. A second unknown-command
+  marker (`zmcp_update_install_20261028`) tells the background watcher to run
+  the installer without a Windows prompt. Status file states include installing
+  and installed. The watcher task was restarted; the current installed
+  companion wrote `up_to_date` for 0.4.6; save hashes matched. UI choices and
+  install flow still need a future-release in-game test. GitHub remains 0.4.5.
+
+- **Verified in-game (user screenshots, 2026-10-28):** local 0.4.6 updater
+  showed both checking and up-to-date states; body text rendered oversized and
+  visually soft, and the checking message nearly overlapped disabled buttons.
+  Root cause in `zmcheckpointupdater.lua`: body UIText height was 74 UI units,
+  which T6 used to scale the glyphs. 0.4.7 changes body height to 28, status
+  height to 28, uses the default font for body, and shortens checking/install
+  messages. Build and publish as a new release without running Install.ps1;
+  keep every installed file at 0.4.6 for the user to test download/install.
