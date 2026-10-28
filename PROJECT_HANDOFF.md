@@ -12,7 +12,7 @@ failure, installation, or test so the project retains its lessons.
 
 - Project: **ZM Checkpoint** for Call of Duty: Black Ops II Zombies on Plutonium T6.
 - Workspace: `C:\Users\User\Documents\Projects\Bo2 Zombie Plutonium`
-- Current source/package: **0.4.14-alpha**; locally installed metadata: **0.4.13-alpha** at task start. GitHub publication status is recorded in section 23. No project installer was run by the agent.
+- Current source/package and GitHub release: **0.4.14-alpha**; locally installed metadata: **0.4.13-alpha**. GitHub publication status is recorded in section 23. No project installer was run by the agent.
 - Current date of this handoff: **2026-10-28**
 - The project is a Git repository with public origin `https://github.com/PourquoiPasMoi/zm-checkpoint`.
 - The standalone mod and companion packages are installed locally.
@@ -1203,3 +1203,10 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
 - **Next:** save a fresh Nuketown round on 0.4.14 and compare perk names and
   physical sites after Resume. Inspect console for `ZMCP NUKETOWN` fallback
   if the layout still changes. Continue co-op tests separately.
+- **Published:** source commit `35fba8d` was pushed before
+  `https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.14-alpha`.
+  GitHub confirms the matching ZIP size and SHA-256 above. The installed
+  0.4.13 updater returns `UPDATE_AVAILABLE|0.4.13-alpha|0.4.14-alpha`.
+  Installed metadata stays 0.4.13-alpha and all four task-start checkpoint
+  hashes above remained unchanged. The owner will install through the updater;
+  unload/reload the mod afterward. No Plutonium restart is required.

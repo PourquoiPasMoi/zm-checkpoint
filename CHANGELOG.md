@@ -38,6 +38,11 @@ semantics.
 - Remaining risk/next step: publish without installing locally. Test a new
   Nuketown save created on 0.4.14, then Resume it and compare every perk site.
   Existing 0.4.13 saves have no site IDs and retain the old placement behavior.
+- Publication: source commit `35fba8d` was pushed before GitHub release
+  `0.4.14-alpha`; GitHub reports the matching 95,440-byte ZIP and SHA-256
+  above. The installed 0.4.13 updater reports
+  `UPDATE_AVAILABLE|0.4.13-alpha|0.4.14-alpha`. Installed metadata remains
+  0.4.13-alpha and the four task-start checkpoint hashes are unchanged.
 
 ## 0.4.13-alpha — 2026-10-28
 
