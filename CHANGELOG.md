@@ -4,6 +4,48 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.12-alpha — 2026-10-28
+
+### 2026-10-28 — Paginated release notes and reliable updater results
+
+- Request: fix repeated in-game install attempts that returned to the menu
+  without an explanation, delayed release notes, and a dense changelog that
+  was cut off with no way to read the rest.
+- Change or investigation: owner screenshots of standalone
+  `mods/zm_checkpoint` show 0.4.11 available, an installing state, a completed
+  0.4.11 install with `No release notes provided`, then release notes appearing
+  after a later check as one truncated paragraph. The 0.4.11 formatter removed
+  all paragraph breaks and limited notes to 11 lines. The watcher could also
+  launch overlapping check/install processes, while the window companion hid
+  exceptions, so failed or racing results were opaque. Version 0.4.12 splits
+  authored lines and sentences into bullet entries, highlights each bullet,
+  and supplies Previous/Next page controls in the notes panel. It carries up
+  to 64 lines and displays a page number. Update workers are serialized by a
+  named mutex; the watcher queues requests, and errors appear in-game as
+  sanitized short text. If Install is clicked after the package is already
+  current, the updater now resolves that request instead of leaving it pending.
+- Files affected: updater Lua, updater status/window/watcher PowerShell,
+  mod.json, README.md, PROJECT_HANDOFF.md, CHANGELOG.md, generated package.
+- Validation: modified PowerShell and updater Lua parsed. An isolated status
+  test rendered the 0.4.11 release body into 19 formatted/padded lines across
+  three pages, created 64 bounded dvar slots, and stripped command punctuation
+  and URLs from error text. Build.ps1 and all six GSC parses passed; IWD
+  contains page controls, count and error display. Full mod-folder ZIP has 20
+  entries, excludes scriptdata and caches, and has SHA-256
+  `F2BBE38C86B1BE88491D128AEE532B957C841AD5724087C5616959AA88DE82E4`
+  (84,729 bytes). Installed metadata stays 0.4.11-alpha; no local install.
+  Buried and TranZit saves retain their prior hashes. Nuketown is now
+  `C0376DCF00151DA429F7A5545D010FB8F4052439CE07404201A8D0C8FD7AB404`,
+  last written by gameplay at 19:51:40, after the previous session baseline;
+  neither Build.ps1 nor this agent wrote scriptdata.
+- In-game result: **Verified in-game:** 0.4.11 installed, delayed and truncated
+  notes, and the reported retry sequence. The 0.4.12 fixes are not yet tested.
+- Remaining risk/next step: publish without local install. The currently
+  running 0.4.11 bridge remains in memory until restarted; the new window
+  companion mutex still serializes update workers after 0.4.12 is installed.
+  Owner should test pages, focus, clear errors and a future update through the
+  game. A failed check's exact prior exception was not retained by 0.4.11.
+
 ## 0.4.11-alpha — 2026-10-28
 
 ### 2026-10-28 — Update detection timing check

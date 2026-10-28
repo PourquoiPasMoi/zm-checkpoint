@@ -12,7 +12,7 @@ failure, installation, or test so the project retains its lessons.
 
 - Project: **ZM Checkpoint** for Call of Duty: Black Ops II Zombies on Plutonium T6.
 - Workspace: `C:\Users\User\Documents\Projects\Bo2 Zombie Plutonium`
-- Current source/package and GitHub release: **0.4.11-alpha**; locally installed metadata is **0.4.10-alpha**. No project installer was run by the agent.
+- Current source/package version: **0.4.12-alpha**; GitHub release at task start and locally installed metadata: **0.4.11-alpha**. No project installer was run by the agent.
 - Current date of this handoff: **2026-10-28**
 - The project is a Git repository with public origin `https://github.com/PourquoiPasMoi/zm-checkpoint`.
 - The standalone mod and companion packages are installed locally.
@@ -1066,3 +1066,36 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   `UPDATE_AVAILABLE|0.4.10-alpha|0.4.11-alpha`. Installed metadata remains
   0.4.10-alpha and Buried, Nuketown, and TranZit saves retain baseline hashes.
   No local installation was performed.
+
+## 21. 0.4.12-alpha work — 2026-10-28
+
+- **Verified in-game failure (owner screenshots, standalone
+  `mods/zm_checkpoint`, updater page):** several Install attempts showed
+  `Installing update...` with no useful error, then 0.4.11 installed. Its
+  first installed view had `No release notes provided`; after about 30 seconds
+  and another check, notes appeared as one dense block ending in `...`.
+  0.4.11's formatter flattened release text and cut it to 11 lines. The old
+  watcher could run check and install in parallel, and the window companion
+  discarded exception details. Logs confirm multiple request/install markers,
+  but the exact exception for earlier failed attempts was not retained.
+- **Validated statically:** 0.4.12 formats release bodies into bullet entries
+  with blank lines, highlights bullet starts, and pages up to 64 36-character
+  lines, eight at a time. PREV PAGE and NEXT PAGE appear inside the notes box;
+  keyboard/controller focus can move right from main choices. The page count
+  is shown. Error messages are sanitized, capped and displayed in-game. A
+  named mutex serializes window workers even when an older watcher instance
+  remains running; the new watcher also queues overlapping requests. A check
+  that finds the package current after Install resolves as installed. An
+  isolated test formatted 0.4.11 notes into 19 lines on three pages and
+  stripped unsafe error punctuation. Modified PowerShell and Lua parsed;
+  Build.ps1 and six GSC parse checks passed. The complete 20-entry ZIP is
+  `dist/zm_checkpoint-0.4.12-alpha.zip` (84,729 bytes; SHA-256
+  `F2BBE38C86B1BE88491D128AEE532B957C841AD5724087C5616959AA88DE82E4`).
+  Installed metadata remains 0.4.11-alpha and no local install was run.
+  Buried and TranZit save hashes remain unchanged. Nuketown has a newer
+  19:51:40 gameplay write and current SHA-256
+  `C0376DCF00151DA429F7A5545D010FB8F4052439CE07404201A8D0C8FD7AB404`;
+  this session did not write any scriptdata files.
+- **In-game result:** new layout and reliability behavior not yet tested.
+  Owner installs via the updater. Do not run Install.ps1 or copy the package
+  into the local game. Preserve all scriptdata checkpoint saves.

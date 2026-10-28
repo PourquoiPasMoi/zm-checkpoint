@@ -2,7 +2,7 @@
 
 Experimental save and resume checkpoints for Call of Duty: Black Ops II Zombies on Plutonium T6.
 
-The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases). Download `zm_checkpoint-0.4.11-alpha.zip` from release **0.4.11-alpha** and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
+The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases). Download `zm_checkpoint-0.4.12-alpha.zip` from release **0.4.12-alpha** and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
 
 The source, build scripts, test guidance, and project history are in this repository. The user-facing setup and feature details live in [README.md](README.md); contributors should read [AGENTS.md](AGENTS.md) and [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md) first.
 
@@ -20,9 +20,13 @@ hidden until this updater page completes an installation.
 Press **R** on the updater page to run a fresh check. Its **R Refresh** prompt
 uses the same bottom-right style as the game's Mods menu.
 The right-hand **LATEST CHANGES** panel shows the newest GitHub release's
-version and a short summary of its release notes. It also appears when the
-installed version is already current. Long notes are shortened to fit the
-panel; the GitHub release page has the full text.
+version and notes. Use **PREV PAGE** and **NEXT PAGE** at the bottom of the
+panel to read longer notes. Headings and changes are separated into readable
+entries. This panel also appears when the installed version is already current.
+Very long release notes are capped; the GitHub release page has the full text.
+If an update check or installation fails, the updater shows a short error reason
+so you can retry with **R Refresh**. An installation already in progress is
+allowed to finish before another check or install starts.
 
 For co-op checkpoints, the original host and the same two to four player
 account IDs must be present and alive. Opening the pause menu on every PC is
