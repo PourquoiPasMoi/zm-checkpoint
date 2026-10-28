@@ -12,7 +12,7 @@ failure, installation, or test so the project retains its lessons.
 
 - Project: **ZM Checkpoint** for Call of Duty: Black Ops II Zombies on Plutonium T6.
 - Workspace: `C:\Users\User\Documents\Projects\Bo2 Zombie Plutonium`
-- Current source/package: **0.4.13-alpha**; locally installed metadata: **0.4.12-alpha**. GitHub publication status is recorded in section 22. No project installer was run by the agent.
+- Current source/package and GitHub release: **0.4.13-alpha**; locally installed metadata: **0.4.12-alpha**. Publication status is recorded in section 22. No project installer was run by the agent.
 - Current date of this handoff: **2026-10-28**
 - The project is a Git repository with public origin `https://github.com/PourquoiPasMoi/zm-checkpoint`.
 - The standalone mod and companion packages are installed locally.
@@ -1148,3 +1148,12 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   including an older Slot 1 save; confirm a successful resume leaves other
   slots intact. Capture the updater stages and any exact error if delayed.
   Continue two-player co-op Save & Exit test when friend is available.
+- **Published:** source commit `3709c5c` was pushed before release
+  `https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.13-alpha`.
+  GitHub reports the matching 93,506-byte ZIP and SHA-256 listed above. The
+  installed 0.4.12 checker reports
+  `UPDATE_AVAILABLE|0.4.12-alpha|0.4.13-alpha`. Installed metadata remains
+  0.4.12-alpha. Buried, Nuketown and TranZit saves match task-start hashes:
+  `AAC274E2C3F938643DACE098C80771A281BAD8E90B43FFE2C9AF3D3B5BCA5B82`,
+  `C0376DCF00151DA429F7A5545D010FB8F4052439CE07404201A8D0C8FD7AB404`,
+  and `C65C81B25731D981518D321DB25C1D817F58E88320BC0CBA5A0155D578991AC4`.

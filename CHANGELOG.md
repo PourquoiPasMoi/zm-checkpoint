@@ -39,6 +39,11 @@ semantics.
 - Remaining risk/next step: verify actual BO2 lobby settings transfer and
   server-side comparison in-game; capture update stage timing if a download
   still seems stalled. Co-op Save & Exit remains unverified with two players.
+- Publication: source commit `3709c5c` was pushed to main before release
+  `0.4.13-alpha`. GitHub reports the matching 93,506-byte ZIP asset with the
+  SHA-256 above. The installed 0.4.12 checker reports
+  `UPDATE_AVAILABLE|0.4.12-alpha|0.4.13-alpha`. Installed metadata remains
+  0.4.12-alpha and all three existing checkpoint hashes match task start.
 
 ## 0.4.12-alpha — 2026-10-28
 
