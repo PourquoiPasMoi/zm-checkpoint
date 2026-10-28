@@ -2,7 +2,7 @@
 
 Experimental save and resume checkpoints for Call of Duty: Black Ops II Zombies on Plutonium T6.
 
-The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases). Download `zm_checkpoint-0.4.10-alpha.zip` from release **0.4.10-alpha** and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
+The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases). Download `zm_checkpoint-0.4.11-alpha.zip` from release **0.4.11-alpha** and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
 
 The source, build scripts, test guidance, and project history are in this repository. The user-facing setup and feature details live in [README.md](README.md); contributors should read [AGENTS.md](AGENTS.md) and [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md) first.
 
@@ -19,6 +19,17 @@ shortcut appears. Both use the game's normal mod-unload action. They remain
 hidden until this updater page completes an installation.
 Press **R** on the updater page to run a fresh check. Its **R Refresh** prompt
 uses the same bottom-right style as the game's Mods menu.
+The right-hand **LATEST CHANGES** panel shows the newest GitHub release's
+version and a short summary of its release notes. It also appears when the
+installed version is already current. Long notes are shortened to fit the
+panel; the GitHub release page has the full text.
+
+For co-op checkpoints, the original host and the same two to four player
+account IDs must be present and alive. Opening the pause menu on every PC is
+no longer required for the readiness check. Both players should still load
+the same mod version. The exact team must reconnect before the host can resume.
+The expanded Custom Games menu places the map preview on the lower right so
+the selected option's description remains visible.
 
 After installation, choose UNLOAD or press U, then load ZM Checkpoint again from
 the Mods menu to use the new UI. The updater does not restart Plutonium. If

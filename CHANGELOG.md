@@ -4,6 +4,36 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.11-alpha — 2026-10-28
+
+### 2026-10-28 — Latest changes panel and first co-op test fixes
+
+- Request: show the latest release changes in a BO2-style right-side updater
+  panel; fix the two-player Nuketown Save & Exit readiness rejection and the
+  Custom Games map card covering the selected option's description.
+- Change or investigation: the Windows companion now passes the newest GitHub
+  release notes to the in-game status file as bounded, sanitized plain text.
+  The updater shows up to 11 short lines in a dark framed right-side panel.
+  The co-op save/restore guards no longer require the unverified pause-menu
+  `hello_040` signal. Valid unique account IDs, exact roster, original host,
+  alive players and map context remain required. Specific save errors now
+  identify an invalid ID, duplicate ID or non-playing player. The stock map
+  card is moved and slightly reduced to keep left-side descriptions visible.
+- Files affected: updater scripts and Lua, co-op GSC/Lua, private lobby Lua,
+  mod.json, README.md, COOP_TEST_PLAN.md, PROJECT_HANDOFF.md, CHANGELOG.md.
+- Validation: modified PowerShell and Lua parsed; all six built GSC outputs
+  parsed; Build.ps1 passed. Isolated status-file check produced 11 bounded
+  release-note lines and stripped unsafe command punctuation. Complete mod
+  folder ZIP has 20 entries and excludes saves/caches; SHA-256
+  `14692685B0DFFDCB121F4BDCBA95E5C6206F7017C04BF42B949455C835F86FFA`.
+  Installed metadata remains 0.4.10-alpha; Buried, Nuketown, and TranZit
+  checkpoint hashes match their pre-work baselines. No local install was run.
+- In-game result: **Verified in-game:** previous co-op readiness error and map
+  card overlap on Nuketown from owner screenshots. New behavior not yet tested.
+- Remaining risk/next step: publish 0.4.11 without local install; both PCs
+  load it and retry Nuketown co-op save/resume. Confirm map layout and notes.
+  A client mod cannot be attested through the optional pause-menu signal.
+
 ## 0.4.10-alpha — 2026-10-28
 
 ### 2026-10-28 — Offer Unload after an in-game update

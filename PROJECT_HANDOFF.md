@@ -12,7 +12,7 @@ failure, installation, or test so the project retains its lessons.
 
 - Project: **ZM Checkpoint** for Call of Duty: Black Ops II Zombies on Plutonium T6.
 - Workspace: `C:\Users\User\Documents\Projects\Bo2 Zombie Plutonium`
-- Current source/package and GitHub release version: **0.4.10-alpha**; locally installed metadata remains **0.4.9-alpha**. No project installer was run by the agent.
+- Current source/package version: **0.4.11-alpha**; latest published at task start **0.4.10-alpha**; locally installed metadata is **0.4.10-alpha**. No project installer was run by the agent.
 - Current date of this handoff: **2026-10-28**
 - The project is a Git repository with public origin `https://github.com/PourquoiPasMoi/zm-checkpoint`.
 - The standalone mod and companion packages are installed locally.
@@ -787,16 +787,16 @@ existing companions. A shareable standalone ZIP is at
   `zmcp_coop_ui_error`. Missing members currently display account IDs.
 - Resume sets `zmcp_coop_autoload 1`, clears solo autoload, then uses xpartygo.
   GSC resets the request, holds stock round_think, waits for the exact living
-  team and matching `hello_040` menu-response handshake, restores shared state
+  team, restores shared state
   then each member by XUID, and verifies consumption before releasing the round.
-  Everyone must open pause once per match, including on a Resume launch.
+  The old `hello_040` pause handshake was removed as a hard gate in 0.4.11.
   Initial team wait is 120 seconds; overall watchdog is 150 seconds. Failed
   checks exit to lobby; solo game-end consumption is not attached to co-op.
 - **Known limitation:** no dedicated server, split-screen identity, host
   migration, competitive mode, custom round controller, co-op character or
   quest-milestone reconstruction guarantee. All previous dynamic-map exclusions
   remain. Normal round-start effects (such as grenade awards) need observation.
-  UI handshake declares compatibility; it is not cryptographic file attestation.
+  The optional UI handshake is diagnostic only; it cannot attest client files.
 - **Expected, unverified:** Plutonium lobby string XUIDs and getxuid() normalize
   to the same online identity, round-think detouring holds multiplayer spawning,
   and existing player/world adapters restore a full team. LAN identity remains
@@ -1019,3 +1019,32 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   still match their baseline. Next: owner installs via the updater, confirms
   UNLOAD row and U prompt appear only after successful installation, then
   unloads and reloads the mod. The new UI is **not yet verified in-game**.
+
+## 20. 0.4.11-alpha work — 2026-10-28
+
+- **Verified in-game failure (owner screenshot):** in a two-player Nuketown
+  match with `mods/zm_checkpoint`, the host pressed SAVE & EXIT and received
+  `Team not ready: all players must be alive and open pause once`. Both players
+  tried opening pause without changing the result. The old guard combined
+  invalid/duplicate XUID, player state, and an unverified `hello_040` menu
+  response into one message; the exact failed subcondition was not logged.
+  The candidate removes that signal as a save/restore requirement. Host
+  authorization, valid unique XUIDs, exact team count, map/mode/settings and
+  alive checks remain. New messages and logs distinguish invalid ID,
+  duplicate ID and non-playing/dead player. The client mod remains a setup
+  requirement; the server cannot attest client files through this signal.
+- **Verified in-game layout issue (owner screenshot):** Custom Games has enough
+  left-side rows for the stock map card to cover the selected description.
+  The candidate repositions and slightly shrinks it in the lower-right pane.
+- **Validated statically:** the updater draws a dark outlined `LATEST CHANGES`
+  panel in the free right column. The companion takes the newest GitHub
+  release body, sanitizes it to plain text, wraps at 36 characters into at
+  most 11 lines, and writes note dvars to the status CFG. An isolated test
+  confirmed bounded lines and removed command punctuation. Modified
+  PowerShell/Lua parsed; Build.ps1 and all six GSC parses passed. The currently
+  installed 0.4.10 companion cannot display release notes for the available
+  0.4.11 update until 0.4.11 is installed and the mod reloaded.
+- **In-game result:** new behaviors not yet tested. Next: both players load
+  0.4.11 and retest Nuketown Save & Exit and Resume, exact roster and member
+  restoration, round controller/spawning, map-card layout and release notes.
+  Keep the installed game files and saves untouched during publication.

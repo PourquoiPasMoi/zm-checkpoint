@@ -1,18 +1,19 @@
 # Host-stored co-op checkpoints — 0.4.0-alpha
 
-Status: experimental implementation; no two-PC in-game result yet. Start with
-two players on Nuketown before testing three/four players or another map.
+Status: first two-PC Nuketown test reached the save button but the team-readiness
+guard rejected it. The 0.4.11 candidate removes the unproven pause handshake
+as a save/restore blocker; a new two-PC test is required.
 
 ## How to try it
 
-1. Both players install the same 0.4.0 package and load ZM Checkpoint. Reload
+1. Both players install the same current package and load ZM Checkpoint. Reload
    the mod or restart Plutonium yourself after installation. Do not replace any
    scriptdata folder. For a friend's standalone installation, extract the
    package contents to `%LOCALAPPDATA%\Plutonium\storage\t6\mods\zm_checkpoint`.
 2. The intended host creates a private Nuketown Classic lobby. Join with the
    second account and start normally. Set `developer 1` before launch for logs.
-3. Each player opens and closes the pause menu once. This sends the versioned
-   UI handshake. Repeat after each new match or Resume launch.
+3. Both players should verify that ZM Checkpoint is loaded. Opening pause can
+   still send a diagnostic UI signal, but it is not required for saving.
 4. At round 2 or 3, record different weapons/ammo, points, perks and positions
    for each player. Keep everyone alive, out of last stand and spectating.
 5. Only the host selects SAVE & EXIT. Expect `Team checkpoint saved` and a
@@ -20,8 +21,8 @@ two players on Nuketown before testing three/four players or another map.
 6. Open CO-OP RESUME in the private lobby. Select the same map, mode, start
    location, mod, difficulty, magic and headshots settings. Reconnect the exact
    accounts. The original host must host. The page refreshes every half second.
-7. Press RESUME TEAM CHECKPOINT. Loading uses xpartygo. Everyone opens pause
-   once after loading; the round is held while IDs and readiness are checked.
+7. Press RESUME TEAM CHECKPOINT. Loading uses xpartygo. The round is held
+   while IDs and readiness are checked.
    There is a 120-second team wait and 150-second overall restoration timeout.
 8. Verify all player states, opened paths, active round HUD, zombie spawning,
    and multiplayer zombie counts. Then save again and repeat. Confirm that a
@@ -40,7 +41,9 @@ ownership in LAN mode. IDs are compared as normalized hex strings, never floats.
 - Another host, another mod, another mode/location or recorded setting: locked.
 - Display-name change with the same authenticated ID: should remain eligible.
 - Player disconnects during load/restore: return to lobby without consuming.
-- Client never sends the matching UI handshake: timeout, checkpoint retained.
+- Client does not open pause: save and restore still rely on exact valid account
+  IDs and all players being alive. Check that a missing mod still gets reported
+  as a compatibility limitation rather than an identity mismatch.
 - Wrong/stale lobby metadata or manual co-op autoload: server still checks file,
   host, exact roster and context; does not fall back to a fresh playable run.
 - Incomplete newest generation: reader retains the earlier complete generation.
@@ -72,9 +75,10 @@ host/player IDs, party order, and observed before/after inventory for failures.
   afterlife, staffs/generators, full Easter eggs, etc. No map is co-op verified.
 - Round restarts at its beginning. Normal round-start effects may adjust ammo
   (including stock grenade replenishment); these need observation in testing.
-- The server owns state and authorization. UI handshake is a compatibility
-  declaration, not cryptographic proof of client files. Local host save edits
-  are outside the ownership guarantee.
+- The server owns state and authorization. The optional UI handshake is only
+  diagnostic, not proof of client files. The host cannot establish from this
+  signal that a guest has identical mod files. Local host save edits are
+  outside the ownership guarantee.
 
 ## Static evidence and checks
 

@@ -178,7 +178,7 @@ zmcp_coop_roster( checkpoint, ready )
                 return 0;
             hosts++;
         }
-        if ( ready && ( !zmcp_coop_alive( players[i] ) || !isdefined( players[i].zmcp_ui_compatible ) ) )
+        if ( ready && !zmcp_coop_alive( players[i] ) )
             return 0;
     }
     return hosts == 1;
@@ -212,9 +212,22 @@ zmcp_coop_save( host, exit_after_save )
     for ( i = 0; i < players.size; i++ )
     {
         id = zmcp_coop_id( players[i] );
-        if ( id == "" || isdefined( seen[id] ) || !zmcp_coop_alive( players[i] ) || !isdefined( players[i].zmcp_ui_compatible ) )
+        if ( id == "" )
         {
-            host iprintlnbold( "^1Team not ready: all players must be alive and open pause once" );
+            host iprintlnbold( "^1Team save blocked: a player has no valid account ID" );
+            println( "ZMCP COOP: save blocked; invalid player XUID at index " + i );
+            return;
+        }
+        if ( isdefined( seen[id] ) )
+        {
+            host iprintlnbold( "^1Team save blocked: duplicate player account ID" );
+            println( "ZMCP COOP: save blocked; duplicate XUID " + id );
+            return;
+        }
+        if ( !zmcp_coop_alive( players[i] ) )
+        {
+            host iprintlnbold( "^1Team save blocked: every player must be alive" );
+            println( "ZMCP COOP: save blocked; player not alive/playing: " + id );
             return;
         }
         seen[id] = 1;

@@ -105,7 +105,7 @@ LUI.createMenu.ZMCheckpointCoop = function ( controller )
 	end
 	local list = CoD.ButtonList.new( { leftAnchor = true, rightAnchor = false, left = 0, right = 500, topAnchor = true, bottomAnchor = false, top = 325, bottom = 400 } )
 	menu:addElement( list )
-	local resume = list:addButton( "RESUME TEAM CHECKPOINT", "After loading, everyone must open pause once to verify the mod. The saved round then restarts." )
+	local resume = list:addButton( "RESUME TEAM CHECKPOINT", "The saved round restarts with the original host and the exact same players." )
 	resume:setActionEventName( "zmcp_coop_resume" )
 	menu:registerEventHandler( "zmcp_coop_resume", C.CoopResume )
 	local wasReady = false
