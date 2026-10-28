@@ -41,6 +41,11 @@ semantics.
   later update; if the companion is unavailable the page should show a retry
   error rather than a false up-to-date result. The currently running older
   bridge uses the worker's log fallback until its scheduled task restarts.
+- Publication: source commit `b0037f2` was pushed before GitHub release
+  `0.4.15-alpha`; GitHub confirms the 96,557-byte ZIP and SHA-256 above. The
+  installed 0.4.14 checker returns
+  `UPDATE_AVAILABLE|0.4.14-alpha|0.4.15-alpha`. Local installed metadata and
+  all four task-start checkpoint hashes are unchanged.
 
 ## 0.4.14-alpha — 2026-10-28
 
