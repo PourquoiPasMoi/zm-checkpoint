@@ -14,6 +14,7 @@ semantics.
 - Validation: modified Lua parsed; 25 co-op lobby and launch cases, including decimal/hex 64-bit IDs, and solo Resume regression suite passed. Build.ps1 and all six generated T6 GSC parses passed. The 20-entry release ZIP has the complete folder and no `scriptdata`, save, cache, or tool files; SHA-256 `4179597D44BDC8DE133D5CB0BC74F621488E5A22E1B0B25C503A32D89F4DDE87`. All five local solo save hashes remained unchanged; no local install was run.
 - In-game result: 0.4.18-alpha not yet tested; owner screenshots document the prior version's failures.
 - Remaining risk/next step: have the original Save & Exit host open CO-OP RESUME with the same friend connected. If IDs still disagree, collect the host save and console log for diagnosis. Check badges on both Solo pages after updating.
+- Publication: source commit `06335dc` was pushed before [GitHub release 0.4.18-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.18-alpha). The uploaded ZIP is 100,815 bytes and GitHub reports the same SHA-256 digest as the local package. Local Plutonium remains on 0.4.17-alpha for the owner to update in-game.
 
 ## 0.4.17-alpha — 2026-10-28
 

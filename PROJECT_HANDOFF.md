@@ -1305,6 +1305,7 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
 - **Expected:** the Solo slot panel's color and letter badges render in the menu where HUD-only perk materials and weapon table art failed. Real weapon/perk image assets are not included; stock HUD textures cannot be assumed to load in the frontend. Names remain visible. This needs user visual testing after update.
 - **Validated statically:** modified Lua parsed; co-op lobby test passed 25 cases including decimal/hex mixed ID cases and 64-bit boundaries. Solo Resume suite, Build.ps1, six generated T6 GSC parses passed. Release ZIP has 20 entries and SHA-256 `4179597D44BDC8DE133D5CB0BC74F621488E5A22E1B0B25C503A32D89F4DDE87`. All five local solo checkpoint hashes stayed unchanged; no local install was run.
 - **Installed state:** local Plutonium mod remains 0.4.17-alpha by owner preference; 0.4.18 is GitHub-only pending use of the in-game updater. Do not copy this release into the local game as part of publishing.
+- **Published:** source commit `06335dc` was pushed before [0.4.18-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.18-alpha). The uploaded ZIP is 100,815 bytes; GitHub's SHA-256 digest matches the local ZIP. No local install was run.
 - **Next:** original Save & Exit host opens CO-OP RESUME in the same lobby, friend connected. If ID mismatch remains, obtain host `.sav` and `console_zm.log` without modifying the save. Check Solo badge layout after updater install and mod unload/reload.
 
 ## 26. 0.4.17-alpha repair — 2026-10-28
