@@ -45,16 +45,18 @@ local function slotHint( meta )
 	return "Select to view this checkpoint's equipment and settings."
 end
 
-local perkArt = {
-	specialty_armorvest = { "specialty_juggernaut_zombies", "JUGGERNOG" },
-	specialty_deadshot = { "specialty_ads_zombies", "DEADSHOT" },
-	specialty_fastreload = { "specialty_fastreload_zombies", "SPEED COLA" },
-	specialty_longersprint = { "specialty_marathon_zombies", "STAMIN-UP" },
-	specialty_quickrevive = { "specialty_quickrevive_zombies", "QUICK REVIVE" },
-	specialty_rof = { "specialty_doubletap_zombies", "DOUBLE TAP" },
-	specialty_additionalprimaryweapon = { "specialty_additionalprimaryweapon_zombies", "MULE KICK" },
-	specialty_finalstand = { "specialty_tombstone_zombies", "TOMBSTONE" },
-	specialty_grenadepulldeath = { nil, "ELECTRIC CHERRY" }
+local perkStyle = {
+	specialty_armorvest = { "JUGGERNOG", "JG", 0.60, 0.13, 0.13 },
+	specialty_deadshot = { "DEADSHOT", "DS", 0.36, 0.36, 0.36 },
+	specialty_fastreload = { "SPEED COLA", "SC", 0.18, 0.48, 0.23 },
+	specialty_longersprint = { "STAMIN-UP", "SU", 0.65, 0.44, 0.12 },
+	specialty_quickrevive = { "QUICK REVIVE", "QR", 0.14, 0.40, 0.62 },
+	specialty_rof = { "DOUBLE TAP", "DT", 0.63, 0.33, 0.12 },
+	specialty_additionalprimaryweapon = { "MULE KICK", "MK", 0.32, 0.40, 0.15 },
+	specialty_finalstand = { "TOMBSTONE", "TS", 0.38, 0.36, 0.50 },
+	specialty_grenadepulldeath = { "CHERRY", "EC", 0.48, 0.16, 0.48 },
+	specialty_flakjacket = { "PHD FLOPPER", "PH", 0.38, 0.19, 0.55 },
+	specialty_chugabud = { "WHO'S WHO", "WW", 0.20, 0.39, 0.56 }
 }
 
 local function addText( parent, value, left, right, top, bottom, orange )
@@ -69,32 +71,21 @@ local function addText( parent, value, left, right, top, bottom, orange )
 	return label
 end
 
-local function addImage( parent, material, left, top, width, height )
-	if not material or material == "" then return false end
-	local ok, registered = pcall( RegisterMaterial, material )
-	if not ok or not registered then return false end
-	local icon = LUI.UIImage.new()
-	icon:setLeftRight( true, false, left, left + width )
-	icon:setTopBottom( true, false, top, top + height )
-	icon:setImage( registered )
-	parent:addElement( icon )
-	return true
+local function addBadge( parent, letters, left, top, width, height, red, green, blue )
+	local background = LUI.UIImage.new()
+	background:setLeftRight( true, false, left, left + width )
+	background:setTopBottom( true, false, top, top + height )
+	background:setRGB( red, green, blue )
+	background:setAlpha( 0.85 )
+	parent:addElement( background )
+	local mark = addText( parent, letters, left, left + width, top + 3, top + height - 3 )
+	mark:setAlignment( LUI.Alignment.Center )
 end
 
 local function weaponName( name )
 	local clean = string.gsub( name, "_zm.*$", "" )
 	clean = string.gsub( clean, "_", " " )
 	return string.upper( clean )
-end
-
-local function weaponArt( name )
-	local ok, image = pcall( function ()
-		local index = UIExpression.GetItemIndex( nil, name )
-		if not index or index <= 0 then return nil end
-		return UIExpression.GetItemImage( nil, index )
-	end )
-	if ok and type( image ) == "string" and image ~= "" then return image end
-	return nil
 end
 
 local function addPreview( menu, list )
@@ -136,21 +127,23 @@ local function addPreview( menu, list )
 		if #meta.weapons == 0 then addText( content, "NONE", 18, 445, 137, 162 ) end
 		for i, name in ipairs( meta.weapons ) do
 			local top = 132 + (i - 1) * 43
-			local image = weaponArt( name )
-			local hasArt = addImage( content, image, 18, top, 96, 35 )
-			addText( content, weaponName( name ), hasArt and 125 or 18, 445, top + 5, top + 31 )
+			local label = weaponName( name )
+			addBadge( content, string.sub( label, 1, 3 ), 18, top, 76, 34,
+				CoD.BOIIOrange.r * 0.65, CoD.BOIIOrange.g * 0.65, CoD.BOIIOrange.b * 0.65 )
+			addText( content, label, 107, 445, top + 5, top + 31 )
 		end
-		addText( content, "PERKS", 18, 445, 310, 337, true )
-		if #meta.perks == 0 then addText( content, "NONE", 18, 445, 351, 377 ) end
+		addText( content, "PERKS", 18, 445, 298, 325, true )
+		if #meta.perks == 0 then addText( content, "NONE", 18, 445, 333, 359 ) end
 		for i, name in ipairs( meta.perks ) do
-			local col = (i - 1) % 4
-			local row = math.floor( (i - 1) / 4 )
-			local left = 18 + col * 110
-			local top = 347 + row * 32
-			local art = perkArt[name]
-			if art and art[1] then addImage( content, art[1], left, top, 25, 25 ) end
-			local label = art and art[2] or string.upper( string.gsub( name, "specialty_", "" ) )
-			addText( content, label, left + 28, left + 108, top + 2, top + 25 )
+			local col = (i - 1) % 3
+			local row = math.floor( (i - 1) / 3 )
+			local left = 18 + col * 145
+			local top = 329 + row * 29
+			local style = perkStyle[name]
+			local label = style and style[1] or string.upper( string.gsub( name, "specialty_", "" ) )
+			addBadge( content, style and style[2] or "?", left, top, 25, 24,
+				style and style[3] or 0.35, style and style[4] or 0.35, style and style[5] or 0.35 )
+			addText( content, label, left + 29, left + 141, top + 2, top + 25 )
 		end
 	end
 	return show

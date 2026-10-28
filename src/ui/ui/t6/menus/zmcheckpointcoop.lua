@@ -11,6 +11,51 @@ C.NormalizeId = function ( id )
 	return id
 end
 
+-- Lobby APIs can expose a 64-bit XUID as decimal while GSC getxuid() uses
+-- hexadecimal. Divide the string by 16 so no Lua double loses ID bits.
+C.DecimalIdToHex = function ( id )
+	if type( id ) ~= "string" or #id < 1 or #id > 20 or string.find( id, "[^0-9]" ) then return nil end
+	id = string.gsub( id, "^0+", "" )
+	if id == "" then return nil end
+	local result = ""
+	while id ~= "" do
+		local quotient, carry = "", 0
+		for i = 1, #id do
+			local value = carry * 10 + tonumber( string.sub( id, i, i ) )
+			local digit = math.floor( value / 16 )
+			carry = value % 16
+			if quotient ~= "" or digit ~= 0 then quotient = quotient .. digit end
+		end
+		result = string.sub( "0123456789abcdef", carry + 1, carry + 1 ) .. result
+		if #result > 16 then return nil end
+		id = quotient
+	end
+	return result
+end
+
+C.LiveIdCandidates = function ( id )
+	if type( id ) ~= "string" then return {} end
+	local candidates = {}
+	local direct = C.NormalizeId( id )
+	if direct then candidates[#candidates + 1] = direct end
+	if string.find( id, "^[0-9]+$" ) then
+		local decimal = C.DecimalIdToHex( id )
+		if decimal and decimal ~= direct then candidates[#candidates + 1] = decimal end
+	end
+	return candidates
+end
+
+local function matchSavedId( rawId, expectedSet )
+	local found
+	for _, candidate in ipairs( C.LiveIdCandidates( rawId ) ) do
+		if expectedSet[candidate] then
+			if found and found ~= candidate then return nil, true end
+			found = candidate
+		end
+	end
+	return found, false
+end
+
 C.CoopValue = function ( value )
 	if value == "" then return "-" end
 	return value
@@ -22,7 +67,7 @@ C.CoopStatus = function ( controller )
 	local dvar = function ( name ) return C.DvarString( prefix .. name ) end
 	local details = {}
 	if not C.SupportedMaps[map] or dvar( "has" ) ~= "1" then
-		return false, "No team checkpoint for the selected map.", details
+		return false, "No team checkpoint on this PC. Open Resume on the Save & Exit host.", details
 	end
 	local expected, expectedSet = {}, {}
 	for id in string.gmatch( dvar( "ids" ), "[^/]+" ) do
@@ -34,14 +79,14 @@ C.CoopStatus = function ( controller )
 	if #expected < 2 or #expected > 4 then return false, "Invalid saved team size.", details end
 	local host = C.NormalizeId( dvar( "host" ) )
 	if not host or not expectedSet[host] then return false, "Invalid saved host.", details end
-	local localId = C.NormalizeId( Engine.GetXUIDStringForController( controller ) )
+	local localId, localAmbiguous = matchSavedId( Engine.GetXUIDStringForController( controller ), expectedSet )
 	local members = Engine.GetPlayersInLobby()
 	if type( members ) ~= "table" then return false, "Lobby identities are unavailable.", details end
 	local actual, count = {}, 0
 	for _, member in pairs( members ) do
-		local id = C.NormalizeId( member.xuid )
-		if not id or actual[id] then return false, "Lobby contains an invalid or duplicate ID.", details end
-		actual[id] = member.gamertag or id
+		local id, ambiguous = matchSavedId( member.xuid, expectedSet )
+		if ambiguous or (id and actual[id]) then return false, "Lobby contains an ambiguous or duplicate ID.", details end
+		if id then actual[id] = member.gamertag or id end
 		count = count + 1
 	end
 	local matches = count == #expected and Engine.PartyGetPlayerCount() == #expected
@@ -50,7 +95,7 @@ C.CoopStatus = function ( controller )
 		table.insert( details, (actual[id] and "CONNECTED: " or "MISSING: ") .. label .. (id == host and " (HOST)" or "") )
 		if not actual[id] then matches = false end
 	end
-	if localId ~= host or UIExpression.GameHost( controller ) ~= 1 or not CoD.isPartyHost() then
+	if localAmbiguous or localId ~= host or UIExpression.GameHost( controller ) ~= 1 or not CoD.isPartyHost() then
 		return false, "The original host must host this lobby.", details
 	end
 	if not matches then return false, "Reconnect the exact saved team; remove extra players.", details end
