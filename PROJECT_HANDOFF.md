@@ -1025,6 +1025,14 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
 
 ## 20. 0.4.11-alpha work — 2026-10-28
 
+- **Update check observation (2026-10-28):** the owner first saw a stale
+  `Latest version installed / 0.4.10-alpha` screen, then confirmed the new
+  update appeared. The console log contains the fresh update request, the
+  status CFG reports `update_available / 0.4.11-alpha`, and the direct check
+  returns `UPDATE_AVAILABLE|0.4.10-alpha|0.4.11-alpha`. The screenshot likely
+  preceded background-check completion; precise timing is unknown. No code,
+  game files, or saves changed during this investigation.
+
 - **Verified in-game failure (owner screenshot):** in a two-player Nuketown
   match with `mods/zm_checkpoint`, the host pressed SAVE & EXIT and received
   `Team not ready: all players must be alive and open pause once`. Both players

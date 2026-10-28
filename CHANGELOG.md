@@ -6,6 +6,24 @@ semantics.
 
 ## 0.4.11-alpha — 2026-10-28
 
+### 2026-10-28 — Update detection timing check
+
+- Request: investigate why the in-game updater still displayed 0.4.10 as the
+  latest version after 0.4.11 had been published.
+- Change or investigation: inspected the live Plutonium console log, update
+  status CFG, installed metadata, bridge task state, and a direct GitHub check.
+  The request marker reached the console. The status CFG now reports
+  `update_available` and `0.4.11-alpha`; the direct check also returns
+  `UPDATE_AVAILABLE|0.4.10-alpha|0.4.11-alpha`. The user then confirmed the
+  update appeared. The earlier screenshot likely captured the previous status
+  before the background check completed; exact timing was not captured.
+- Files affected: CHANGELOG.md and PROJECT_HANDOFF.md only.
+- Validation: live status and direct check agreed; installed version remained
+  0.4.10-alpha. No game files or saves were changed by this investigation.
+- In-game result: **Verified in-game:** user reports that 0.4.11 is now shown.
+- Remaining risk/next step: no updater code change needed for this observation;
+  continue with the 0.4.11 download and two-PC Nuketown tests.
+
 ### 2026-10-28 — Latest changes panel and first co-op test fixes
 
 - Request: show the latest release changes in a BO2-style right-side updater
