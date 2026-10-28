@@ -38,7 +38,8 @@ semantics.
   `8374DC3B9DDE29C1EF87C78D6E4C5590B2D28B721255ED3E10F33C5E6CF6A3B2`.
   The background bridge was restarted (new PID 33372). A fresh direct check
   now reports `UP_TO_DATE|0.4.17-alpha`. All four checkpoint hashes still
-  match the task-start values.
+  match the task-start values. Each of the six installed mod and raw map
+  scripts matches its package hash; the installed IWD contains the updater Lua.
 - In-game result: the 0.4.17 fix is not yet tested in-game. The owner must
   unload and reload the mod; Plutonium need not restart.
 - Remaining risk/next step: open the updater after reloading. It should show

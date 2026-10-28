@@ -1347,5 +1347,7 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   The old watcher PID 25252 was stopped and the scheduled bridge started with
   PID 33372; Plutonium was not closed or restarted. A direct update check
   reports `UP_TO_DATE|0.4.17-alpha`. All four checkpoint hashes from the task
-  start remain identical. The game may still have old Lua in memory until the
+  start remain identical. All six installed mod and raw map scripts match
+  their package hashes, and the IWD contains `zmcheckpointupdater.lua`.
+  The game may still have old Lua in memory until the
   owner unloads and reloads ZM Checkpoint.
