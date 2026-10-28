@@ -1,4 +1,4 @@
-param([string]$PlutoniumRoot = (Join-Path $env:LOCALAPPDATA 'Plutonium\storage\t6'), [switch]$CheckOnly)
+param([string]$PlutoniumRoot = (Join-Path $env:LOCALAPPDATA 'Plutonium\storage\t6'), [switch]$CheckOnly, [switch]$IncludeNotes)
 $ErrorActionPreference = 'Stop'
 $repo = 'PourquoiPasMoi/zm-checkpoint'
 $root = [IO.Path]::GetFullPath((Join-Path $PlutoniumRoot 'mods\zm_checkpoint'))
@@ -9,6 +9,11 @@ $releases = Invoke-RestMethod -Uri "https://api.github.com/repos/$repo/releases?
 $release = $releases | Where-Object { -not $_.draft } | Select-Object -First 1
 if (-not $release) { throw 'No published release found' }
 $latest = $release.tag_name
+if ($CheckOnly -and $IncludeNotes) {
+ $notesText = [string]$release.body
+ if ($notesText.Length -gt 4096) { $notesText = $notesText.Substring(0, 4096) }
+ Write-Output ('NOTES64|' + [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($notesText)))
+}
 $currentNumbers = [regex]::Match($current, '^([0-9]+)\.([0-9]+)\.([0-9]+)').Groups
 $latestNumbers = [regex]::Match($latest, '^([0-9]+)\.([0-9]+)\.([0-9]+)').Groups
 if (-not $currentNumbers[0].Success -or -not $latestNumbers[0].Success) { throw 'Invalid version format' }
