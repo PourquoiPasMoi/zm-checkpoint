@@ -43,6 +43,7 @@ zmcp_solo_publish( slot, checkpoint )
     prefix = zmcp_solo_meta_prefix( slot );
     if ( !isdefined( checkpoint ) )
     {
+        cmdexec( "seta " + prefix + "preview 0" );
         cmdexec( "seta " + has + " 0" );
         cmdexec( "seta " + round_dvar + " 0" );
         cmdexec( "seta " + prefix + "settings 0" );
@@ -50,6 +51,33 @@ zmcp_solo_publish( slot, checkpoint )
     }
     cmdexec( "seta " + has + " 1" );
     cmdexec( "seta " + round_dvar + " " + checkpoint.round );
+    // Publish compact lobby metadata from the validated checkpoint, without
+    // changing the on-disk format or exposing arbitrary checkpoint text to cmdexec.
+    cmdexec( "seta " + prefix + "preview 0" );
+    cmdexec( "seta " + prefix + "score " + checkpoint.score );
+    count = checkpoint.weapons.size;
+    if ( count > 4 ) count = 4;
+    cmdexec( "seta " + prefix + "weapons " + count );
+    for ( i = 0; i < count; i++ )
+    {
+        name = checkpoint.weapons[i]["name"];
+        if ( zmcp_coop_token( name ) )
+            cmdexec( "seta " + prefix + "weapon" + i + " " + name );
+        else
+            cmdexec( "seta " + prefix + "weapon" + i + " unknown" );
+    }
+    count = checkpoint.perks.size;
+    if ( count > 12 ) count = 12;
+    cmdexec( "seta " + prefix + "perks " + count );
+    for ( i = 0; i < count; i++ )
+    {
+        name = checkpoint.perks[i];
+        if ( zmcp_coop_token( name ) )
+            cmdexec( "seta " + prefix + "perk" + i + " " + name );
+        else
+            cmdexec( "seta " + prefix + "perk" + i + " unknown" );
+    }
+    cmdexec( "seta " + prefix + "preview 1" );
     if ( !isdefined( checkpoint.settings ) )
     {
         cmdexec( "seta " + prefix + "settings 0" );
