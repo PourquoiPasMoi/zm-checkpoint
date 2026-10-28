@@ -12,7 +12,7 @@ failure, installation, or test so the project retains its lessons.
 
 - Project: **ZM Checkpoint** for Call of Duty: Black Ops II Zombies on Plutonium T6.
 - Workspace: `C:\Users\User\Documents\Projects\Bo2 Zombie Plutonium`
-- Current source/package version: **0.4.11-alpha**; latest published at task start **0.4.10-alpha**; locally installed metadata is **0.4.10-alpha**. No project installer was run by the agent.
+- Current source/package and GitHub release: **0.4.11-alpha**; locally installed metadata is **0.4.10-alpha**. No project installer was run by the agent.
 - Current date of this handoff: **2026-10-28**
 - The project is a Git repository with public origin `https://github.com/PourquoiPasMoi/zm-checkpoint`.
 - The standalone mod and companion packages are installed locally.
@@ -37,7 +37,9 @@ failure, installation, or test so the project retains its lessons.
 - **Validated statically and installed (2026-10-27):** experimental host-stored
   co-op Save & Exit and separate CO-OP RESUME page. Exact string XUID roster,
   original host, count and map context are checked in the lobby and server.
-  No co-op in-game test has occurred. See section 18 and `COOP_TEST_PLAN.md`.
+  A first two-PC Nuketown test found the save-readiness failure described in
+  section 20; successful co-op save/resume is still unverified. See
+  `COOP_TEST_PLAN.md`.
 - Nuketown has been tested successfully through the complete workflow:
   **SAVE & EXIT → lobby → RESUME → active round with zombies and round HUD**.
 - The shared adapter is built and installed for all six stock physical Zombies
@@ -820,9 +822,10 @@ remaining-enemy counter toggled with 0/numpad 0. New styling is installed
 and statically validated, awaiting visual confirmation; the earlier counter
 was visible in the user screenshot. It retains the 0.4.0
 experimental host-stored co-op path and separate CO-OP RESUME page. All parsers
-and 23 mocked Lua lobby/launch cases pass; co-op is not tested in-game. Prioritize
-the two-PC Nuketown test, then negative roster/host/timeout cases. Every player
-must open pause once per match for hello_040. Preserve solo and co-op files.
+and 23 mocked Lua lobby/launch cases pass; the first two-PC Nuketown test
+found a save-readiness failure. Version 0.4.11 removes the pause handshake as
+a hard gate; retest on both PCs, then negative roster/host/timeout cases.
+Preserve solo and co-op files.
 Nuketown's original solo workflow,
 TranZit's round/player restore, and Buried's common doors/debris restore are
 verified in-game. Version 0.3.3
@@ -1048,3 +1051,10 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   0.4.11 and retest Nuketown Save & Exit and Resume, exact roster and member
   restoration, round controller/spawning, map-card layout and release notes.
   Keep the installed game files and saves untouched during publication.
+- **Published:** `https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.11-alpha`
+  contains the full `zm_checkpoint-0.4.11-alpha.zip` (83,057 bytes; SHA-256
+  `14692685B0DFFDCB121F4BDCBA95E5C6206F7017C04BF42B949455C835F86FFA`).
+  Source was pushed before the release. The local 0.4.10 updater reports
+  `UPDATE_AVAILABLE|0.4.10-alpha|0.4.11-alpha`. Installed metadata remains
+  0.4.10-alpha and Buried, Nuketown, and TranZit saves retain baseline hashes.
+  No local installation was performed.

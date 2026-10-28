@@ -28,6 +28,9 @@ semantics.
   `14692685B0DFFDCB121F4BDCBA95E5C6206F7017C04BF42B949455C835F86FFA`.
   Installed metadata remains 0.4.10-alpha; Buried, Nuketown, and TranZit
   checkpoint hashes match their pre-work baselines. No local install was run.
+  Source was pushed before GitHub release 0.4.11-alpha was published with the
+  83,057-byte ZIP and matching digest. The local 0.4.10 updater returns
+  `UPDATE_AVAILABLE|0.4.10-alpha|0.4.11-alpha`.
 - In-game result: **Verified in-game:** previous co-op readiness error and map
   card overlap on Nuketown from owner screenshots. New behavior not yet tested.
 - Remaining risk/next step: publish 0.4.11 without local install; both PCs
