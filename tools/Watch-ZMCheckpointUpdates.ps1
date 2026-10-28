@@ -6,8 +6,24 @@ $statusScript=Join-Path $PSScriptRoot 'Update-ZMCheckpoint-Status.ps1'
 $marker='zmcp_update_request_20261028'
 $installMarker='zmcp_update_install_20261028'
 $position=if(Test-Path $log){(Get-Item $log).Length}else{0}
+$worker=$null
+$pendingCheck=$false
+$pendingInstall=$false
 while($true){
  Start-Sleep -Milliseconds 500
+ if(($null -eq $worker -or $worker.HasExited) -and ($pendingInstall -or $pendingCheck)){
+  $install=$pendingInstall
+  $pendingInstall=$false
+  $pendingCheck=$false
+  try{
+   if($install){ & $statusScript -State installing }else{ & $statusScript -State checking }
+   $args=@('-NoProfile','-ExecutionPolicy','Bypass','-WindowStyle','Hidden','-File',('"'+$updater+'"'))
+   if($install){$args+='-InstallLatest'}
+   $worker=Start-Process -FilePath 'powershell.exe' -ArgumentList $args -WindowStyle Hidden -PassThru
+  }catch{
+   & $statusScript -State error -ErrorMessage $_.Exception.Message
+  }
+ }
  if(-not(Test-Path $log)){continue}
  $file=Get-Item $log
  if($file.Length -lt $position){$position=0}
@@ -21,11 +37,12 @@ while($true){
   $reader.Dispose()
  }finally{ $stream.Dispose() }
  if($chunk.ToLowerInvariant().Contains($marker)){
-  & $statusScript -State checking
-  Start-Process -FilePath 'powershell.exe' -ArgumentList @('-NoProfile','-ExecutionPolicy','Bypass','-WindowStyle','Hidden','-File',('"'+$updater+'"')) -WindowStyle Hidden
+  $pendingCheck=$true
+  if(-not $pendingInstall){ & $statusScript -State checking }
  }
  if($chunk.ToLowerInvariant().Contains($installMarker)){
+  $pendingInstall=$true
+  $pendingCheck=$false
   & $statusScript -State installing
-  Start-Process -FilePath 'powershell.exe' -ArgumentList @('-NoProfile','-ExecutionPolicy','Bypass','-WindowStyle','Hidden','-File',('"'+$updater+'"'),'-InstallLatest') -WindowStyle Hidden
  }
 }

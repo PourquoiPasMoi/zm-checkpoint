@@ -97,7 +97,10 @@ LUI.createMenu.ZMCheckpointUpdaterInfo = function ( controller )
 	notesDivider:setAlpha( 0.6 )
 	notesPanel:addElement( notesDivider )
 	local notesLines = {}
-	for i = 1, 11 do
+	local notePage = 1
+	local noteCount = 0
+	local noteCache = {}
+	for i = 1, 8 do
 		local line = LUI.UIText.new()
 		line:setLeftRight( true, true, 18, -18 )
 		line:setTopBottom( true, false, 100 + (i - 1) * 26, 122 + (i - 1) * 26 )
@@ -107,6 +110,51 @@ LUI.createMenu.ZMCheckpointUpdaterInfo = function ( controller )
 		notesPanel:addElement( line )
 		notesLines[i] = line
 	end
+	local notePageText = LUI.UIText.new()
+	notePageText:setLeftRight( true, true, 245, -18 )
+	notePageText:setTopBottom( true, false, 340, 364 )
+	notePageText:setFont( CoD.fonts.Condensed )
+	notePageText:setAlignment( LUI.Alignment.Right )
+	notePageText:setText( "PAGE 1 / 1" )
+	notesPanel:addElement( notePageText )
+	local noteButtons = CoD.ButtonList.new( { leftAnchor = true, rightAnchor = false,
+		left = 18, right = 220, topAnchor = true, bottomAnchor = false,
+		top = 318, bottom = 387 } )
+	notesPanel:addElement( noteButtons )
+	local previousNotes = noteButtons:addButton( "PREV PAGE", "Read the previous release-note page." )
+	local nextNotes = noteButtons:addButton( "NEXT PAGE", "Read the next release-note page." )
+	previousNotes:disable()
+	nextNotes:disable()
+	local function renderNotes()
+		local total = math.max( 1, math.ceil( noteCount / 8 ) )
+		if notePage > total then notePage = total end
+		for i = 1, 8 do
+			local text = noteCache[(notePage - 1) * 8 + i] or ""
+			notesLines[i]:setText( text )
+			if string.sub( text, 1, 1 ) == "-" then
+				notesLines[i]:setRGB( CoD.BOIIOrange.r, CoD.BOIIOrange.g, CoD.BOIIOrange.b )
+			else
+				notesLines[i]:setRGB( 1, 1, 1 )
+			end
+		end
+		notePageText:setText( "PAGE " .. notePage .. " / " .. total )
+		if notePage > 1 then previousNotes:enable() else previousNotes:disable() end
+		if notePage < total then nextNotes:enable() else nextNotes:disable() end
+	end
+	local function clearNotes()
+		notePage = 1
+		noteCount = 0
+		noteCache = {}
+		renderNotes()
+	end
+	previousNotes:setActionEventName( "zmcp_notes_previous" )
+	nextNotes:setActionEventName( "zmcp_notes_next" )
+	menu:registerEventHandler( "zmcp_notes_previous", function ()
+		if notePage > 1 then notePage = notePage - 1; renderNotes() end
+	end )
+	menu:registerEventHandler( "zmcp_notes_next", function ()
+		if notePage * 8 < noteCount then notePage = notePage + 1; renderNotes() end
+	end )
 	menu:addElement( notesPanel )
 	local actions = CoD.ButtonList.new( { leftAnchor = true, rightAnchor = false,
 		left = 0, right = 500, topAnchor = true, bottomAnchor = false,
@@ -116,6 +164,18 @@ LUI.createMenu.ZMCheckpointUpdaterInfo = function ( controller )
 	local later = actions:addButton( "NOT NOW", "Keep the current version." )
 	local unload = actions:addButton( "UNLOAD", "Unload ZM Checkpoint so the new version can be loaded." )
 	local back = actions:addButton( "BACK", "Return to the Zombies menu." )
+	-- Allow keyboard/controller focus to move from the main choices into the
+	-- notes footer as well as allowing mouse clicks on its page buttons.
+	for _, button in ipairs( { install, later, unload, back } ) do
+		button.navigation = button.navigation or {}
+		button.navigation.right = nextNotes
+	end
+	previousNotes.navigation = previousNotes.navigation or {}
+	nextNotes.navigation = nextNotes.navigation or {}
+	previousNotes.navigation.down = nextNotes
+	nextNotes.navigation.up = previousNotes
+	previousNotes.navigation.left = back
+	nextNotes.navigation.left = back
 	install:setActionEventName( "zmcp_update_install" )
 	later:setActionEventName( "zmcp_update_later" )
 	unload:setActionEventName( "zmcp_update_unload" )
@@ -181,12 +241,13 @@ LUI.createMenu.ZMCheckpointUpdaterInfo = function ( controller )
 		status:setText( "Checking for updates..." )
 		body:setText( "Checking GitHub for a new version..." )
 		notesVersion:setText( "Checking release notes..." )
-		for i = 1, 11 do notesLines[i]:setText( "" ) end
+		clearNotes()
 		requestUpdateCheck( controller )
 	end )
 	menu:registerEventHandler( "zmcp_update_install", function ()
 		if menu.zmcpInstallRequested then return end
 		menu.zmcpInstallRequested = true
+		menu.zmcpInstallTargetVersion = UIExpression.DvarString( nil, "zmcp_update_version" )
 		menu.zmcpUpdateInstalled = false
 		install:disable()
 		later:disable()
@@ -206,21 +267,39 @@ LUI.createMenu.ZMCheckpointUpdaterInfo = function ( controller )
 		local version = UIExpression.DvarString( nil, "zmcp_update_version" ) or ""
 		if state == "checking" then
 			notesVersion:setText( "Checking release notes..." )
-			for i = 1, 11 do notesLines[i]:setText( "" ) end
+			clearNotes()
 		elseif state == "error" then
 			notesVersion:setText( "Release notes unavailable." )
-			for i = 1, 11 do notesLines[i]:setText( "" ) end
+			clearNotes()
 		else
 			notesVersion:setText( "VERSION " .. version )
-			for i = 1, 11 do
-				notesLines[i]:setText( UIExpression.DvarString( nil, "zmcp_update_note" .. i ) or "" )
-			end
+			local count = tonumber( UIExpression.DvarString( nil, "zmcp_update_note_count" ) ) or 11
+			count = math.max( 0, math.min( 64, count ) )
+			if count ~= noteCount then notePage = 1 end
+			noteCount = count
+			for i = 1, count do noteCache[i] = UIExpression.DvarString( nil, "zmcp_update_note" .. i ) or "" end
+			renderNotes()
 		end
 		if state == "up_to_date" then
+			if menu.zmcpInstallRequested then
+				if version == menu.zmcpInstallTargetVersion then
+					menu.zmcpUpdateInstalled = true
+					menu.zmcpInstallRequested = false
+				else
+					status:setText( "Installing update..." )
+					body:setText( "Waiting for the current check to finish..." )
+					return
+				end
+			end
 			if menu.zmcpUpdateInstalled then showInstalled() else showBack() end
 			status:setText( "Latest version installed." )
 			body:setText( "Installed: " .. version )
 		elseif state == "update_available" then
+			if menu.zmcpInstallRequested then
+				status:setText( "Installing update..." )
+				body:setText( "Waiting for the current check to finish..." )
+				return
+			end
 			status:setText( "Update available: " .. version )
 			body:setText( "Install this update now?" )
 			if not menu.zmcpInstallRequested then
@@ -242,16 +321,19 @@ LUI.createMenu.ZMCheckpointUpdaterInfo = function ( controller )
 			status:setText( "Installing update..." )
 			body:setText( "Downloading and installing..." )
 		elseif state == "installed" then
-			if menu.zmcpInstallRequested then menu.zmcpUpdateInstalled = true end
+			if menu.zmcpInstallRequested or version == menu.zmcpInstallTargetVersion then
+				menu.zmcpUpdateInstalled = true
+			end
 			menu.zmcpInstallRequested = false
 			if menu.zmcpUpdateInstalled then showInstalled() else showBack() end
 			status:setText( "Update installed: " .. version )
 			body:setText( "Choose UNLOAD, then reload the mod from Mods." )
 		elseif state == "error" then
+			local detail = UIExpression.DvarString( nil, "zmcp_update_error" ) or ""
 			menu.zmcpInstallRequested = false
 			if menu.zmcpUpdateInstalled then showInstalled() else showBack() end
 			status:setText( "Update check failed." )
-			body:setText( "Check your connection and try again." )
+			body:setText( detail ~= "" and detail or "Check your connection and try again." )
 		end
 	end )
 	menu:addElement( LUI.UITimer.new( 1500, "zmcp_update_refresh", false ) )
