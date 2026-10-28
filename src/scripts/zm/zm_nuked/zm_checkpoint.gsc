@@ -449,12 +449,56 @@ zmcp_write_buried_quest( file )
 zmcp_write_nuketown_perks( file )
 {
     machines = zmcp_get_nuketown_perk_machines();
+    locations = [];
+    complete = machines.size == 5;
+
+    for ( i = 0; i < machines.size; i++ )
+    {
+        if ( !isdefined( machines[i] ) || !isdefined( machines[i].script_int ) )
+        {
+            complete = 0;
+            continue;
+        }
+        locations[i] = int( machines[i].script_int );
+        if ( locations[i] < 0 || locations[i] > 1000 )
+            complete = 0;
+        for ( j = 0; j < i; j++ )
+            if ( isdefined( locations[j] ) && locations[j] == locations[i] )
+                complete = 0;
+    }
+
+    if ( complete )
+        for ( i = 0; i < 5; i++ )
+            fs_writeline( file, "MACHINELOC," + i + "," + locations[i] );
 
     for ( i = 0; i < machines.size; i++ )
     {
         if ( isdefined( machines[i] ) && machines[i].origin[2] < 4000 )
             fs_writeline( file, "MACHINE," + i );
     }
+}
+
+zmcp_read_nuketown_location( checkpoint, fields )
+{
+    if ( fields.size != 3 )
+    {
+        checkpoint.machine_location_invalid = 1;
+        return;
+    }
+    index = int( fields[1] );
+    location = int( fields[2] );
+    if ( index < 0 || index >= 5 || fields[1] != "" + index ||
+         location < 0 || location > 1000 || fields[2] != "" + location ||
+         checkpoint.machine_locations[index] != -1 )
+    {
+        checkpoint.machine_location_invalid = 1;
+        return;
+    }
+    for ( i = 0; i < 5; i++ )
+        if ( checkpoint.machine_locations[i] == location )
+            checkpoint.machine_location_invalid = 1;
+    checkpoint.machine_locations[index] = location;
+    checkpoint.machine_location_seen++;
 }
 // ZMCP_NUKETOWN_ONLY_END
 
@@ -479,13 +523,19 @@ zmcp_read_checkpoint( path )
     checkpoint.offhands = [];
     checkpoint.flags = [];
     checkpoint.machines = [];
+    checkpoint.machine_locations = [];
+    checkpoint.machine_location_seen = 0;
+    checkpoint.machine_location_invalid = 0;
     checkpoint.quest_seen = 0;
     checkpoint.quest_invalid = 0;
     checkpoint.settings_invalid = 0;
     checkpoint.complete = 0;
 
     for ( i = 0; i < 5; i++ )
+    {
         checkpoint.machines[i] = 0;
+        checkpoint.machine_locations[i] = -1;
+    }
 
     for ( line_index = 0; line_index < 2048; line_index++ )
     {
@@ -569,6 +619,10 @@ zmcp_read_checkpoint( path )
             if ( machine_index >= 0 && machine_index < 5 )
                 checkpoint.machines[machine_index] = 1;
         }
+        // ZMCP_NUKETOWN_ONLY_BEGIN
+        else if ( record == "MACHINELOC" )
+            zmcp_read_nuketown_location( checkpoint, fields );
+        // ZMCP_NUKETOWN_ONLY_END
         else if ( record == "END" )
             checkpoint.complete = 1;
     }
@@ -578,7 +632,7 @@ zmcp_read_checkpoint( path )
     if ( checkpoint.quest_invalid )
         checkpoint.quest = undefined;
 
-    if ( !checkpoint.complete || checkpoint.version != level.zmcp_version || checkpoint.map != level.zmcp_map || checkpoint.round < 1 || !isdefined( checkpoint.score ) || checkpoint.settings_invalid )
+    if ( !checkpoint.complete || checkpoint.version != level.zmcp_version || checkpoint.map != level.zmcp_map || checkpoint.round < 1 || !isdefined( checkpoint.score ) || checkpoint.settings_invalid || checkpoint.machine_location_invalid || ( checkpoint.machine_location_seen > 0 && checkpoint.machine_location_seen != 5 ) )
         return undefined;
 
     return checkpoint;
@@ -1101,12 +1155,85 @@ zmcp_prepare_nuketown_perks()
     level.zmcp_perk_triggers[4] = getent( "specialty_weapupgrade", "script_noteworthy" );
 }
 
+zmcp_restore_nuketown_locations( machines, triggers, saved )
+{
+    if ( !isdefined( saved ) || saved.size != 5 || saved[0] < 0 )
+        return;
+
+    // Stock Nuketown randomizes which physical drop site receives each perk.
+    // script_int identifies the site's vehicle path and blocker. Capture all
+    // five current sites before moving any entity, then reassign each perk's
+    // machine and trigger cluster to its saved site.
+    sites = [];
+    for ( i = 0; i < 5; i++ )
+    {
+        if ( !isdefined( machines[i] ) || !isdefined( triggers[i] ) || !isdefined( machines[i].script_int ) )
+            return;
+        sites[i] = spawnstruct();
+        sites[i].id = int( machines[i].script_int );
+        sites[i].machine_origin = machines[i].origin;
+        sites[i].machine_angles = machines[i].angles;
+        sites[i].trigger_origin = triggers[i].origin;
+        sites[i].blocker = triggers[i].blocker_model;
+        if ( isdefined( triggers[i].clip ) )
+        {
+            sites[i].clip_origin = triggers[i].clip.origin;
+            sites[i].clip_angles = triggers[i].clip.angles;
+        }
+        if ( isdefined( triggers[i].bump ) )
+        {
+            sites[i].bump_origin = triggers[i].bump.origin;
+            sites[i].bump_angles = triggers[i].bump.angles;
+        }
+    }
+
+    mapping = [];
+    used = [];
+    for ( i = 0; i < 5; i++ )
+    {
+        mapping[i] = -1;
+        used[i] = 0;
+        for ( j = 0; j < 5; j++ )
+            if ( sites[j].id == saved[i] )
+                mapping[i] = j;
+        if ( mapping[i] < 0 || used[mapping[i]] )
+        {
+            println( "ZMCP NUKETOWN: saved perk site unavailable; keeping current placement" );
+            return;
+        }
+        used[mapping[i]] = 1;
+    }
+
+    for ( i = 0; i < 5; i++ )
+    {
+        site = sites[mapping[i]];
+        machines[i].origin = site.machine_origin;
+        machines[i].angles = site.machine_angles;
+        machines[i].script_int = site.id;
+        triggers[i].origin = site.trigger_origin;
+        triggers[i].blocker_model = site.blocker;
+        if ( isdefined( triggers[i].clip ) && isdefined( site.clip_origin ) )
+        {
+            triggers[i].clip.origin = site.clip_origin;
+            triggers[i].clip.angles = site.clip_angles;
+        }
+        if ( isdefined( triggers[i].bump ) && isdefined( site.bump_origin ) )
+        {
+            triggers[i].bump.origin = site.bump_origin;
+            triggers[i].bump.angles = site.bump_angles;
+        }
+    }
+    println( "ZMCP NUKETOWN: restored five saved perk drop sites" );
+}
+
 zmcp_restore_nuketown_perks()
 {
     level endon( "end_game" );
     zmcp_prepare_nuketown_perks();
     machines = level.zmcp_perk_machines;
     triggers = level.zmcp_perk_triggers;
+
+    zmcp_restore_nuketown_locations( machines, triggers, level.zmcp_pending.machine_locations );
 
     for ( i = 0; i < machines.size; i++ )
     {
