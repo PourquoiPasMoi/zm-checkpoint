@@ -2,7 +2,7 @@
 
 Experimental save and resume checkpoints for Call of Duty: Black Ops II Zombies on Plutonium T6.
 
-The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.14-alpha). Download `zm_checkpoint-0.4.14-alpha.zip` and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
+The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.15-alpha). Download `zm_checkpoint-0.4.15-alpha.zip` and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
 
 The source, build scripts, test guidance, and project history are in this repository. The user-facing setup and feature details live in [README.md](README.md); contributors should read [AGENTS.md](AGENTS.md) and [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md) first.
 
@@ -45,10 +45,17 @@ The right-hand **LATEST CHANGES** panel shows the newest GitHub release's
 version and notes. Use **PREV PAGE** and **NEXT PAGE** at the bottom of the
 panel to read longer notes. Headings and changes are separated into readable
 entries. This panel also appears when the installed version is already current.
+The page buttons no longer show descriptions outside the notes panel.
 Very long release notes are capped; the GitHub release page has the full text.
 If an update check or installation fails, the updater shows a short error reason
 so you can retry with **R Refresh**. An installation already in progress is
 allowed to finish before another check or install starts.
+Each update check has a request ID. The page stays on **Checking for updates**
+until the background companion replies to that exact request. An old status
+file cannot report **Latest version installed** for a new request. If the
+companion does not reply within about three minutes, the page shows a retry
+message rather than claiming there is no update. Release checks request fresh
+GitHub data to reduce stale responses.
 During installation, the page now identifies the download, unpacking, and
 file-copy stages. The companion uses one GitHub release lookup for an install
 instead of repeating the check. Network download time can still vary.

@@ -4,6 +4,44 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.15-alpha — 2026-10-28
+
+### 2026-10-28 — Wait for the current update check and contain notes hints
+
+- Request: remove the note page hover description overlapping the menu and
+  stop showing a stale no-update result before a new GitHub check completes.
+- Change or investigation: the owner screenshot shows `Read the previous
+  release-note page.` below the notes box, overlapping the surrounding menu.
+  The note page buttons were given stock hint text that the game drew outside
+  their panel; those hints are removed. The installed 0.4.14 status CFG still
+  contained the last `installed / 0.4.14-alpha` result. On each page poll,
+  `exec zmcp_update_status.cfg` could replay that old result before the watcher
+  finished a fresh check. New check and install commands carry a unique
+  request ID through the watcher, worker and status CFG. The Lua page accepts
+  a result only when its ID matches; otherwise it stays in Checking or
+  Starting Update and eventually shows a retry error after about three
+  minutes. The worker can recover the ID from the log when an older bridge
+  process launches it without the new argument. An archived sequence keeps
+  request IDs distinct across game restarts. GitHub release checks use a
+  fresh query and no-cache header to reduce cached results.
+- Files affected: updater Lua; watcher, worker, updater and status PowerShell;
+  mod.json, README.md, PROJECT_HANDOFF.md, CHANGELOG.md and release package.
+- Validation: modified Lua and PowerShell parsed. An isolated status write
+  produced the expected request ID in both status CFG locations. A direct
+  fresh GitHub check succeeded and reported 0.4.14 current before publication.
+  Build.ps1, six T6 GSC parses and the prior solo/co-op Lua suites passed.
+  Full package ZIP contains 20 entries, all six map scripts and the updater
+  IWD, with no saves/caches (96,557 bytes, SHA-256
+  `03899F787ACE016FB83C1216E9C179108D0C6756F3FA7A8EAFA2F977B02E9EEA`).
+  No local install or save changes.
+- In-game result: **Verified in-game (owner):** overlapping note hint and
+  repeated stale no-update message on 0.4.14. The 0.4.15 fix is not yet
+  tested in-game.
+- Remaining risk/next step: test a fresh check immediately after publishing a
+  later update; if the companion is unavailable the page should show a retry
+  error rather than a false up-to-date result. The currently running older
+  bridge uses the worker's log fallback until its scheduled task restarts.
+
 ## 0.4.14-alpha — 2026-10-28
 
 ### 2026-10-28 — Clear countdown and restore Nuketown perk sites

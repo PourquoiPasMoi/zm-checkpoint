@@ -3,10 +3,12 @@ param(
  [string]$Version = '',
  [string]$Notes = '',
  [string]$ErrorMessage = '',
+ [string]$RequestId = '',
  [string]$PlutoniumRoot = (Join-Path $env:LOCALAPPDATA 'Plutonium\storage\t6')
 )
 $ErrorActionPreference='Stop'
 if ($Version -and $Version -notmatch '^[0-9]+\.[0-9]+\.[0-9]+(?:-alpha)?$') { throw 'Invalid update version' }
+if ($RequestId -and $RequestId -notmatch '^[0-9]{9,16}$') { throw 'Invalid update request ID' }
 $main=Join-Path $PlutoniumRoot 'main'
 New-Item -ItemType Directory -Path $main -Force | Out-Null
 # Release bodies and exception messages are untrusted: keep dvars to short
@@ -57,7 +59,7 @@ if ($lines.Count -gt 64) {
 }
 $errorText = Clean-GameText $ErrorMessage
 if ($errorText.Length -gt 60) { $errorText = $errorText.Substring(0,57) + '...' }
-$content="set zmcp_update_state $State`r`nset zmcp_update_version $Version`r`n"
+$content="set zmcp_update_state $State`r`nset zmcp_update_version $Version`r`nset zmcp_update_request_id $RequestId`r`n"
 $content += "set zmcp_update_error `"$errorText`"`r`n"
 $content += "set zmcp_update_note_count $($lines.Count)`r`n"
 for ($i = 0; $i -lt 64; $i++) {

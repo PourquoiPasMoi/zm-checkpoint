@@ -1,10 +1,20 @@
 -- Companion updater information popup.
 local C = CoD.ZMCheckpointMenu
+local nextRequestId = function ( controller )
+	local archived = tonumber( C.DvarString( "zmcp_update_sequence" ) ) or 0
+	C.UpdateRequestCounter = math.max( C.UpdateRequestCounter or 0, archived ) + 1
+	if C.UpdateRequestCounter > 999999 then C.UpdateRequestCounter = 1 end
+	Engine.Exec( controller, "seta zmcp_update_sequence " .. C.UpdateRequestCounter .. "\n" )
+	return tostring( math.random( 100000000, 999999999 ) ) .. tostring( C.UpdateRequestCounter )
+end
 local requestUpdateCheck = function ( controller )
+	local requestId = nextRequestId( controller )
+	C.PendingUpdateRequestId = requestId
 	Engine.SetDvar( "zmcp_update_state", "checking" )
 	Engine.SetDvar( "zmcp_update_version", "" )
 	-- T6 logs an unknown command; echo itself is unsupported here.
-	Engine.Exec( controller, "zmcp_update_request_20261028\n" )
+	Engine.Exec( controller, "zmcp_update_request_20261028_" .. requestId .. "\n" )
+	return requestId
 end
 
 C.OpenUpdater = function ( menu, event )
@@ -16,6 +26,8 @@ end
 LUI.createMenu.ZMCheckpointUpdaterInfo = function ( controller )
 	local menu = CoD.Menu.New( "ZMCheckpointUpdaterInfo" )
 	menu.m_ownerController = controller
+	menu.zmcpRequestId = C.PendingUpdateRequestId
+	menu.zmcpWaitTicks = 0
 	menu:addLargePopupBackground()
 	menu:addTitle( "ZM CHECKPOINT UPDATER" )
 	menu:addBackButton()
@@ -121,8 +133,8 @@ LUI.createMenu.ZMCheckpointUpdaterInfo = function ( controller )
 		left = 18, right = 220, topAnchor = true, bottomAnchor = false,
 		top = 318, bottom = 387 } )
 	notesPanel:addElement( noteButtons )
-	local previousNotes = noteButtons:addButton( "PREV PAGE", "Read the previous release-note page." )
-	local nextNotes = noteButtons:addButton( "NEXT PAGE", "Read the next release-note page." )
+	local previousNotes = noteButtons:addButton( "PREV PAGE" )
+	local nextNotes = noteButtons:addButton( "NEXT PAGE" )
 	previousNotes:disable()
 	nextNotes:disable()
 	local function renderNotes()
@@ -242,12 +254,15 @@ LUI.createMenu.ZMCheckpointUpdaterInfo = function ( controller )
 		body:setText( "Checking GitHub for a new version..." )
 		notesVersion:setText( "Checking release notes..." )
 		clearNotes()
-		requestUpdateCheck( controller )
+		menu.zmcpRequestId = requestUpdateCheck( controller )
+		menu.zmcpWaitTicks = 0
 	end )
 	menu:registerEventHandler( "zmcp_update_install", function ()
 		if menu.zmcpInstallRequested then return end
 		menu.zmcpInstallRequested = true
 		menu.zmcpInstallTargetVersion = UIExpression.DvarString( nil, "zmcp_update_version" )
+		menu.zmcpRequestId = nextRequestId( controller )
+		menu.zmcpWaitTicks = 0
 		menu.zmcpUpdateInstalled = false
 		install:disable()
 		later:disable()
@@ -257,12 +272,27 @@ LUI.createMenu.ZMCheckpointUpdaterInfo = function ( controller )
 		choiceMode = "installing"
 		status:setText( "Installing update..." )
 		body:setText( "Downloading and installing..." )
-		Engine.Exec( controller, "zmcp_update_install_20261028\n" )
+		Engine.Exec( controller, "zmcp_update_install_20261028_" .. menu.zmcpRequestId .. "\n" )
 	end )
 	menu:registerEventHandler( "zmcp_update_later", function () menu:goBack() end )
 	menu:registerEventHandler( "zmcp_update_back", function () menu:goBack() end )
 	menu:registerEventHandler( "zmcp_update_refresh", function ()
 		Engine.Exec( controller, "exec zmcp_update_status.cfg\n" )
+		local responseId = UIExpression.DvarString( nil, "zmcp_update_request_id" ) or ""
+		if responseId ~= menu.zmcpRequestId then
+			menu.zmcpWaitTicks = menu.zmcpWaitTicks + 1
+			if menu.zmcpWaitTicks >= 120 then
+				menu.zmcpInstallRequested = false
+				showBack()
+				status:setText( "Update check did not finish." )
+				body:setText( "The update companion did not reply. Press R to retry." )
+			else
+				status:setText( menu.zmcpInstallRequested and "Starting update..." or "Checking for updates..." )
+				body:setText( "Waiting for the update companion..." )
+			end
+			return
+		end
+		menu.zmcpWaitTicks = 0
 		local state = UIExpression.DvarString( nil, "zmcp_update_state" )
 		local version = UIExpression.DvarString( nil, "zmcp_update_version" ) or ""
 		if state == "checking" then

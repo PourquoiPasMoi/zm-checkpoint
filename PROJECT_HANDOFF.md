@@ -12,7 +12,7 @@ failure, installation, or test so the project retains its lessons.
 
 - Project: **ZM Checkpoint** for Call of Duty: Black Ops II Zombies on Plutonium T6.
 - Workspace: `C:\Users\User\Documents\Projects\Bo2 Zombie Plutonium`
-- Current source/package and GitHub release: **0.4.14-alpha**; locally installed metadata: **0.4.13-alpha**. GitHub publication status is recorded in section 23. No project installer was run by the agent.
+- Current source/package: **0.4.15-alpha**; locally installed metadata: **0.4.14-alpha**. GitHub publication status is recorded in section 24. No project installer was run by the agent.
 - Current date of this handoff: **2026-10-28**
 - The project is a Git repository with public origin `https://github.com/PourquoiPasMoi/zm-checkpoint`.
 - The standalone mod and companion packages are installed locally.
@@ -1210,3 +1210,41 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   Installed metadata stays 0.4.13-alpha and all four task-start checkpoint
   hashes above remained unchanged. The owner will install through the updater;
   unload/reload the mod afterward. No Plutonium restart is required.
+
+## 24. 0.4.15-alpha work — 2026-10-28
+
+- **Verified in-game (owner screenshot/report):** installed 0.4.14-alpha
+  showed the note page button's `Read the previous release-note page.` hint
+  outside the panel, overlapping nearby UI. The owner also saw the updater
+  claim no update until several refreshes and a wait, despite a newer GitHub
+  release. The installed status CFG retained `installed / 0.4.14-alpha` from
+  the previous completed request.
+- **Cause:** `zmcheckpointupdater.lua` executes `zmcp_update_status.cfg` on
+  every 1.5-second poll; the file can still contain the previous terminal
+  state while a fresh background request is pending. The page had no request
+  correlation, so it could show that stale result as current. The notes page
+  buttons' stock hint text was rendered below their nested panel.
+- **Validated statically:** check and install markers include a numeric
+  request ID. The watcher carries it into the window worker, updater stage
+  updates and status CFG. The Lua page ignores responses with a different ID,
+  keeps a pending message, and shows a retry error after 120 polls (about
+  three minutes) without a reply. An archived sequence helps keep IDs unique
+  across game restarts. The worker recovers the ID from recent console markers
+  if an older watcher instance starts it without the new argument. GitHub
+  release listing uses a fresh query nonce and no-cache
+  header. Notes page buttons no longer supply external hover descriptions.
+- **Validation:** modified Lua and PowerShell parsed; isolated status writer
+  test produced the correct request ID in both CFGs. Fresh direct GitHub
+  check reported `UP_TO_DATE|0.4.14-alpha` before publication. Build.ps1,
+  all six T6 GSC parses and prior solo/co-op Lua suites passed. The full
+  20-entry ZIP includes six map scripts and updater IWD, with no saves/caches:
+  96,557 bytes, SHA-256
+  `03899F787ACE016FB83C1216E9C179108D0C6756F3FA7A8EAFA2F977B02E9EEA`.
+  Installed 0.4.14-alpha save hashes match the four hashes in section 23.
+- **In-game result:** new request correlation and notes layout not yet tested.
+  The owner installs via updater and unloads/reloads the mod afterward.
+- **Next:** check 0.4.15 from the installed 0.4.14 page, then test a future
+  update check immediately after its release. Confirm the page stays on
+  Checking until its matching result arrives and note paging no longer draws
+  an outside hint. If a check times out, inspect the bridge task and console
+  marker; do not treat the timeout as proof that no update exists.
