@@ -37,8 +37,12 @@ end
 
 C.HasCheckpoint = function ( mapName )
 	local name = mapName or C.CurrentMap( false )
-	return C.SupportedMaps[name] ~= nil and
-		(tonumber( C.DvarString( "zmcp_has_" .. name ) ) or 0) == 1
+	if C.SupportedMaps[name] == nil then return false end
+	for slot = 1, 4 do
+		local suffix = slot == 1 and "" or ("_slot" .. slot)
+		if C.DvarString( "zmcp_has_" .. name .. suffix ) == "1" then return true end
+	end
+	return false
 end
 
 C.ResumeLabel = function ( mapName )
@@ -66,8 +70,17 @@ C.SaveAndExit = function ( menu, event )
 	if not C.IsSupportedMap( true ) then
 		return
 	end
-
 	local controller = event.controller or 0
+	if Engine.PartyGetPlayerCount() < 2 then
+		menu:openPopup( "ZMCheckpointSoloSave", controller )
+		return
+	end
+	C.CommitSaveAndExit( menu, controller, 1 )
+end
+
+C.CommitSaveAndExit = function ( menu, controller, slot )
+	if slot < 1 or slot > 4 then return end
+	Engine.SetDvar( "zmcp_solo_slot", slot )
 	Engine.SendMenuResponse( controller, C.MenuResponseName, "hello_040" )
 	-- The dvar bridge is intentionally sent as well as the stock menu response.
 	-- It keeps Save & Exit working in total conversions that replace or consume
@@ -78,18 +91,45 @@ C.SaveAndExit = function ( menu, event )
 	Engine.PlaySound( "uin_navigation_click" )
 end
 
-C.Resume = function ( menu, event )
+C.Resume = function ( menu, event, slot )
 	local controller = event.controller or 0
 	if Engine.PartyGetPlayerCount() ~= 1 then
-		return
+		return false, "Solo Resume requires one player."
+	end
+	local map = C.CurrentMap( false )
+	local meta = C.SoloSlotMeta( map, slot )
+	if not meta.has then return false, "That slot has no checkpoint." end
+	if meta.settings then
+		if meta.difficulty == nil or meta.magic == nil or meta.headshots == nil or
+			meta.assist == nil or meta.cheats == nil then
+			return false, "Saved settings are invalid. This checkpoint was not started."
+		end
+		if meta.mode ~= C.DvarString( "ui_gametype" ) or
+			meta.group ~= C.CoopValue( C.DvarString( "ui_zm_gamemodegroup" ) ) or
+			meta.location ~= C.CoopValue( C.DvarString( "ui_zm_mapstartlocation" ) ) then
+			return false, "Select this save's original mode and start location."
+		end
+		Engine.SetGametypeSetting( "zmDifficulty", meta.difficulty )
+		Engine.SetGametypeSetting( "magic", meta.magic )
+		Engine.SetGametypeSetting( "headshotsonly", meta.headshots )
+		Engine.SetDvar( "sv_allowAimAssist", meta.assist )
+		Engine.SetDvar( "sv_cheats", meta.cheats )
+		if tonumber( Engine.GetGametypeSetting( "zmDifficulty" ) ) ~= meta.difficulty or
+			tonumber( Engine.GetGametypeSetting( "magic" ) ) ~= meta.magic or
+			tonumber( Engine.GetGametypeSetting( "headshotsonly" ) ) ~= meta.headshots or
+			tonumber( C.DvarString( "sv_allowAimAssist" ) ) ~= meta.assist or
+			tonumber( C.DvarString( "sv_cheats" ) ) ~= meta.cheats then
+			return false, "Could not apply saved settings. Check lobby options."
+		end
 	end
 	Engine.Exec( controller, "set zmcp_coop_autoload 0\n" )
 	-- Resume through the stock private-lobby launch path. A raw `map` command
 	-- skips the Zombies session bootstrap, leaving the player in a loaded map
 	-- without a round controller, HUD round counter, or zombie spawns.
-	Engine.Exec( controller, "set zmcp_autoload 1\n" )
+	Engine.Exec( controller, "set zmcp_solo_slot " .. slot .. "\nset zmcp_autoload 1\n" )
 	Engine.Exec( controller, "xpartygo\n" )
 	Engine.PlaySound( "uin_navigation_click" )
+	return true
 end
 
 C.HookLobby = function ()
@@ -117,9 +157,8 @@ C.AddLobbyResumeButton = function ( menu, controller )
 		return
 	end
 
-	local button = list:addButton(
-		C.ResumeLabel( mapName ),
-		"Continue the saved " .. C.SupportedMaps[mapName] .. " run from the beginning of its saved round." )
+	local button = list:addButton( "SOLO RESUME",
+		"Choose one of your saved " .. C.SupportedMaps[mapName] .. " checkpoints." )
 
 	-- addButton appends to the vertical list. Reinsert the fully constructed
 	-- stock button at the top so it sits immediately above START MATCH while
@@ -129,7 +168,9 @@ C.AddLobbyResumeButton = function ( menu, controller )
 
 	button:setActionEventName( "zmcp_resume_checkpoint" )
 	menu.zmcpLobbyResumeButton = button
-	menu:registerEventHandler( "zmcp_resume_checkpoint", C.Resume )
+	menu:registerEventHandler( "zmcp_resume_checkpoint", function ( owner, event )
+		owner:openPopup( "ZMCheckpointSoloResume", event.controller or controller )
+	end )
 end
 
 C.AddFallbackButton = function ( menu, controller )
@@ -169,6 +210,7 @@ end
 
 C.HookLobby()
 require( "T6.Menus.ZMCheckpointCoop" )
+require( "T6.Menus.ZMCheckpointSolo" )
 require( "T6.Menus.ZMCheckpointUpdater" )
 
 

@@ -22,42 +22,44 @@ main()
     level.zmcp_coop_loading = 0;
     level.zmcp_coop_ready = 0;
     level.zmcp_coop_session = 0;
+    level.zmcp_selected_slot = 1;
     level.zmcp_existing = zmcp_read_checkpoint();
+    for ( slot = 1; slot <= 4; slot++ )
+        zmcp_solo_publish( slot, zmcp_read_checkpoint( zmcp_solo_path( slot ) ) );
     zmcp_coop_init();
-
-    if ( isdefined( level.zmcp_existing ) )
-    {
-        cmdexec( "seta " + level.zmcp_has_dvar + " 1" );
-        cmdexec( "seta " + level.zmcp_round_dvar + " " + level.zmcp_existing.round );
-    }
-    else
-    {
-        cmdexec( "seta " + level.zmcp_has_dvar + " 0" );
-        cmdexec( "seta " + level.zmcp_round_dvar + " 0" );
-    }
 
     if ( !level.zmcp_coop_loading && getdvarint( "zmcp_autoload" ) )
     {
         setdvar( "zmcp_autoload", "0" );
+        level.zmcp_selected_slot = zmcp_solo_slot( getdvarint( "zmcp_solo_slot" ) );
+        level.zmcp_save_file = zmcp_solo_path( level.zmcp_selected_slot );
+        level.zmcp_has_dvar = zmcp_solo_has_dvar( level.zmcp_selected_slot );
+        level.zmcp_round_dvar = zmcp_solo_round_dvar( level.zmcp_selected_slot );
+        level.zmcp_existing = zmcp_read_checkpoint();
         level.zmcp_pending = level.zmcp_existing;
 
         if ( isdefined( level.zmcp_pending ) )
         {
-            level.zmcp_loading = 1;
-            replacefunc( getfunction( "maps/mp/zombies/_zm", "init_levelvars" ), ::zmcp_init_levelvars_override, -1 );
-
-            // ZMCP_BURIED_ONLY_BEGIN
-            if ( isdefined( level.zmcp_pending.quest ) )
+            if ( isdefined( level.zmcp_pending.settings ) && !zmcp_solo_settings_match( level.zmcp_pending.settings ) )
+                level.zmcp_settings_rejected = 1;
+            else
             {
-                level.zmcp_buried_quest_restore_status = "pending";
-                level thread zmcp_restore_buried_quest_early();
-            }
-            // ZMCP_BURIED_ONLY_END
+                level.zmcp_loading = 1;
+                replacefunc( getfunction( "maps/mp/zombies/_zm", "init_levelvars" ), ::zmcp_init_levelvars_override, -1 );
 
-            // ZMCP_NUKETOWN_ONLY_BEGIN
-            if ( level.zmcp_map == "zm_nuked" )
-                replacefunc( getfunction( "maps/mp/zm_nuked_perks", "perks_from_the_sky" ), ::zmcp_perks_from_the_sky_override, -1 );
-            // ZMCP_NUKETOWN_ONLY_END
+                // ZMCP_BURIED_ONLY_BEGIN
+                if ( isdefined( level.zmcp_pending.quest ) )
+                {
+                    level.zmcp_buried_quest_restore_status = "pending";
+                    level thread zmcp_restore_buried_quest_early();
+                }
+                // ZMCP_BURIED_ONLY_END
+
+                // ZMCP_NUKETOWN_ONLY_BEGIN
+                if ( level.zmcp_map == "zm_nuked" )
+                    replacefunc( getfunction( "maps/mp/zm_nuked_perks", "perks_from_the_sky" ), ::zmcp_perks_from_the_sky_override, -1 );
+                // ZMCP_NUKETOWN_ONLY_END
+            }
         }
     }
 }
@@ -69,6 +71,9 @@ init()
     level thread zmcp_collect_persistent_flags();
     level thread zmcp_command_loop();
     level thread zmcp_player_connect_loop();
+
+    if ( isdefined( level.zmcp_settings_rejected ) )
+        level thread zmcp_solo_reject_settings();
 
     if ( level.zmcp_coop_loading )
         level thread zmcp_coop_restore();
@@ -285,23 +290,26 @@ zmcp_save_checkpoint( player, exit_after_save )
     }
 
     level.zmcp_busy = 1;
+    slot = zmcp_solo_slot( getdvarint( "zmcp_solo_slot" ) );
+    path = zmcp_solo_path( slot );
     player freezecontrols( 1 );
     player enableinvulnerability();
     player iprintlnbold( "^3Saving checkpoint..." );
-    file = fs_fopen( level.zmcp_save_file, "write" );
+    file = fs_fopen( path, "write" );
 
     if ( !isdefined( file ) )
     {
         player freezecontrols( 0 );
         player disableinvulnerability();
         player iprintlnbold( "^1Checkpoint file could not be opened (FS_WRITE)" );
-        println( "ZMCP: fs_fopen(write) failed for " + level.zmcp_save_file + "; scr_allowFileIo=" + getdvar( "scr_allowFileIo" ) );
+        println( "ZMCP: fs_fopen(write) failed for " + path + "; scr_allowFileIo=" + getdvar( "scr_allowFileIo" ) );
         level.zmcp_busy = 0;
         return;
     }
 
     fs_writeline( file, "CHECKPOINT," + level.zmcp_version + "," + level.zmcp_map );
     fs_writeline( file, "ROUND," + level.round_number );
+    zmcp_solo_write_settings( file );
     fs_writeline( file, "PLAYER," + player.score + "," + player.health + "," + player.maxhealth + "," + player.origin[0] + "," + player.origin[1] + "," + player.origin[2] + "," + player getplayerangles()[0] + "," + player getplayerangles()[1] + "," + player getplayerangles()[2] + "," + player getcurrentweapon() );
     zmcp_write_weapons( file, player );
     zmcp_write_perks( file, player );
@@ -319,14 +327,13 @@ zmcp_save_checkpoint( player, exit_after_save )
     // ZMCP_NUKETOWN_ONLY_END
     fs_writeline( file, "END" );
     fs_fclose( file );
-    saved_checkpoint = zmcp_read_checkpoint();
+    saved_checkpoint = zmcp_read_checkpoint( path );
     player freezecontrols( 0 );
 
     if ( isdefined( saved_checkpoint ) && saved_checkpoint.round == level.round_number )
     {
-        cmdexec( "seta " + level.zmcp_has_dvar + " 1" );
-        cmdexec( "seta " + level.zmcp_round_dvar + " " + level.round_number );
-        player iprintlnbold( "^2Checkpoint saved - round " + level.round_number );
+        zmcp_solo_publish( slot, saved_checkpoint );
+        player iprintlnbold( "^2Slot " + slot + " saved - round " + level.round_number );
         player iprintln( "^7Resume will appear when this map is selected." );
 
         if ( exit_after_save )
@@ -451,12 +458,14 @@ zmcp_write_nuketown_perks( file )
 }
 // ZMCP_NUKETOWN_ONLY_END
 
-zmcp_read_checkpoint()
+zmcp_read_checkpoint( path )
 {
-    if ( !fs_testfile( level.zmcp_save_file ) )
+    if ( !isdefined( path ) )
+        path = level.zmcp_save_file;
+    if ( !fs_testfile( path ) )
         return undefined;
 
-    file = fs_fopen( level.zmcp_save_file, "read" );
+    file = fs_fopen( path, "read" );
 
     if ( !isdefined( file ) )
         return undefined;
@@ -472,6 +481,7 @@ zmcp_read_checkpoint()
     checkpoint.machines = [];
     checkpoint.quest_seen = 0;
     checkpoint.quest_invalid = 0;
+    checkpoint.settings_invalid = 0;
     checkpoint.complete = 0;
 
     for ( i = 0; i < 5; i++ )
@@ -498,6 +508,8 @@ zmcp_read_checkpoint()
         }
         else if ( record == "ROUND" && fields.size >= 2 )
             checkpoint.round = int( fields[1] );
+        else if ( record == "SETTINGS" )
+            zmcp_solo_read_settings( checkpoint, fields );
         else if ( record == "PLAYER" && fields.size >= 11 )
         {
             checkpoint.score = int( fields[1] );
@@ -566,7 +578,7 @@ zmcp_read_checkpoint()
     if ( checkpoint.quest_invalid )
         checkpoint.quest = undefined;
 
-    if ( !checkpoint.complete || checkpoint.version != level.zmcp_version || checkpoint.map != level.zmcp_map || checkpoint.round < 1 || !isdefined( checkpoint.score ) )
+    if ( !checkpoint.complete || checkpoint.version != level.zmcp_version || checkpoint.map != level.zmcp_map || checkpoint.round < 1 || !isdefined( checkpoint.score ) || checkpoint.settings_invalid )
         return undefined;
 
     return checkpoint;
@@ -673,6 +685,7 @@ zmcp_consume_checkpoint()
 
     cmdexec( "seta " + level.zmcp_has_dvar + " 0" );
     cmdexec( "seta " + level.zmcp_round_dvar + " 0" );
+    zmcp_solo_publish( level.zmcp_selected_slot, undefined );
     level.zmcp_existing = undefined;
 }
 
@@ -1166,18 +1179,20 @@ zmcp_show_status()
     if ( players.size < 1 )
         return;
 
-    checkpoint = zmcp_read_checkpoint();
+    slot = zmcp_solo_slot( getdvarint( "zmcp_solo_slot" ) );
+    checkpoint = zmcp_read_checkpoint( zmcp_solo_path( slot ) );
 
     if ( !isdefined( checkpoint ) )
         players[0] iprintlnbold( "^1No valid checkpoint" );
     else
-        players[0] iprintlnbold( "^2Saved checkpoint: " + level.zmcp_map + " round " + checkpoint.round );
+        players[0] iprintlnbold( "^2Saved slot " + slot + ": " + level.zmcp_map + " round " + checkpoint.round );
 }
 
 zmcp_clear_checkpoint()
 {
     players = get_players();
-    file = fs_fopen( level.zmcp_save_file, "write" );
+    slot = zmcp_solo_slot( getdvarint( "zmcp_solo_slot" ) );
+    file = fs_fopen( zmcp_solo_path( slot ), "write" );
 
     if ( isdefined( file ) )
     {
@@ -1185,8 +1200,7 @@ zmcp_clear_checkpoint()
         fs_fclose( file );
     }
 
-    cmdexec( "seta " + level.zmcp_has_dvar + " 0" );
-    cmdexec( "seta " + level.zmcp_round_dvar + " 0" );
+    zmcp_solo_publish( slot, undefined );
 
     if ( players.size > 0 )
         players[0] iprintlnbold( "^3Checkpoint cleared" );
