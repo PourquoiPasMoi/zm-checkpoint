@@ -12,7 +12,7 @@ failure, installation, or test so the project retains its lessons.
 
 - Project: **ZM Checkpoint** for Call of Duty: Black Ops II Zombies on Plutonium T6.
 - Workspace: `C:\Users\User\Documents\Projects\Bo2 Zombie Plutonium`
-- Current source/package version: **0.4.12-alpha**; GitHub release at task start and locally installed metadata: **0.4.11-alpha**. No project installer was run by the agent.
+- Current source/package and GitHub release: **0.4.12-alpha**; locally installed metadata: **0.4.11-alpha**. No project installer was run by the agent.
 - Current date of this handoff: **2026-10-28**
 - The project is a Git repository with public origin `https://github.com/PourquoiPasMoi/zm-checkpoint`.
 - The standalone mod and companion packages are installed locally.
@@ -1099,3 +1099,13 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
 - **In-game result:** new layout and reliability behavior not yet tested.
   Owner installs via the updater. Do not run Install.ps1 or copy the package
   into the local game. Preserve all scriptdata checkpoint saves.
+- **Published:** `https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.12-alpha`
+  contains the complete 84,729-byte ZIP with the SHA-256 recorded above.
+  Source was pushed first. The installed 0.4.11 updater reports
+  `UPDATE_AVAILABLE|0.4.11-alpha|0.4.12-alpha`. The installed game remains
+  on 0.4.11-alpha; all three checkpoint files still match the hashes recorded
+  above. Owner should update, unload/reload the mod, then test the note pages
+  and error display. To load the new watcher logic immediately, restart the
+  `ZM Checkpoint Update Bridge` scheduled task; the named mutex in the new
+  window companion already serializes requests even if the old watcher stays
+  active until its next restart.

@@ -38,6 +38,10 @@ semantics.
   `C0376DCF00151DA429F7A5545D010FB8F4052439CE07404201A8D0C8FD7AB404`,
   last written by gameplay at 19:51:40, after the previous session baseline;
   neither Build.ps1 nor this agent wrote scriptdata.
+  Source was pushed before GitHub release 0.4.12-alpha was published with
+  the matching ZIP digest. The installed 0.4.11 updater reports
+  `UPDATE_AVAILABLE|0.4.11-alpha|0.4.12-alpha`; all three saves retain the
+  hashes recorded above and no local installation occurred.
 - In-game result: **Verified in-game:** 0.4.11 installed, delayed and truncated
   notes, and the reported retry sequence. The 0.4.12 fixes are not yet tested.
 - Remaining risk/next step: publish without local install. The currently
