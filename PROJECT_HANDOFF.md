@@ -1276,8 +1276,11 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   text. Existing saves remain valid and gain metadata after their map is
   loaded once by this version; reading does not rewrite their file.
 - **Validation:** Build.ps1 succeeded, all six generated T6 map scripts parsed,
-  modified Lua parsed, and solo Resume tests passed. ZIP and GitHub release
-  validation is recorded below after publication. No local install was run.
+  modified Lua parsed, and solo Resume tests passed. The complete 20-entry
+  ZIP includes all six map scripts and the updated IWD, with no checkpoint
+  files or caches: 99,795 bytes, SHA-256
+  `AFC80F4BC4A6507CC449147608F4EE0C37D41C736E4949F871B14EBFADF8BF35`.
+  GitHub confirms the same asset size and digest. No local install was run.
 - **In-game result:** new preview not yet tested. Weapon item art availability
   depends on BO2's item table for each saved weapon; the name is always shown.
 - **Installed state at task start:** local `mod.json` is 0.4.15-alpha. Existing
@@ -1288,3 +1291,9 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
 - **Next:** owner installs through the updater, unloads/reloads the mod, and
   checks both solo pages on a map with checkpoints. Confirm equipment art and
   that switching focus changes every detail. Co-op state is unaffected.
+- **Published:** source commit `1bf6a22` was pushed first, then
+  `https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.16-alpha`
+  was created with the matching ZIP. Local installed metadata remains
+  0.4.15-alpha. All four task-start checkpoint hashes listed above still
+  match after publication. Unload/reload the mod after using the updater;
+  Plutonium itself does not need restarting.

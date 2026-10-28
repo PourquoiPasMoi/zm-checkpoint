@@ -23,13 +23,20 @@ semantics.
   README.md, PROJECT_HANDOFF.md, CHANGELOG.md and release package.
 - Validation: Build.ps1 succeeded; all six generated T6 map scripts and the
   modified Lua parsed. The existing solo Resume suite passed. Package archive
-  and publication checks are recorded in PROJECT_HANDOFF.md.
+  has 20 entries, including all six map scripts and IWD, with no saves or
+  caches: 99,795 bytes, SHA-256
+  `AFC80F4BC4A6507CC449147608F4EE0C37D41C736E4949F871B14EBFADF8BF35`.
+  GitHub confirms the same size and digest. Installed 0.4.15-alpha and all
+  four task-start checkpoint hashes remain unchanged.
 - In-game result: Not yet tested. The owner screenshot confirms the previous
   0.4.15 slot screen displayed only round/settings and a wrapping hint.
 - Remaining risk/next step: install with the in-game updater, unload/reload,
   then check slot focus, points, weapon images/names, and perk icons in both
   solo pages. Existing saves may need their map loaded once for preview dvars
   to be republished. Co-op checkpoints are unchanged.
+- Publication: source commit `1bf6a22` was pushed before
+  [GitHub release 0.4.16-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.16-alpha)
+  with the matching ZIP asset. No local install was performed.
 
 ## 0.4.15-alpha — 2026-10-28
 
