@@ -45,6 +45,13 @@ check("four players",true,function() roster[3]={xuid="aaa"};roster[4]={xuid="bbb
 check("different connection order",true,function() roster[1],roster[2]=roster[2],roster[1] end)
 check("renamed player",true,function() roster[2].gamertag="New name" end)
 check("hex formatting",true,function() roster[2].xuid="0x123456789ABCDEF0" end)
+check("decimal lobby XUIDs",true,function()
+ roster[1].xuid="12379813812177893520"; roster[2].xuid="1311768467463790320"
+ localId="12379813812177893520"
+end)
+check("mixed decimal and hex lobby XUIDs",true,function()
+ roster[1].xuid="12379813812177893520"; localId="12379813812177893520"
+end)
 check("missing player",false,function() roster[2]=nil;count=1 end)
 check("extra player",false,function() roster[3]={xuid="f00"};count=3 end)
 check("replacement player",false,function() roster[2].xuid="f00" end)
@@ -64,4 +71,8 @@ check("already launching",false,function() launching=true end)
 check("missing API fails closed",false,function() Engine.GetPlayersInLobby=function() error("unavailable") end end)
 assert(C.NormalizeId("000000000000000A")=="a")
 assert(C.NormalizeId("0")==nil)
+assert(C.DecimalIdToHex("12379813812177893520")=="abcdef1234567890")
+assert(C.DecimalIdToHex("18446744073709551615")=="ffffffffffffffff")
+assert(C.DecimalIdToHex("18446744073709551616")==nil)
+assert(C.DecimalIdToHex("0")==nil)
 print("PASS: "..total.." co-op lobby and launch cases; 64-bit IDs kept as strings")

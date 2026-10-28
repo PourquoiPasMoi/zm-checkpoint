@@ -2,7 +2,7 @@
 
 Experimental save and resume checkpoints for Call of Duty: Black Ops II Zombies on Plutonium T6.
 
-The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.17-alpha). Download `zm_checkpoint-0.4.17-alpha.zip` and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
+The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.18-alpha). Download `zm_checkpoint-0.4.18-alpha.zip` and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
 
 The source, build scripts, test guidance, and project history are in this repository. The user-facing setup and feature details live in [README.md](README.md); contributors should read [AGENTS.md](AGENTS.md) and [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md) first.
 
@@ -16,9 +16,8 @@ choose **SOLO RESUME** to select a saved slot. A successful resume consumes
 only that slot; the other slots remain available.
 
 The Solo Save and Solo Resume pages show a selected slot's points, weapons,
-perks, and match settings. Known perks use the game's own icons; weapon icons
-appear when BO2 provides one for the saved weapon. A name remains visible when
-an icon is unavailable. Older saves gain this preview after the new version
+perks, and match settings. Weapons and perks use colored, labeled badges in the
+game menu because the stock HUD icons did not load there. Older saves gain this preview after the new version
 loads their map once and reads the checkpoint; the checkpoint file is not
 changed by that read. The new slot preview is **validated statically** and
 still needs an in-game test.
@@ -74,6 +73,11 @@ For co-op checkpoints, the original host and the same two to four player
 account IDs must be present and alive. Opening the pause menu on every PC is
 no longer required for the readiness check. Both players should still load
 the same mod version. The exact team must reconnect before the host can resume.
+The complete team checkpoint exists only on the PC that hosted Save & Exit.
+Guests will see no team checkpoint on their own PC; the original host must
+open CO-OP RESUME. Lobby account IDs may appear in decimal while saved IDs
+appear in hexadecimal; the menu compares both without rounding the 64-bit ID.
+This comparison still needs a two-PC in-game test.
 The expanded Custom Games menu places the map preview on the lower right so
 the selected option's description remains visible.
 The stock match-start countdown now appears above that preview, clear of the

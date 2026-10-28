@@ -1298,6 +1298,15 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   match after publication. Unload/reload the mod after using the updater;
   Plutonium itself does not need restarting.
 
+## 27. 0.4.18-alpha co-op ID and preview repair — 2026-10-28
+
+- **Verified in-game (owner screenshots, prior installed 0.4.17):** the current PC's CO-OP RESUME page showed no team checkpoint after the friend pressed Save & Exit, while Solo preview displayed checkerboard perk icons and weapon names without icons. The inspected current PC has no co-op `.sav` files; host-only storage means the friend who hosted Save & Exit owns the complete save. No host checkpoint/log was available to prove the reported ID mismatch's precise cause.
+- **Expected:** lobby account IDs can be decimal while GSC saved IDs are hexadecimal. `zmcheckpointcoop.lua` now computes exact hexadecimal decimal-string conversion and compares both interpretations against saved IDs. It rejects ambiguous matches and retains exact roster, count, original host and settings gates. It explains when the user is on a PC without the host save.
+- **Expected:** the Solo slot panel's color and letter badges render in the menu where HUD-only perk materials and weapon table art failed. Real weapon/perk image assets are not included; stock HUD textures cannot be assumed to load in the frontend. Names remain visible. This needs user visual testing after update.
+- **Validated statically:** modified Lua parsed; co-op lobby test passed 25 cases including decimal/hex mixed ID cases and 64-bit boundaries. Solo Resume suite, Build.ps1, six generated T6 GSC parses passed. Release ZIP has 20 entries and SHA-256 `4179597D44BDC8DE133D5CB0BC74F621488E5A22E1B0B25C503A32D89F4DDE87`. All five local solo checkpoint hashes stayed unchanged; no local install was run.
+- **Installed state:** local Plutonium mod remains 0.4.17-alpha by owner preference; 0.4.18 is GitHub-only pending use of the in-game updater. Do not copy this release into the local game as part of publishing.
+- **Next:** original Save & Exit host opens CO-OP RESUME in the same lobby, friend connected. If ID mismatch remains, obtain host `.sav` and `console_zm.log` without modifying the save. Check Solo badge layout after updater install and mod unload/reload.
+
 ## 26. 0.4.17-alpha repair — 2026-10-28
 
 - **Verified in-game (owner screenshot):** installed 0.4.15-alpha remained on

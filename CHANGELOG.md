@@ -4,6 +4,17 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.18-alpha — 2026-10-28
+
+### 2026-10-28 — Clarify host-only co-op saves and repair slot previews
+
+- Request: investigate a two-player Resume ID rejection and missing weapon/perk images.
+- Change or investigation: **Verified in-game (owner screenshots):** after a successful co-op Save & Exit, the current PC's CO-OP RESUME page said no team checkpoint; the Solo slot preview showed checkerboard perk materials and text-only weapons. The current PC has no co-op checkpoint file, consistent with the friend hosting Save & Exit. The complete team snapshot belongs on that host PC. **Expected:** a decimal lobby XUID versus hexadecimal saved XUID can cause an exact-team rejection; the lobby gate now compares both forms using string arithmetic without 64-bit rounding, while retaining host, count, duplicate and exact-roster checks. The missing-save message names the host PC. The preview now uses menu-renderable colored text badges for perks and weapons instead of HUD-only textures or absent weapon item art.
+- Files affected: co-op and solo menu Lua, co-op lobby test, mod.json, README.md, COOP_TEST_PLAN.md, PROJECT_HANDOFF.md, CHANGELOG.md.
+- Validation: modified Lua parsed; 25 co-op lobby and launch cases, including decimal/hex 64-bit IDs, and solo Resume regression suite passed. Build.ps1 and all six generated T6 GSC parses passed. The 20-entry release ZIP has the complete folder and no `scriptdata`, save, cache, or tool files; SHA-256 `4179597D44BDC8DE133D5CB0BC74F621488E5A22E1B0B25C503A32D89F4DDE87`. All five local solo save hashes remained unchanged; no local install was run.
+- In-game result: 0.4.18-alpha not yet tested; owner screenshots document the prior version's failures.
+- Remaining risk/next step: have the original Save & Exit host open CO-OP RESUME with the same friend connected. If IDs still disagree, collect the host save and console log for diagnosis. Check badges on both Solo pages after updating.
+
 ## 0.4.17-alpha — 2026-10-28
 
 ### 2026-10-28 — Repair companion request IDs and local update flow

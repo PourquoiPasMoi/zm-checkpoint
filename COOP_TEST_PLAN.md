@@ -18,7 +18,7 @@ as a save/restore blocker; a new two-PC test is required.
    for each player. Keep everyone alive, out of last stand and spectating.
 5. Only the host selects SAVE & EXIT. Expect `Team checkpoint saved` and a
    return to the lobby. All player state is on the host PC; guests need no save.
-6. Open CO-OP RESUME in the private lobby. Select the same map, mode, start
+6. On the same physical PC that hosted Save & Exit, open CO-OP RESUME in the private lobby. Select the same map, mode, start
    location, mod, difficulty, magic and headshots settings. Reconnect the exact
    accounts. The original host must host. The page refreshes every half second.
 7. Press RESUME TEAM CHECKPOINT. Loading uses xpartygo. The round is held
@@ -30,6 +30,10 @@ as a save/restore blocker; a new two-PC test is required.
 
 The page displays connected names and missing account IDs. Names are not keys.
 Online account ID stability and Lua/GSC ID equivalence require this real test.
+Version 0.4.18-alpha compares decimal and hexadecimal lobby ID representations
+as strings. If an ID mismatch remains, capture the host checkpoint and host
+console log without changing the save, plus the lobby player list; the guest's
+PC having no checkpoint is expected.
 LAN username-derived identities are weaker; this is not proof of account
 ownership in LAN mode. IDs are compared as normalized hex strings, never floats.
 
