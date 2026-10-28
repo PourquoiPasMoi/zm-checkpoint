@@ -1297,3 +1297,42 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   0.4.15-alpha. All four task-start checkpoint hashes listed above still
   match after publication. Unload/reload the mod after using the updater;
   Plutonium itself does not need restarting.
+
+## 26. 0.4.17-alpha repair — 2026-10-28
+
+- **Verified in-game (owner screenshot):** installed 0.4.15-alpha remained on
+  `Checking for updates / Waiting for the update companion` while 0.4.16 was
+  already published. This is a repeat of the stalled-check symptom, with new
+  log evidence identifying the cause; the prior request-correlation approach
+  did not account for T6 Lua number formatting.
+- **Cause:** `nextRequestId` concatenated `tostring(math.random(100000000,
+  999999999))` with a counter. The live console log contains
+  `zmcp_update_request_20261028_1.5688346e+0081` and similar markers.
+  The background watcher's regex requires 9–16 contiguous decimal digits, so
+  it never recognizes these markers. The status CFG did contain
+  `update_available / 0.4.16-alpha` but with an empty request ID, which the
+  menu ignored as intended. The watcher process was running; the issue was
+  marker format rather than task absence or GitHub availability.
+- **Validated statically:** `nextRequestId` now uses fixed-width decimal
+  formatting for a 15-digit ID. The menu reports a missing companion response
+  after about 45 seconds instead of about three minutes. A focused Fengari
+  test loads the actual updater Lua and checks repeated requests and counter
+  rollover. `tools/Install.ps1` now updates other mod folders only when
+  `-InstallCompanionMods` is passed, so this local install does not overwrite
+  files belonging to other mods.
+- **Installed state at task start:** local mod 0.4.15-alpha. Buried save
+  SHA-256 `AAC274E2C3F938643DACE098C80771A281BAD8E90B43FFE2C9AF3D3B5BCA5B82`;
+  Nuketown slot 2 `66613918FBEEF4A8709695573B1349A7E0CEBF6FB6DF5E3D6C451FF736C4DB25`;
+  Nuketown slot 1 `03A9F01EABF1643D84A1E04F9B84B20C21B608D1BD573FBBD5FEAD5A05E1C775`;
+  TranZit `C65C81B25731D981518D321DB25C1D817F58E88320BC0CBA5A0155D578991AC4`.
+- **Validation:** updater Lua and installer PowerShell parsed; focused updater
+  marker test and solo Resume suite passed. Build.ps1 and all six T6 GSC
+  parses passed. Direct GitHub check from installed 0.4.15 reported
+  `UPDATE_AVAILABLE|0.4.15-alpha|0.4.16-alpha`. The 20-entry ZIP contains all
+  six scripts and IWD, no saves or caches: 100,019 bytes, SHA-256
+  `4E1A295CE99B1BE050A603F4A0DBCB98A65544A57EFF6312F66E946326A73E43`.
+- **In-game result:** 0.4.17 fix not yet tested. The owner must unload/reload
+  the mod after the local install; do not close or restart Plutonium
+  automatically.
+- **Next:** open CHECK FOR UPDATES after reloading; confirm 0.4.17 is current.
+  When a later release exists, confirm detection without repeated refreshes.

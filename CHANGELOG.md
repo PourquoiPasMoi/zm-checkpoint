@@ -4,6 +4,42 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.17-alpha — 2026-10-28
+
+### 2026-10-28 — Repair companion request IDs and local update flow
+
+- Request: fix 0.4.15's endless "Waiting for the update companion" screen,
+  publish the repair, and install it locally for testing.
+- Change or investigation: **Verified in-game (owner screenshot):** the updater
+  kept checking and waiting despite a published 0.4.16 release. The 0.4.15
+  `console_zm.log` shows requests such as
+  `zmcp_update_request_20261028_1.5688346e+0081`. T6's Lua `tostring` used
+  scientific notation for the random part of the request ID. The watcher and
+  worker accept only 9–16 digits, so the request went unmatched. The status
+  file had 0.4.16 available but an empty request ID, which the menu correctly
+  refused as a reply to its pending check. Request IDs now use fixed-width
+  decimal formatting. Missing replies show a retry message after about 45
+  seconds instead of three minutes. The installer now touches other mod
+  folders only with an explicit `-InstallCompanionMods` switch; the local
+  repair install is scoped to ZM Checkpoint and its shared raw map scripts.
+- Files affected: zmcheckpointupdater.lua, Install.ps1,
+  Test-UpdaterRequestId.lua, mod.json, README.md, PROJECT_HANDOFF.md,
+  CHANGELOG.md and release package.
+- Validation: a focused test loads the shipped updater Lua and confirms
+  digit-only 15-character request markers across repeat checks and rollover.
+  Updater Lua and installer PowerShell parse; Build.ps1, six T6 map-script
+  parses, and the solo Resume regression suite pass. A direct GitHub check
+  from installed 0.4.15 reports `UPDATE_AVAILABLE|0.4.15-alpha|0.4.16-alpha`.
+  The 20-entry ZIP includes all six map scripts and IWD, with no saves/caches:
+  100,019 bytes, SHA-256
+  `4E1A295CE99B1BE050A603F4A0DBCB98A65544A57EFF6312F66E946326A73E43`.
+  Local install and publication results are recorded after completion.
+- In-game result: the 0.4.17 fix is not yet tested in-game. The owner must
+  unload and reload the mod; Plutonium need not restart.
+- Remaining risk/next step: open the updater after reloading. It should show
+  0.4.17 current, then detect the next release without waiting for a timeout.
+  If the bridge does not reply, inspect its running task and console log.
+
 ## 0.4.16-alpha — 2026-10-28
 
 ### 2026-10-28 — Show solo slot equipment and points

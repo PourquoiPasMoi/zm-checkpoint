@@ -5,7 +5,9 @@ local nextRequestId = function ( controller )
 	C.UpdateRequestCounter = math.max( C.UpdateRequestCounter or 0, archived ) + 1
 	if C.UpdateRequestCounter > 999999 then C.UpdateRequestCounter = 1 end
 	Engine.Exec( controller, "seta zmcp_update_sequence " .. C.UpdateRequestCounter .. "\n" )
-	return tostring( math.random( 100000000, 999999999 ) ) .. tostring( C.UpdateRequestCounter )
+	-- T6's Lua tostring prints large numbers in scientific notation. The log
+	-- watcher accepts digit-only IDs, so format both parts as fixed decimals.
+	return string.format( "%09.0f%06.0f", math.random( 100000000, 999999999 ), C.UpdateRequestCounter )
 end
 local requestUpdateCheck = function ( controller )
 	local requestId = nextRequestId( controller )
@@ -281,7 +283,7 @@ LUI.createMenu.ZMCheckpointUpdaterInfo = function ( controller )
 		local responseId = UIExpression.DvarString( nil, "zmcp_update_request_id" ) or ""
 		if responseId ~= menu.zmcpRequestId then
 			menu.zmcpWaitTicks = menu.zmcpWaitTicks + 1
-			if menu.zmcpWaitTicks >= 120 then
+			if menu.zmcpWaitTicks >= 30 then
 				menu.zmcpInstallRequested = false
 				showBack()
 				status:setText( "Update check did not finish." )

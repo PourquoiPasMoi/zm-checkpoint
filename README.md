@@ -2,7 +2,7 @@
 
 Experimental save and resume checkpoints for Call of Duty: Black Ops II Zombies on Plutonium T6.
 
-The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.16-alpha). Download `zm_checkpoint-0.4.16-alpha.zip` and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
+The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.17-alpha). Download `zm_checkpoint-0.4.17-alpha.zip` and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
 
 The source, build scripts, test guidance, and project history are in this repository. The user-facing setup and feature details live in [README.md](README.md); contributors should read [AGENTS.md](AGENTS.md) and [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md) first.
 
@@ -61,9 +61,11 @@ allowed to finish before another check or install starts.
 Each update check has a request ID. The page stays on **Checking for updates**
 until the background companion replies to that exact request. An old status
 file cannot report **Latest version installed** for a new request. If the
-companion does not reply within about three minutes, the page shows a retry
+companion does not reply within about 45 seconds, the page shows a retry
 message rather than claiming there is no update. Release checks request fresh
 GitHub data to reduce stale responses.
+Version 0.4.17-alpha fixes request IDs that T6 printed in scientific notation,
+which prevented the companion from matching them and left the page waiting.
 During installation, the page now identifies the download, unpacking, and
 file-copy stages. The companion uses one GitHub release lookup for an install
 instead of repeating the check. Network download time can still vary.
@@ -85,3 +87,5 @@ request marker.
 
 The test PC is intentionally left on its currently installed version when new
 releases are published. The owner runs the updater to install each release.
+For the 0.4.17-alpha repair, the owner explicitly requested a local install.
+After installation, unload and reload the mod to apply the updated menu.

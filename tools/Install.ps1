@@ -1,5 +1,6 @@
 param(
-    [string]$PlutoniumRoot = (Join-Path $env:LOCALAPPDATA 'Plutonium\storage\t6')
+    [string]$PlutoniumRoot = (Join-Path $env:LOCALAPPDATA 'Plutonium\storage\t6'),
+    [switch]$InstallCompanionMods
 )
 
 $ErrorActionPreference = 'Stop'
@@ -33,6 +34,7 @@ foreach ($mapName in $stockMaps) {
 }
 
 $companionMods = @()
+if ($InstallCompanionMods) {
 Get-ChildItem -LiteralPath $modsRoot -Directory | Where-Object { $_.FullName -ne $installRoot } | ForEach-Object {
     $targetRoot = [System.IO.Path]::GetFullPath($_.FullName)
     if (-not $targetRoot.StartsWith($modsRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
@@ -46,6 +48,7 @@ Get-ChildItem -LiteralPath $modsRoot -Directory | Where-Object { $_.FullName -ne
     }
     Copy-Item -LiteralPath (Join-Path $packageRoot 'zz_zm_checkpoint.iwd') -Destination (Join-Path $targetRoot 'zz_zm_checkpoint.iwd') -Force
     $companionMods += $_.Name
+}
 }
 
 Write-Host "Installed standalone ZM Checkpoint at $installRoot"
