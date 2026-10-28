@@ -2,7 +2,7 @@
 
 Experimental save and resume checkpoints for Call of Duty: Black Ops II Zombies on Plutonium T6.
 
-The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.13-alpha). Download `zm_checkpoint-0.4.13-alpha.zip` and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
+The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.14-alpha). Download `zm_checkpoint-0.4.14-alpha.zip` and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
 
 The source, build scripts, test guidance, and project history are in this repository. The user-facing setup and feature details live in [README.md](README.md); contributors should read [AGENTS.md](AGENTS.md) and [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md) first.
 
@@ -21,6 +21,12 @@ launching and checks them again when the map loads. Select the same mode and
 start location as the saved match. Older checkpoints without stored settings
 remain usable with the lobby's current settings. These new slot and settings
 behaviors are **validated statically** and still need an in-game test.
+
+On Nuketown, new checkpoints also record which physical drop site belongs to
+each perk machine. Resume restores those assignments before replaying the
+arrivals. Checkpoints made before 0.4.14-alpha did not record the assignments,
+so their original perk locations cannot be reconstructed. The new placement
+restore is **validated statically** and still needs an in-game test.
 
 ## In-game updates
 
@@ -53,6 +59,8 @@ no longer required for the readiness check. Both players should still load
 the same mod version. The exact team must reconnect before the host can resume.
 The expanded Custom Games menu places the map preview on the lower right so
 the selected option's description remains visible.
+The stock match-start countdown now appears above that preview, clear of the
+expanded settings and Resume rows.
 
 After installation, choose UNLOAD or press U, then load ZM Checkpoint again from
 the Mods menu to use the new UI. The updater does not restart Plutonium. If

@@ -453,9 +453,15 @@ zmcp_coop_read( path )
     c.path = path;
     c.flags = [];
     c.machines = [];
+    c.machine_locations = [];
+    c.machine_location_seen = 0;
+    c.machine_location_invalid = 0;
     c.members = [];
     for ( i = 0; i < 5; i++ )
+    {
         c.machines[i] = 0;
+        c.machine_locations[i] = -1;
+    }
     member = undefined;
     header = 0;
     complete = 0;
@@ -543,6 +549,10 @@ zmcp_coop_read( path )
             c.flags[c.flags.size] = f[1];
         else if ( r == "MACHINE" && f.size == 2 && int( f[1] ) >= 0 && int( f[1] ) < 5 )
             c.machines[int( f[1] )] = 1;
+        // ZMCP_NUKETOWN_ONLY_BEGIN
+        else if ( r == "MACHINELOC" )
+            zmcp_read_nuketown_location( c, f );
+        // ZMCP_NUKETOWN_ONLY_END
         else if ( r == "SLOTH" && f.size == 10 && !isdefined( c.sloth ) && level.zmcp_map == "zm_buried" )
         {
             c.sloth = spawnstruct();
@@ -560,7 +570,7 @@ zmcp_coop_read( path )
             break;
     }
     fs_fclose( file );
-    if ( invalid || !header || !complete || isdefined( member ) || !isdefined( c.host ) || !isdefined( c.round ) )
+    if ( invalid || !header || !complete || isdefined( member ) || !isdefined( c.host ) || !isdefined( c.round ) || c.machine_location_invalid || ( c.machine_location_seen > 0 && c.machine_location_seen != 5 ) )
         return undefined;
     if ( c.round < 1 || c.count < 2 || c.count > 4 || c.members.size != c.count || c.generation < 1 || c.generation > 2000000000 || !isdefined( zmcp_coop_member( c, c.host ) ) )
         return undefined;

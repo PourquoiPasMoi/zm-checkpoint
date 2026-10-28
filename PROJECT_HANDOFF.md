@@ -12,7 +12,7 @@ failure, installation, or test so the project retains its lessons.
 
 - Project: **ZM Checkpoint** for Call of Duty: Black Ops II Zombies on Plutonium T6.
 - Workspace: `C:\Users\User\Documents\Projects\Bo2 Zombie Plutonium`
-- Current source/package and GitHub release: **0.4.13-alpha**; locally installed metadata: **0.4.12-alpha**. Publication status is recorded in section 22. No project installer was run by the agent.
+- Current source/package: **0.4.14-alpha**; locally installed metadata: **0.4.13-alpha** at task start. GitHub publication status is recorded in section 23. No project installer was run by the agent.
 - Current date of this handoff: **2026-10-28**
 - The project is a Git repository with public origin `https://github.com/PourquoiPasMoi/zm-checkpoint`.
 - The standalone mod and companion packages are installed locally.
@@ -1157,3 +1157,49 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   `AAC274E2C3F938643DACE098C80771A281BAD8E90B43FFE2C9AF3D3B5BCA5B82`,
   `C0376DCF00151DA429F7A5545D010FB8F4052439CE07404201A8D0C8FD7AB404`,
   and `C65C81B25731D981518D321DB25C1D817F58E88320BC0CBA5A0155D578991AC4`.
+
+## 23. 0.4.14-alpha work — 2026-10-28
+
+- **Verified in-game (owner screenshot and report):** installed 0.4.13-alpha
+  in Custom Games shows `Game starting in 4` over CHEATS and the selected
+  row hint. The owner reports Nuketown Resume restores the match but the same
+  perk machines drop at different physical locations. Exact perk placement
+  was not captured in the screenshot, but the report fits stock Nuketown's
+  random perk-to-site mapping. The installed mod at task start was
+  0.4.13-alpha.
+- **Cause:** stock `CoD.GameLobby.AddStatusText` anchors the launch status to
+  the left under the original button list. The previous mod moved the map
+  preview right but did not move status text. Stock
+  `zm_nuked_perks::init_nuked_perks` randomizes which physical site receives
+  each perk. `zmcp_write_nuketown_perks` recorded only `MACHINE,<index>` for
+  landed machines; no site ID survived a checkpoint.
+- **Validated statically:** privateonlinegamelobby.lua places the stock status
+  above the lower-right map preview and reapplies that position on each
+  `party_update_status` event. New Nuketown checkpoints write five
+  `MACHINELOC,<perk-index>,<site-script_int>` records after confirming all
+  five IDs are present and unique. Solo and co-op readers accept the optional
+  records but reject malformed or partial location sets. Resume captures all
+  current physical sites before moving anything, maps the saved IDs to those
+  sites, then moves each perk's machine, use trigger, clip and bump while
+  reassigning its path ID and site blocker. This occurs before the existing
+  perk arrival thread moves machines overhead. A site mismatch logs a fallback
+  and keeps current placement. Old saves with no MACHINELOC stay valid but
+  cannot recover their original placement; the missing data was never saved.
+- **Validation:** Build.ps1 succeeded; six generated map scripts parsed with
+  the bundled T6 gsc-tool and modified Lua parsed. Existing solo and co-op Lua
+  suites passed. The complete ZIP contains six map scripts and the updated
+  IWD, without scriptdata or build caches: 95,440 bytes, SHA-256
+  `457A190CD60BCBA4B2C3C8F60E7A7705417F0C6D2FB582E67A1FA40AD049264A`.
+  No local install. Task-start installed saves: Buried consumed file SHA-256
+  `AAC274E2C3F938643DACE098C80771A281BAD8E90B43FFE2C9AF3D3B5BCA5B82`;
+  Nuketown Slot 2 SHA-256
+  `66613918FBEEF4A8709695573B1349A7E0CEBF6FB6DF5E3D6C451FF736C4DB25`;
+  Nuketown Slot 1 consumed file SHA-256
+  `AAC274E2C3F938643DACE098C80771A281BAD8E90B43FFE2C9AF3D3B5BCA5B82`;
+  TranZit SHA-256
+  `C65C81B25731D981518D321DB25C1D817F58E88320BC0CBA5A0155D578991AC4`.
+- **In-game result:** new countdown placement and perk-site remapping not yet
+  tested. The owner installs via updater; unload/reload the mod afterward.
+- **Next:** save a fresh Nuketown round on 0.4.14 and compare perk names and
+  physical sites after Resume. Inspect console for `ZMCP NUKETOWN` fallback
+  if the layout still changes. Continue co-op tests separately.

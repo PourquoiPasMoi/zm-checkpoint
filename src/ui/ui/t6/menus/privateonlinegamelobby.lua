@@ -24,5 +24,20 @@ LUI.createMenu.PrivateOnlineGameLobby = function ( controller )
 		card:setLeftRight( true, false, 570, 870 )
 		card:setTopBottom( false, true, -CoD.ButtonPrompt.Height - 245, -CoD.ButtonPrompt.Height - 15 )
 	end
+	-- The stock launch countdown sits under the newly added Resume rows.
+	-- Keep it above the map preview in the free right column, including when
+	-- the stock lobby rebuilds its status text after an options change.
+	local placeStatus = function ( owner )
+		local status = owner.buttonPane and owner.buttonPane.body and owner.buttonPane.body.statusText
+		if status then
+			status:setLeftRight( true, false, 570, 870 )
+			status:setTopBottom( false, true, -CoD.ButtonPrompt.Height - 290, -CoD.ButtonPrompt.Height - 260 )
+		end
+	end
+	placeStatus( menu )
+	menu:registerEventHandler( "party_update_status", function ( owner, event )
+		CoD.GameLobby.UpdateStatusText( owner, event )
+		placeStatus( owner )
+	end )
 	return menu
 end

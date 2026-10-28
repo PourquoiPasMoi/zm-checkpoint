@@ -4,6 +4,41 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.14-alpha — 2026-10-28
+
+### 2026-10-28 — Clear countdown and restore Nuketown perk sites
+
+- Request: move the match-start countdown off the Custom Games settings and
+  restore perk machines to their saved Nuketown drop locations.
+- Change or investigation: the stock `GameLobby.AddStatusText` placed `Game
+  starting in 4` in the left column, where new Resume rows and their hints now
+  live. The private lobby keeps that text above the right-hand map preview,
+  including after stock lobby status updates. Nuketown's stock
+  `init_nuked_perks` randomly assigns perk identities to physical drop sites
+  each match. Earlier checkpoints recorded only which machines had landed,
+  so their old locations are unrecoverable. New solo and co-op checkpoints
+  write five `MACHINELOC` site IDs; readers validate a complete, unique set
+  while continuing to accept older files without those records. Resume
+  reassigns machine, trigger, collision, bump and blocker references to the
+  saved sites before the existing arrival flow. If the saved sites are not
+  available, it leaves the new match's placement alone and logs that fallback.
+- Files affected: privateonlinegamelobby.lua, shared Nuketown GSC source and
+  co-op checkpoint reader, mod.json, README.md, PROJECT_HANDOFF.md,
+  CHANGELOG.md and generated release package.
+- Validation: Build.ps1 and all six T6 GSC parser checks passed during the
+  implementation; modified Lua parsed. The prior solo and 23-case co-op Lua
+  suites passed. Full mod ZIP has six map scripts and the updated IWD, with no
+  scriptdata or build caches (95,440 bytes, SHA-256
+  `457A190CD60BCBA4B2C3C8F60E7A7705417F0C6D2FB582E67A1FA40AD049264A`).
+  Installed game and checkpoint files were not written by this session.
+- In-game result: **Verified in-game (owner):** a 0.4.13 Nuketown Resume
+  restored the match but perk machines arrived at different sites; screenshot
+  shows the stock launch countdown overlapping CHEATS and the focused hint.
+  The 0.4.14 fixes are not yet tested in-game.
+- Remaining risk/next step: publish without installing locally. Test a new
+  Nuketown save created on 0.4.14, then Resume it and compare every perk site.
+  Existing 0.4.13 saves have no site IDs and retain the old placement behavior.
+
 ## 0.4.13-alpha — 2026-10-28
 
 ### 2026-10-28 — Four solo slots, saved lobby settings, and updater progress
