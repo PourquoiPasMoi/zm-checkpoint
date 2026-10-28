@@ -315,11 +315,19 @@ LUI.createMenu.ZMCheckpointUpdaterInfo = function ( controller )
 					choiceMode = "update_available"
 				end
 			end
-		elseif state == "installing" then
+		elseif state == "installing" or state == "downloading" or state == "unpacking" or state == "copying" then
 			install:disable()
 			later:disable()
 			status:setText( "Installing update..." )
-			body:setText( "Downloading and installing..." )
+			if state == "downloading" then
+				body:setText( "Downloading the release..." )
+			elseif state == "unpacking" then
+				body:setText( "Checking and unpacking the release..." )
+			elseif state == "copying" then
+				body:setText( "Copying mod files; saves are untouched..." )
+			else
+				body:setText( "Contacting GitHub..." )
+			end
 		elseif state == "installed" then
 			if menu.zmcpInstallRequested or version == menu.zmcpInstallTargetVersion then
 				menu.zmcpUpdateInstalled = true

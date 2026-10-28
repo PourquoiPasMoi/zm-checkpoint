@@ -12,7 +12,7 @@ failure, installation, or test so the project retains its lessons.
 
 - Project: **ZM Checkpoint** for Call of Duty: Black Ops II Zombies on Plutonium T6.
 - Workspace: `C:\Users\User\Documents\Projects\Bo2 Zombie Plutonium`
-- Current source/package and GitHub release: **0.4.12-alpha**; locally installed metadata: **0.4.11-alpha**. No project installer was run by the agent.
+- Current source/package: **0.4.13-alpha**; locally installed metadata: **0.4.12-alpha**. GitHub publication status is recorded in section 22. No project installer was run by the agent.
 - Current date of this handoff: **2026-10-28**
 - The project is a Git repository with public origin `https://github.com/PourquoiPasMoi/zm-checkpoint`.
 - The standalone mod and companion packages are installed locally.
@@ -1109,3 +1109,42 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   `ZM Checkpoint Update Bridge` scheduled task; the named mutex in the new
   window companion already serializes requests even if the old watcher stays
   active until its next restart.
+
+## 22. 0.4.13-alpha work — 2026-10-28
+
+- **Verified in-game (owner screenshots):** 0.4.12 updater showed
+  `Update available: 0.4.12-alpha`, then an unchanged install page for about
+  one minute before `Update installed: 0.4.12-alpha`. Precise network and copy
+  timings were not captured. The owner also observed that older solo Resume
+  did not restore difficulty, Magic, Headshots Only, Target Assist or Cheats.
+- **Validated statically:** solo Save & Exit offers four slots per map; the
+  Custom Games SOLO RESUME page selects one of four saved slots. Slot 1 retains
+  `zm_checkpoint_<map>.sav`, with legacy format-3 saves accepted. Slots 2–4
+  use `zm_checkpoint_<map>_slotN.sav`. Save publishes slot metadata via dvars,
+  writes a SETTINGS record for five lobby values and mode/group/location, and
+  confirms the completed file before exiting. Resume applies those settings
+  in the lobby before the established `zmcp_autoload 1` + `xpartygo` path.
+  Map startup checks the saved values and cancels without consuming the file
+  on mismatch. Successful Resume consumes only its selected slot. A legacy
+  slot without SETTINGS resumes with current lobby settings. Co-op save files
+  and the exact-roster protocol are unchanged.
+- **Validated statically:** the updater's Install action now performs a single
+  GitHub release lookup. It writes `downloading`, `unpacking` and `copying`
+  states to the status CFG, which the Lua page displays. GitHub's asset SHA-256
+  digest is checked when the API provides one. Network download can still
+  take time; the earlier one-minute wait's precise cause remains unverified.
+- **Validation:** Build.ps1 and six T6 GSC parses passed. Modified Lua and
+  PowerShell parsed. `tools/Test-SoloResume.lua` passed for settings, selected
+  slot, legacy file and refusal cases; `tools/Test-CoopLobby.lua` passed all
+  23 prior cases. Full release ZIP contains all six map scripts and updated
+  IWD; 93,506 bytes; SHA-256
+  `549428788CA3EF9DFCEC86FB3340A49039288DB373E4D3D4BC2B1FAAE67AE04F`.
+  Installed metadata is 0.4.12-alpha; Buried, Nuketown and TranZit saves
+  retain their task-start hashes. GitHub publication is recorded below.
+- **In-game result:** new slot, settings, and updater stage behavior not yet
+  tested. The owner must install via the in-game updater, then unload/reload
+  the mod. Do not run Install.ps1 or copy this build into Plutonium locally.
+- **Next:** test all five setting combinations and four slots on Nuketown,
+  including an older Slot 1 save; confirm a successful resume leaves other
+  slots intact. Capture the updater stages and any exact error if delayed.
+  Continue two-player co-op Save & Exit test when friend is available.

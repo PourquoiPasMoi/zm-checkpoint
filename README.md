@@ -2,9 +2,25 @@
 
 Experimental save and resume checkpoints for Call of Duty: Black Ops II Zombies on Plutonium T6.
 
-The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases). Download `zm_checkpoint-0.4.12-alpha.zip` from release **0.4.12-alpha** and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
+The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.13-alpha). Download `zm_checkpoint-0.4.13-alpha.zip` and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
 
 The source, build scripts, test guidance, and project history are in this repository. The user-facing setup and feature details live in [README.md](README.md); contributors should read [AGENTS.md](AGENTS.md) and [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md) first.
+
+## Solo save slots
+
+In a solo match, choose **SAVE & EXIT**, then select one of four slots. An
+occupied slot needs a second selection before it is replaced. Slot 1 is the
+original per-map checkpoint, so existing solo saves remain available. Slots
+2–4 are separate checkpoints for the same map. In the Custom Games lobby,
+choose **SOLO RESUME** to select a saved slot. A successful resume consumes
+only that slot; the other slots remain available.
+
+New solo checkpoints store the lobby's difficulty, Magic, Headshots Only,
+Target Assist, and Cheats settings. Resume applies those settings before
+launching and checks them again when the map loads. Select the same mode and
+start location as the saved match. Older checkpoints without stored settings
+remain usable with the lobby's current settings. These new slot and settings
+behaviors are **validated statically** and still need an in-game test.
 
 ## In-game updates
 
@@ -27,6 +43,9 @@ Very long release notes are capped; the GitHub release page has the full text.
 If an update check or installation fails, the updater shows a short error reason
 so you can retry with **R Refresh**. An installation already in progress is
 allowed to finish before another check or install starts.
+During installation, the page now identifies the download, unpacking, and
+file-copy stages. The companion uses one GitHub release lookup for an install
+instead of repeating the check. Network download time can still vary.
 
 For co-op checkpoints, the original host and the same two to four player
 account IDs must be present and alive. Opening the pause menu on every PC is

@@ -4,6 +4,42 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.13-alpha — 2026-10-28
+
+### 2026-10-28 — Four solo slots, saved lobby settings, and updater progress
+
+- Request: allow multiple solo checkpoints on the same map, restore the five
+  Custom Games settings on Resume, and make a slow updater install visible.
+- Change or investigation: SAVE & EXIT now opens a four-slot solo page with a
+  second selection to replace an occupied slot. SOLO RESUME opens a matching
+  selection page. Slot 1 keeps the old per-map filename and accepts legacy
+  format-3 saves; slots 2–4 use separate files. New saves add a validated
+  SETTINGS record for difficulty, Magic, Headshots Only, Target Assist, Cheats,
+  mode, group and start location. Resume applies the five settings before
+  `xpartygo`, then the map checks the loaded settings before restoring. A
+  mismatch cancels Resume and retains the checkpoint. Only the resumed slot is
+  consumed. The updater now performs one GitHub release lookup during Install
+  and reports download, unpacking and copy stages in-game. Prior 0.4.12
+  screenshots showed an Installing page for roughly a minute before success;
+  the precise delay source was not measured, so network time remains possible.
+- Files affected: GSC solo source and shared slot helpers, solo/lobby/updater
+  Lua, updater and status PowerShell, Build.ps1, test harness, mod.json,
+  README.md, PROJECT_HANDOFF.md, CHANGELOG.md, and generated release package.
+- Validation: Build.ps1 completed; all six generated GSC map scripts parsed
+  with T6 gsc-tool. All modified Lua and PowerShell files parsed. Solo Resume
+  tests cover slot selection, five settings, legacy checkpoint, and launch
+  guards; existing 23-case co-op lobby suite passes. The ZIP has the complete
+  mod folder, six map scripts and the updated IWD, with no saves or build
+  caches (93,506 bytes, SHA-256
+  `549428788CA3EF9DFCEC86FB3340A49039288DB373E4D3D4BC2B1FAAE67AE04F`).
+  Installed metadata stays 0.4.12-alpha; Buried, Nuketown and TranZit saves
+  retain their baseline hashes. No local installation.
+- In-game result: Not yet tested. The owner will update from 0.4.12-alpha,
+  unload/reload the mod, then test solo slots/settings and updater progress.
+- Remaining risk/next step: verify actual BO2 lobby settings transfer and
+  server-side comparison in-game; capture update stage timing if a download
+  still seems stalled. Co-op Save & Exit remains unverified with two players.
+
 ## 0.4.12-alpha — 2026-10-28
 
 ### 2026-10-28 — Paginated release notes and reliable updater results

@@ -16,6 +16,7 @@ $stockMaps = @('zm_transit', 'zm_nuked', 'zm_highrise', 'zm_prison', 'zm_buried'
 $sourceScript = Join-Path $projectRoot 'src\scripts\zm\zm_nuked\zm_checkpoint.gsc'
 $sourceText = [System.IO.File]::ReadAllText($sourceScript)
 $sourceText += [Environment]::NewLine + [System.IO.File]::ReadAllText((Join-Path $projectRoot 'src\scripts\zm\zm_checkpoint_coop.gsc'))
+$sourceText += [Environment]::NewLine + [System.IO.File]::ReadAllText((Join-Path $projectRoot 'src\scripts\zm\zm_checkpoint_slots.gsc'))
 $mapOnlySections = [ordered]@{
     'NUKETOWN' = 'zm_nuked'
     'TRANSIT'  = 'zm_transit'

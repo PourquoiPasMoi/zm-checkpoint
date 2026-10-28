@@ -1,5 +1,5 @@
 param(
- [ValidateSet('checking','up_to_date','update_available','installing','installed','error')][string]$State,
+ [ValidateSet('checking','up_to_date','update_available','installing','downloading','unpacking','copying','installed','error')][string]$State,
  [string]$Version = '',
  [string]$Notes = '',
  [string]$ErrorMessage = '',
