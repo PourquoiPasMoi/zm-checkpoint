@@ -10,6 +10,16 @@ C.SoloSlotMeta = function ( map, slot )
 		if value ~= 0 and value ~= 1 then return nil end
 		return value
 	end
+	local preview = read( "preview" ) == "1"
+	local collect = function ( kind, count, maximum )
+		local values = {}
+		if not preview then return values end
+		for i = 0, math.min( tonumber( read( count ) ) or 0, maximum ) - 1 do
+			local value = read( kind .. i )
+			if value ~= "" then values[#values + 1] = value end
+		end
+		return values
+	end
 	return {
 		has = C.DvarString( "zmcp_has_" .. map .. suffix ) == "1",
 		round = tonumber( C.DvarString( "zmcp_round_" .. map .. suffix ) ) or 0,
@@ -21,17 +31,129 @@ C.SoloSlotMeta = function ( map, slot )
 		cheats = flag( "cheats" ),
 		mode = read( "mode" ),
 		group = read( "group" ),
-		location = read( "location" )
+		location = read( "location" ),
+		preview = preview,
+		score = tonumber( read( "score" ) ) or 0,
+		weapons = collect( "weapon", "weapons", 4 ),
+		perks = collect( "perk", "perks", 12 )
 	}
 end
 
 local function slotHint( meta )
 	if not meta.has then return "Empty slot." end
 	if not meta.settings then return "Older checkpoint: current lobby settings will be used." end
-	local enabled = function ( n ) return n == 1 and "ON" or "OFF" end
-	return "ROUND " .. meta.round .. " | DIFFICULTY " .. (meta.difficulty == 0 and "EASY" or "ORIGINAL") ..
-		" | MAGIC " .. enabled( meta.magic ) .. " | HEADSHOTS " .. enabled( meta.headshots ) ..
-		" | ASSIST " .. enabled( meta.assist ) .. " | CHEATS " .. enabled( meta.cheats )
+	return "Select to view this checkpoint's equipment and settings."
+end
+
+local perkArt = {
+	specialty_armorvest = { "specialty_juggernaut_zombies", "JUGGERNOG" },
+	specialty_deadshot = { "specialty_ads_zombies", "DEADSHOT" },
+	specialty_fastreload = { "specialty_fastreload_zombies", "SPEED COLA" },
+	specialty_longersprint = { "specialty_marathon_zombies", "STAMIN-UP" },
+	specialty_quickrevive = { "specialty_quickrevive_zombies", "QUICK REVIVE" },
+	specialty_rof = { "specialty_doubletap_zombies", "DOUBLE TAP" },
+	specialty_additionalprimaryweapon = { "specialty_additionalprimaryweapon_zombies", "MULE KICK" },
+	specialty_finalstand = { "specialty_tombstone_zombies", "TOMBSTONE" },
+	specialty_grenadepulldeath = { nil, "ELECTRIC CHERRY" }
+}
+
+local function addText( parent, value, left, right, top, bottom, orange )
+	local label = LUI.UIText.new()
+	label:setLeftRight( true, false, left, right )
+	label:setTopBottom( true, false, top, bottom )
+	label:setFont( CoD.fonts.Condensed )
+	label:setAlignment( LUI.Alignment.Left )
+	if orange then label:setRGB( CoD.BOIIOrange.r, CoD.BOIIOrange.g, CoD.BOIIOrange.b ) end
+	label:setText( value )
+	parent:addElement( label )
+	return label
+end
+
+local function addImage( parent, material, left, top, width, height )
+	if not material or material == "" then return false end
+	local ok, registered = pcall( RegisterMaterial, material )
+	if not ok or not registered then return false end
+	local icon = LUI.UIImage.new()
+	icon:setLeftRight( true, false, left, left + width )
+	icon:setTopBottom( true, false, top, top + height )
+	icon:setImage( registered )
+	parent:addElement( icon )
+	return true
+end
+
+local function weaponName( name )
+	local clean = string.gsub( name, "_zm.*$", "" )
+	clean = string.gsub( clean, "_", " " )
+	return string.upper( clean )
+end
+
+local function weaponArt( name )
+	local ok, image = pcall( function ()
+		local index = UIExpression.GetItemIndex( nil, name )
+		if not index or index <= 0 then return nil end
+		return UIExpression.GetItemImage( nil, index )
+	end )
+	if ok and type( image ) == "string" and image ~= "" then return image end
+	return nil
+end
+
+local function addPreview( menu, list )
+	local panel = LUI.UIElement.new()
+	panel:setLeftRight( true, false, 585, 1050 )
+	panel:setTopBottom( true, false, 145, 595 )
+	menu:addElement( panel )
+	local backdrop = LUI.UIImage.new()
+	backdrop:setLeftRight( true, true, 0, 0 )
+	backdrop:setTopBottom( true, true, 0, 0 )
+	backdrop:setRGB( 0.04, 0.04, 0.04 )
+	backdrop:setAlpha( 0.72 )
+	panel:addElement( backdrop )
+	local accent = LUI.UIImage.new()
+	accent:setLeftRight( true, true, 0, 0 )
+	accent:setTopBottom( true, false, 0, 3 )
+	accent:setRGB( CoD.BOIIOrange.r, CoD.BOIIOrange.g, CoD.BOIIOrange.b )
+	panel:addElement( accent )
+	local content
+	local function show( slot, meta )
+		if content then content:close() end
+		content = LUI.UIElement.new()
+		content:setLeftRight( true, true, 0, 0 )
+		content:setTopBottom( true, true, 0, 0 )
+		panel:addElement( content )
+		addText( content, "SLOT " .. slot .. "  /  ROUND " .. (meta.has and meta.round or "-"), 18, 445, 16, 43, true )
+		if not meta.has then
+			addText( content, "EMPTY SLOT", 18, 445, 64, 91 )
+			return
+		end
+		if not meta.preview then
+			addText( content, "Run details will appear after this save is", 18, 445, 67, 92 )
+			addText( content, "loaded once with the new version.", 18, 445, 95, 120 )
+			return
+		end
+		addText( content, "POINTS", 18, 180, 61, 86, true )
+		addText( content, tostring( meta.score ), 180, 445, 58, 88 )
+		addText( content, "WEAPONS", 18, 445, 101, 126, true )
+		if #meta.weapons == 0 then addText( content, "NONE", 18, 445, 137, 162 ) end
+		for i, name in ipairs( meta.weapons ) do
+			local top = 132 + (i - 1) * 43
+			local image = weaponArt( name )
+			local hasArt = addImage( content, image, 18, top, 96, 35 )
+			addText( content, weaponName( name ), hasArt and 125 or 18, 445, top + 5, top + 31 )
+		end
+		addText( content, "PERKS", 18, 445, 310, 337, true )
+		if #meta.perks == 0 then addText( content, "NONE", 18, 445, 351, 377 ) end
+		for i, name in ipairs( meta.perks ) do
+			local col = (i - 1) % 4
+			local row = math.floor( (i - 1) / 4 )
+			local left = 18 + col * 110
+			local top = 347 + row * 32
+			local art = perkArt[name]
+			if art and art[1] then addImage( content, art[1], left, top, 25, 25 ) end
+			local label = art and art[2] or string.upper( string.gsub( name, "specialty_", "" ) )
+			addText( content, label, left + 28, left + 108, top + 2, top + 25 )
+		end
+	end
+	return show
 end
 
 local function pageBase( name, title, message )
@@ -53,16 +175,50 @@ local function pageBase( name, title, message )
 	return menu, status, list
 end
 
+local function attachSlotDetails( menu, list )
+	local showPreview = addPreview( menu, list )
+	local settings = LUI.UIElement.new()
+	settings:setLeftRight( true, false, 0, 565 )
+	settings:setTopBottom( true, false, 430, 560 )
+	menu:addElement( settings )
+	local content
+	local function show( slot, meta )
+		showPreview( slot, meta )
+		if content then content:close() end
+		content = LUI.UIElement.new()
+		content:setLeftRight( true, true, 0, 0 )
+		content:setTopBottom( true, true, 0, 0 )
+		settings:addElement( content )
+		if not meta.has then return end
+		addText( content, "SAVED SETTINGS", 0, 545, 0, 27, true )
+		if not meta.settings then
+			addText( content, "Older save: current lobby settings apply.", 0, 545, 34, 62 )
+			return
+		end
+		local enabled = function ( value ) return value == 1 and "ON" or "OFF" end
+		addText( content, "DIFFICULTY " .. (meta.difficulty == 0 and "EASY" or "ORIGINAL") ..
+			"    MAGIC " .. enabled( meta.magic ) .. "    HEADSHOTS " .. enabled( meta.headshots ), 0, 555, 34, 60 )
+		addText( content, "ASSIST " .. enabled( meta.assist ) .. "    CHEATS " .. enabled( meta.cheats ), 0, 555, 66, 92 )
+	end
+	return function ( button, slot, meta )
+		local watcher = LUI.UIElement.new()
+		button:addElement( watcher )
+		watcher:registerEventHandler( "gain_focus", function () show( slot, meta ) end )
+	end
+end
+
 LUI.createMenu.ZMCheckpointSoloSave = function ( controller )
 	local menu, status, list = pageBase( "ZMCheckpointSoloSave", "SAVE SOLO CHECKPOINT",
 		"Choose a slot. Select an occupied slot twice to replace it." )
 	local map = C.CurrentMap( true )
 	local pending = 0
+	local watch = attachSlotDetails( menu, list )
 	for slot = 1, 4 do
 		local chosenSlot = slot
 		local meta = C.SoloSlotMeta( map, chosenSlot )
 		local title = "SLOT " .. chosenSlot .. (meta.has and (" - ROUND " .. meta.round) or " - EMPTY")
 		local button = list:addButton( title, slotHint( meta ) )
+		watch( button, chosenSlot, meta )
 		button:setActionEventName( "zmcp_save_slot_" .. chosenSlot )
 		menu:registerEventHandler( "zmcp_save_slot_" .. chosenSlot, function ()
 			if meta.has and pending ~= chosenSlot then
@@ -81,11 +237,13 @@ LUI.createMenu.ZMCheckpointSoloResume = function ( controller )
 	local menu, status, list = pageBase( "ZMCheckpointSoloResume", "SOLO RESUME",
 		"Choose a checkpoint for the selected map." )
 	local map = C.CurrentMap( false )
+	local watch = attachSlotDetails( menu, list )
 	for slot = 1, 4 do
 		local chosenSlot = slot
 		local meta = C.SoloSlotMeta( map, chosenSlot )
 		local title = "SLOT " .. chosenSlot .. (meta.has and (" - ROUND " .. meta.round) or " - EMPTY")
 		local button = list:addButton( title, slotHint( meta ) )
+		watch( button, chosenSlot, meta )
 		if meta.has then
 			button:setActionEventName( "zmcp_resume_slot_" .. chosenSlot )
 			menu:registerEventHandler( "zmcp_resume_slot_" .. chosenSlot, function ( owner, event )

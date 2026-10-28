@@ -4,6 +4,33 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.16-alpha — 2026-10-28
+
+### 2026-10-28 — Show solo slot equipment and points
+
+- Request: distinguish saves at the same round by showing points, weapons,
+  perks, and compact game-style artwork on the Solo Save and Solo Resume pages.
+- Change or investigation: validated solo checkpoint files already contain the
+  score, primary weapon records, and perk records. The server now publishes
+  bounded, token-checked preview metadata to per-map, per-slot archived dvars
+  whenever it reads or saves a checkpoint. The disk format is unchanged.
+  Each solo slot page shows a right-side details panel for the selected slot:
+  points, weapons with BO2 item art when available, and perks using stock
+  zombie shaders where a verified shader exists. Names remain visible as
+  fallback. Saved settings have their own compact section below the slot list
+  instead of the long hint that wrapped under the list.
+- Files affected: zm_checkpoint_slots.gsc, zmcheckpointsolo.lua, mod.json,
+  README.md, PROJECT_HANDOFF.md, CHANGELOG.md and release package.
+- Validation: Build.ps1 succeeded; all six generated T6 map scripts and the
+  modified Lua parsed. The existing solo Resume suite passed. Package archive
+  and publication checks are recorded in PROJECT_HANDOFF.md.
+- In-game result: Not yet tested. The owner screenshot confirms the previous
+  0.4.15 slot screen displayed only round/settings and a wrapping hint.
+- Remaining risk/next step: install with the in-game updater, unload/reload,
+  then check slot focus, points, weapon images/names, and perk icons in both
+  solo pages. Existing saves may need their map loaded once for preview dvars
+  to be republished. Co-op checkpoints are unchanged.
+
 ## 0.4.15-alpha — 2026-10-28
 
 ### 2026-10-28 — Wait for the current update check and contain notes hints

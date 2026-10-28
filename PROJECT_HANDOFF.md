@@ -1255,3 +1255,36 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   `UPDATE_AVAILABLE|0.4.14-alpha|0.4.15-alpha`. Installed metadata remains
   0.4.14-alpha and all four task-start checkpoint hashes match. Owner installs
   via updater, then unloads/reloads the mod; no Plutonium restart is required.
+
+## 25. 0.4.16-alpha work — 2026-10-28
+
+- **Verified in-game (owner screenshot):** the prior Solo Resume page lists
+  four slots by round. The focused slot's long settings hint wraps under the
+  list; points, weapons, and perks are not shown there.
+- **Cause:** checkpoint data already stores `PLAYER` score, `WEAPON` records,
+  and `PERK` records, but `zmcp_solo_publish` exposed only round and lobby
+  settings to the UI. No save-format change is needed.
+- **Validated statically:** `zmcp_solo_publish` now exports bounded weapon and
+  perk lists plus points to archived per-map/slot dvars on read/save; values
+  pass `zmcp_coop_token` before being sent to `cmdexec`. The preview-ready flag
+  is set last and cleared when a checkpoint is removed. Solo Save and Solo
+  Resume share a focus-driven right-side panel. Known perks use stock zombie
+  shader material names from `_zm_perks.gsc`; weapons attempt the game's
+  `GetItemIndex`/`GetItemImage` lookup, with readable text fallback. The long
+  settings hint is replaced by a compact settings section under the slot
+  list. Empty slots and saves without published preview have clear fallback
+  text. Existing saves remain valid and gain metadata after their map is
+  loaded once by this version; reading does not rewrite their file.
+- **Validation:** Build.ps1 succeeded, all six generated T6 map scripts parsed,
+  modified Lua parsed, and solo Resume tests passed. ZIP and GitHub release
+  validation is recorded below after publication. No local install was run.
+- **In-game result:** new preview not yet tested. Weapon item art availability
+  depends on BO2's item table for each saved weapon; the name is always shown.
+- **Installed state at task start:** local `mod.json` is 0.4.15-alpha. Existing
+  save SHA-256: Buried `AAC274E2C3F938643DACE098C80771A281BAD8E90B43FFE2C9AF3D3B5BCA5B82`,
+  Nuketown slot 2 `66613918FBEEF4A8709695573B1349A7E0CEBF6FB6DF5E3D6C451FF736C4DB25`,
+  Nuketown slot 1 `03A9F01EABF1643D84A1E04F9B84B20C21B608D1BD573FBBD5FEAD5A05E1C775`,
+  TranZit `C65C81B25731D981518D321DB25C1D817F58E88320BC0CBA5A0155D578991AC4`.
+- **Next:** owner installs through the updater, unloads/reloads the mod, and
+  checks both solo pages on a map with checkpoints. Confirm equipment art and
+  that switching focus changes every detail. Co-op state is unaffected.

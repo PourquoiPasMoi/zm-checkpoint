@@ -2,7 +2,7 @@
 
 Experimental save and resume checkpoints for Call of Duty: Black Ops II Zombies on Plutonium T6.
 
-The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.15-alpha). Download `zm_checkpoint-0.4.15-alpha.zip` and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
+The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.16-alpha). Download `zm_checkpoint-0.4.16-alpha.zip` and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
 
 The source, build scripts, test guidance, and project history are in this repository. The user-facing setup and feature details live in [README.md](README.md); contributors should read [AGENTS.md](AGENTS.md) and [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md) first.
 
@@ -14,6 +14,14 @@ original per-map checkpoint, so existing solo saves remain available. Slots
 2–4 are separate checkpoints for the same map. In the Custom Games lobby,
 choose **SOLO RESUME** to select a saved slot. A successful resume consumes
 only that slot; the other slots remain available.
+
+The Solo Save and Solo Resume pages show a selected slot's points, weapons,
+perks, and match settings. Known perks use the game's own icons; weapon icons
+appear when BO2 provides one for the saved weapon. A name remains visible when
+an icon is unavailable. Older saves gain this preview after the new version
+loads their map once and reads the checkpoint; the checkpoint file is not
+changed by that read. The new slot preview is **validated statically** and
+still needs an in-game test.
 
 New solo checkpoints store the lobby's difficulty, Magic, Headshots Only,
 Target Assist, and Cheats settings. Resume applies those settings before
