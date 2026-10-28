@@ -33,12 +33,21 @@ semantics.
   The 20-entry ZIP includes all six map scripts and IWD, with no saves/caches:
   100,019 bytes, SHA-256
   `4E1A295CE99B1BE050A603F4A0DBCB98A65544A57EFF6312F66E946326A73E43`.
-  Local install and publication results are recorded after completion.
+  GitHub confirms the matching size/digest. Install.ps1 completed locally;
+  installed IWD matches dist SHA-256
+  `8374DC3B9DDE29C1EF87C78D6E4C5590B2D28B721255ED3E10F33C5E6CF6A3B2`.
+  The background bridge was restarted (new PID 33372). A fresh direct check
+  now reports `UP_TO_DATE|0.4.17-alpha`. All four checkpoint hashes still
+  match the task-start values.
 - In-game result: the 0.4.17 fix is not yet tested in-game. The owner must
   unload and reload the mod; Plutonium need not restart.
 - Remaining risk/next step: open the updater after reloading. It should show
   0.4.17 current, then detect the next release without waiting for a timeout.
   If the bridge does not reply, inspect its running task and console log.
+- Publication: source commit `c3419f3` was pushed before
+  [GitHub release 0.4.17-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.17-alpha)
+  and its matching ZIP asset. Local 0.4.17 is installed by explicit owner
+  request; other mod folders were not updated.
 
 ## 0.4.16-alpha — 2026-10-28
 

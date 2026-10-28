@@ -1336,3 +1336,16 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   automatically.
 - **Next:** open CHECK FOR UPDATES after reloading; confirm 0.4.17 is current.
   When a later release exists, confirm detection without repeated refreshes.
+- **Published and installed:** source commit `c3419f3` was pushed before
+  `https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.17-alpha`.
+  GitHub asset size is 100,019 bytes and digest matches the ZIP above.
+  `tools/Install.ps1` installed the standalone mod and six shared raw scripts
+  locally at the owner's explicit request, without touching other mod
+  folders. Installed `mod.json` is 0.4.17-alpha; installed IWD and dist IWD
+  SHA-256 both equal
+  `8374DC3B9DDE29C1EF87C78D6E4C5590B2D28B721255ED3E10F33C5E6CF6A3B2`.
+  The old watcher PID 25252 was stopped and the scheduled bridge started with
+  PID 33372; Plutonium was not closed or restarted. A direct update check
+  reports `UP_TO_DATE|0.4.17-alpha`. All four checkpoint hashes from the task
+  start remain identical. The game may still have old Lua in memory until the
+  owner unloads and reloads ZM Checkpoint.
