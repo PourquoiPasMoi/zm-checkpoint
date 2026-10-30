@@ -1,6 +1,6 @@
 -- Run with .tools/lua-validator/node_modules/.bin/fengari tools/Test-CoopLobby.lua
 -- Exercises the actual shipped Lua predicates and launch action with engine mocks.
-local d, roster, localId, gameHost, partyHost, launching, count, commands
+local d, roster, localId, gameHost, partyHost, launching, count, commands, gameSettings
 CoD = { ZMCheckpointMenu = {}, isPartyHost = function () return partyHost end }
 LUI = { createMenu = {} }
 local C = CoD.ZMCheckpointMenu
@@ -11,7 +11,8 @@ Engine = {
  GetXUIDStringForController = function () return localId end,
  GetPlayersInLobby = function () return roster end,
  PartyGetPlayerCount = function () return count end,
- GetGametypeSetting = function ( key ) return key == "magic" and 1 or 0 end,
+ GetGametypeSetting = function ( key ) return gameSettings[key] end,
+ SetGametypeSetting = function ( key, value ) gameSettings[key] = value end,
  PartyHostIsReadyToStart = function () return launching end,
  Exec = function (_, command) commands[#commands + 1] = command end
 }
@@ -23,6 +24,7 @@ local function reset()
  for key,value in pairs(values) do d["zmcp_coop_zm_nuked_"..key]=value end
  roster = { {xuid="abcdef1234567890",gamertag="Host"}, {xuid="123456789abcdef0",gamertag="Guest"} }
  localId="abcdef1234567890"; gameHost=1; partyHost=true; launching=false; count=2; commands={}
+ gameSettings={zmDifficulty=0,magic=1,headshotsonly=0}
 end
 local total=0
 local function check(name, expected, change)
@@ -63,6 +65,24 @@ check("wrong map variant",false,function() d.ui_zm_mapstartlocation="town" end)
 check("wrong mode",false,function() d.ui_gametype="zstandard" end)
 check("wrong mod",false,function() d.fs_game="mods/dlc5" end)
 check("changed settings",false,function() d.zmcp_coop_zm_nuked_settings="1/1/0" end)
+reset()
+gameSettings.magic=0
+local ready,message,details,canRestore=C.SafeCoopStatus(0)
+assert(not ready and canRestore and message=="Restore saved game settings to unlock Resume.")
+assert(C.ApplyCoopSettings(0))
+assert(C.SafeCoopStatus(0))
+assert(gameSettings.magic==1)
+reset()
+-- Exact mode, location and IDs from the host checkpoint inspected on 2026-10-30.
+d.ui_gametype="zstandard"; d.ui_zm_gamemodegroup="zsurvival"
+d.zmcp_coop_zm_nuked_mode="zstandard"; d.zmcp_coop_zm_nuked_group="zsurvival"
+d.zmcp_coop_zm_nuked_host="1000000006cf5bb"
+d.zmcp_coop_zm_nuked_ids="1000000006cf5bb/1000000006cff03"
+localId="1000000006cf5bb"
+roster={{xuid=localId,gamertag="Sharelocked"},{xuid="1000000006cff03",gamertag="wathson"}}
+gameSettings.magic=0
+assert(select(4,C.SafeCoopStatus(0)))
+assert(C.ApplyCoopSettings(0) and C.SafeCoopStatus(0))
 check("consumed checkpoint",false,function() d.zmcp_coop_zm_nuked_has="0" end)
 check("duplicate saved roster",false,function() d.zmcp_coop_zm_nuked_ids="aa/aa" end)
 check("numeric ID precision refused",false,function() roster[2].xuid=12345 end)

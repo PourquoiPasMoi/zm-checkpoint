@@ -73,3 +73,17 @@ foreach ($folder in @($main, (Join-Path $PlutoniumRoot 'mods\zm_checkpoint'))) {
  [IO.File]::WriteAllText($temp,$content,[Text.Encoding]::ASCII)
  Move-Item -LiteralPath $temp -Destination $path -Force
 }
+# The companion scripts were just replaced on disk. Restart only their
+# background watcher so the next request uses the new code; never touch the game.
+if ($State -eq 'installed') {
+ try {
+  $watcherPath = Join-Path $PlutoniumRoot 'mods\zm_checkpoint\Watch-ZMCheckpointUpdates.ps1'
+  Get-CimInstance Win32_Process -Filter "Name='powershell.exe'" |
+   Where-Object { $_.ProcessId -ne $PID -and $_.CommandLine -and $_.CommandLine.Contains($watcherPath) } |
+   ForEach-Object { Stop-Process -Id $_.ProcessId -ErrorAction Stop }
+  Start-ScheduledTask -TaskName 'ZM Checkpoint Update Bridge' -ErrorAction Stop
+ } catch {
+  # The update has already succeeded; a bridge restart failure must not
+  # replace the installed result with an error. Manual task start still works.
+ }
+}

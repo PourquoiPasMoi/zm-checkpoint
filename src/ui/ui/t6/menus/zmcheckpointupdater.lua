@@ -284,10 +284,10 @@ LUI.createMenu.ZMCheckpointUpdaterInfo = function ( controller )
 		if responseId ~= menu.zmcpRequestId then
 			menu.zmcpWaitTicks = menu.zmcpWaitTicks + 1
 			if menu.zmcpWaitTicks >= 30 then
-				menu.zmcpInstallRequested = false
-				showBack()
-				status:setText( "Update check did not finish." )
-				body:setText( "The update companion did not reply. Press R to retry." )
+				-- A queued GitHub request can outlive 45 seconds. Keep its ID and
+				-- action active; a late reply is still the authoritative result.
+				status:setText( menu.zmcpInstallRequested and "Still installing update..." or "Still checking for updates..." )
+				body:setText( menu.zmcpInstallRequested and "The download is still running; please wait." or "The connection is slow. Press R to start a new check." )
 			else
 				status:setText( menu.zmcpInstallRequested and "Starting update..." or "Checking for updates..." )
 				body:setText( "Waiting for the update companion..." )
@@ -370,9 +370,10 @@ LUI.createMenu.ZMCheckpointUpdaterInfo = function ( controller )
 			body:setText( "Choose UNLOAD, then reload the mod from Mods." )
 		elseif state == "error" then
 			local detail = UIExpression.DvarString( nil, "zmcp_update_error" ) or ""
+			local failedInstall = menu.zmcpInstallRequested
 			menu.zmcpInstallRequested = false
 			if menu.zmcpUpdateInstalled then showInstalled() else showBack() end
-			status:setText( "Update check failed." )
+			status:setText( failedInstall and "Update installation failed." or "Update check failed." )
 			body:setText( detail ~= "" and detail or "Check your connection and try again." )
 		end
 	end )
