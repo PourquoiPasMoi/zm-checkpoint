@@ -32,6 +32,15 @@ LUI.createMenu.ZMCheckpointUpdaterInfo = function ( controller )
 	menu.zmcpWaitTicks = 0
 	menu:addLargePopupBackground()
 	menu:addTitle( "ZM CHECKPOINT UPDATER" )
+	menu:registerEventHandler( "button_prompt_back", function ( owner, event )
+		local popup = owner:openPopup( "ZMCheckpointLeaveConfirm", event.controller or controller )
+		popup.zmcpUpdater = owner
+		if owner.zmcpInstallRequested then
+			popup.zmcpMessage:setText( "The update will continue in the background." )
+		else
+			popup.zmcpMessage:setText( "Leave the update checker?" )
+		end
+	end )
 	menu:addBackButton()
 	-- Match the stock Mods menu's U Unload and R Refresh prompt bindings.
 	local unloadPrompt = CoD.ButtonPrompt.new( "alt1", Engine.Localize( "MENU_UNLOAD" ), menu,
@@ -379,4 +388,42 @@ LUI.createMenu.ZMCheckpointUpdaterInfo = function ( controller )
 	end )
 	menu:addElement( LUI.UITimer.new( 1500, "zmcp_update_refresh", false ) )
 	return menu
+end
+
+LUI.createMenu.ZMCheckpointLeaveConfirm = function ( controller )
+	local popup = CoD.Menu.NewSmallPopup( "ZMCheckpointLeaveConfirm" )
+	popup:setOwner( controller )
+	popup:addSelectButton()
+	popup:addBackButton()
+	local title = LUI.UIText.new()
+	title:setLeftRight( true, true, 0, 0 )
+	title:setTopBottom( true, false, 5, 5 + CoD.textSize.Big )
+	title:setFont( CoD.fonts.Big )
+	title:setAlignment( LUI.Alignment.Left )
+	title:setText( "LEAVE UPDATER?" )
+	popup:addElement( title )
+	local message = LUI.UIText.new()
+	message:setLeftRight( true, true, 0, 0 )
+	message:setTopBottom( true, false, 12 + CoD.textSize.Big, 12 + CoD.textSize.Big + CoD.textSize.Default )
+	message:setFont( CoD.fonts.Default )
+	message:setAlignment( LUI.Alignment.Left )
+	message:setText( "Leave the update checker?" )
+	popup:addElement( message )
+	popup.zmcpMessage = message
+	local buttons = CoD.ButtonList.new( { leftAnchor = true, rightAnchor = true,
+		left = 0, right = 0, topAnchor = false, bottomAnchor = true,
+		top = -CoD.ButtonPrompt.Height - CoD.CoD9Button.Height * 3 + 10, bottom = 0 } )
+	popup:addElement( buttons )
+	local leave = buttons:addButton( "YES, LEAVE" )
+	local stay = buttons:addButton( "NO, STAY" )
+	leave:setActionEventName( "zmcp_leave_yes" )
+	stay:setActionEventName( "zmcp_leave_no" )
+	popup:registerEventHandler( "zmcp_leave_yes", function ( owner, event )
+		local updater = owner.zmcpUpdater
+		CoD.Menu.ButtonPromptBack( owner, event )
+		if updater then updater:goBack( event.controller ) end
+	end )
+	popup:registerEventHandler( "zmcp_leave_no", CoD.Menu.ButtonPromptBack )
+	stay:processEvent( { name = "gain_focus" } )
+	return popup
 end

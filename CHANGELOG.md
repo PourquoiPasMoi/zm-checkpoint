@@ -4,6 +4,17 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.21-alpha — 2026-10-30
+
+### 2026-10-30 — Confirm Esc before leaving the updater
+
+- Request: prevent an accidental Esc press from immediately closing the updater during installation.
+- Change or investigation: the updater's back-button event now opens a small in-game confirmation. **NO, STAY** has initial focus; only **YES, LEAVE** closes the updater. The popup states when an active installation will continue in the background. The updater's explicit BACK and NOT NOW actions retain their normal behavior.
+- Files affected: `src/ui/ui/t6/menus/zmcheckpointupdater.lua`, `mod.json`, `README.md`, `CHANGELOG.md`, `PROJECT_HANDOFF.md`.
+- Validation: modified Lua parsed; `tools/Build.ps1` passed; all six generated T6 GSC scripts parsed. The 20-entry ZIP contains the confirmation Lua, `mod.ff`, six map scripts, and no saves (SHA-256 `981779C7888B936841D4A5AF0B4DA7FC587F3021B6E6F7BE4976736C8A2D39B7`). All eight installed checkpoint hashes matched task start; the local mod stayed at 0.4.20-alpha.
+- In-game result: Not yet tested. Installed metadata at task start reports 0.4.20-alpha, confirming the previous release reached the local mod through the owner's updater; the new confirmation has not been exercised in-game.
+- Remaining risk/next step: test Esc during an active install and after it finishes, check that No or Esc on the confirmation returns to the updater, and verify Yes returns to the Zombies menu. Publish 0.4.21 to GitHub without a local install.
+
 ## 0.4.20-alpha — 2026-10-30
 
 ### 2026-10-30 — Show real perk and weapon art in save slots

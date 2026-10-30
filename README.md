@@ -2,7 +2,7 @@
 
 Experimental save and resume checkpoints for Call of Duty: Black Ops II Zombies on Plutonium T6.
 
-The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.20-alpha). Download `zm_checkpoint-0.4.20-alpha.zip` and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
+The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.21-alpha). Download `zm_checkpoint-0.4.21-alpha.zip` and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
 
 The source, build scripts, test guidance, and project history are in this repository. The user-facing setup and feature details live in [README.md](README.md); contributors should read [AGENTS.md](AGENTS.md) and [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md) first.
 
@@ -42,6 +42,9 @@ On Windows, **CHECK FOR UPDATES** sends a request to a background companion. It
 checks GitHub and reports the result in the game. When an update is available,
 choose **INSTALL UPDATE** or **NOT NOW**. The companion downloads and installs
 package files into `mods/zm_checkpoint` and leaves `scriptdata` saves intact.
+Pressing **Esc** on the updater page now asks before leaving. **NO, STAY** is
+selected by default. If a download or installation is already running, leaving
+the page does not stop it; let it finish, then unload and reload the mod.
 When already current, **INSTALL UPDATE** and **NOT NOW** are greyed out and
 **BACK** is selected. After an update finishes installing from this page, an
 **UNLOAD** row appears between NOT NOW and BACK, and the bottom-right **U Unload**

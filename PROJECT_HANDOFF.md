@@ -12,7 +12,7 @@ failure, installation, or test so the project retains its lessons.
 
 - Project: **ZM Checkpoint** for Call of Duty: Black Ops II Zombies on Plutonium T6.
 - Workspace: `C:\Users\User\Documents\Projects\Bo2 Zombie Plutonium`
-- Current source/package: **0.4.20-alpha**; locally installed metadata: **0.4.19-alpha**. GitHub publication status is recorded in section 29. No project installer was run for 0.4.20.
+- Current source/package: **0.4.21-alpha**; locally installed metadata: **0.4.20-alpha**. GitHub publication status is recorded in section 30. No project installer was run for 0.4.21.
 - Current date of this handoff: **2026-10-30**
 - The project is a Git repository with public origin `https://github.com/PourquoiPasMoi/zm-checkpoint`.
 - The standalone mod and companion packages are installed locally.
@@ -1297,6 +1297,13 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   0.4.15-alpha. All four task-start checkpoint hashes listed above still
   match after publication. Unload/reload the mod after using the updater;
   Plutonium itself does not need restarting.
+
+## 30. 0.4.21-alpha updater exit confirmation — 2026-10-30
+
+- **Verified installed metadata:** the owner updated the local game to 0.4.20-alpha through the updater between sessions; `mods/zm_checkpoint/mod.json` reports that version and its `mod.ff` is present. This does not establish that the new slot art renders in-game.
+- **Change:** the updater page's `button_prompt_back` action now opens a stock-style small confirmation popup. NO, STAY is the initial choice; Yes closes the confirmation and updater. During an active installation, the popup says the operation continues in the background. Explicit BACK and NOT NOW still leave directly because the request concerns accidental Esc.
+- **Validated statically:** modified Lua parsed; `tools/Build.ps1` passed; six generated T6 GSC scripts parsed. The 20-entry ZIP includes the new confirmation Lua, `mod.ff`, six map scripts, and no saves (SHA-256 `981779C7888B936841D4A5AF0B4DA7FC587F3021B6E6F7BE4976736C8A2D39B7`). All eight installed checkpoint hashes matched task start, and installed metadata remains 0.4.20-alpha. **In-game result: not yet tested.** The owner installs via the updater; do not run Install.ps1 for 0.4.21. Unload/reload the mod after updating; Plutonium restart is not required.
+- **Next:** test Esc during update checking, downloading, and after installation; verify default No and confirmation Esc stay on the updater, and Yes returns to Zombies. Confirm the 0.4.20 slot art visually. Retest co-op Resume separately.
 
 ## 29. 0.4.20-alpha real front-end slot images — 2026-10-30
 
