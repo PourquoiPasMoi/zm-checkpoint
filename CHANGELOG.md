@@ -13,7 +13,8 @@ semantics.
 - Files affected: `src/ui/ui/t6/menus/zmcheckpointupdater.lua`, `mod.json`, `README.md`, `CHANGELOG.md`, `PROJECT_HANDOFF.md`.
 - Validation: modified Lua parsed; `tools/Build.ps1` passed; all six generated T6 GSC scripts parsed. The 20-entry ZIP contains the confirmation Lua, `mod.ff`, six map scripts, and no saves (SHA-256 `981779C7888B936841D4A5AF0B4DA7FC587F3021B6E6F7BE4976736C8A2D39B7`). All eight installed checkpoint hashes matched task start; the local mod stayed at 0.4.20-alpha.
 - In-game result: Not yet tested. Installed metadata at task start reports 0.4.20-alpha, confirming the previous release reached the local mod through the owner's updater; the new confirmation has not been exercised in-game.
-- Remaining risk/next step: test Esc during an active install and after it finishes, check that No or Esc on the confirmation returns to the updater, and verify Yes returns to the Zombies menu. Publish 0.4.21 to GitHub without a local install.
+- Remaining risk/next step: test Esc during an active install and after it finishes, check that No or Esc on the confirmation returns to the updater, and verify Yes returns to the Zombies menu. The owner installs this release through the updater.
+- Publication: source commit `5287399db0dea4c8c20328b8d9c192bc6eb28078` was pushed before [GitHub release 0.4.21-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.21-alpha). The 115,726-byte asset digest matches the local ZIP. A read-only check on installed 0.4.20-alpha returned `UPDATE_AVAILABLE|0.4.20-alpha|0.4.21-alpha`. No local install was run.
 
 ## 0.4.20-alpha — 2026-10-30
 
