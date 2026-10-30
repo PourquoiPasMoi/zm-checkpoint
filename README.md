@@ -2,7 +2,7 @@
 
 Experimental save and resume checkpoints for Call of Duty: Black Ops II Zombies on Plutonium T6.
 
-The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.18-alpha). Download `zm_checkpoint-0.4.18-alpha.zip` and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
+The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.19-alpha). Download `zm_checkpoint-0.4.19-alpha.zip` and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
 
 The source, build scripts, test guidance, and project history are in this repository. The user-facing setup and feature details live in [README.md](README.md); contributors should read [AGENTS.md](AGENTS.md) and [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md) first.
 
@@ -60,8 +60,8 @@ allowed to finish before another check or install starts.
 Each update check has a request ID. The page stays on **Checking for updates**
 until the background companion replies to that exact request. An old status
 file cannot report **Latest version installed** for a new request. If the
-companion does not reply within about 45 seconds, the page shows a retry
-message rather than claiming there is no update. Release checks request fresh
+companion is slow, the page continues waiting for that request instead of
+showing a premature failure. **R Refresh** can retry a check. Release checks request fresh
 GitHub data to reduce stale responses.
 Version 0.4.17-alpha fixes request IDs that T6 printed in scientific notation,
 which prevented the companion from matching them and left the page waiting.
@@ -78,6 +78,10 @@ Guests will see no team checkpoint on their own PC; the original host must
 open CO-OP RESUME. Lobby account IDs may appear in decimal while saved IDs
 appear in hexadecimal; the menu compares both without rounding the 64-bit ID.
 This comparison still needs a two-PC in-game test.
+If the original host and exact team are shown but Resume remains locked by
+game settings, choose **RESTORE SAVED SETTINGS** on CO-OP RESUME. It applies
+the saved difficulty, Magic, and Headshots Only values before rechecking the
+lobby. A different mode, start location, or loaded mod is identified by name.
 The expanded Custom Games menu places the map preview on the lower right so
 the selected option's description remains visible.
 The stock match-start countdown now appears above that preview, clear of the
@@ -89,7 +93,7 @@ checks do not complete, confirm that `ZM Checkpoint Update Bridge` is running
 in Windows Task Scheduler and inspect `storage/t6/main/console_zm.log` for the
 request marker.
 
-The test PC is intentionally left on its currently installed version when new
+The test PC is normally left on its currently installed version when new
 releases are published. The owner runs the updater to install each release.
-For the 0.4.17-alpha repair, the owner explicitly requested a local install.
+The owner explicitly requested a local 0.4.18-alpha install for the 2026-10-30 investigation.
 After installation, unload and reload the mod to apply the updated menu.

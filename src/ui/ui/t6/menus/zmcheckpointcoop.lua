@@ -61,6 +61,21 @@ C.CoopValue = function ( value )
 	return value
 end
 
+C.ApplyCoopSettings = function ( controller )
+	local map = C.CurrentMap( false )
+	local saved = C.DvarString( "zmcp_coop_" .. map .. "_settings" )
+	local difficulty, magic, headshots = string.match( saved, "^(%d+)/(%d+)/(%d+)$" )
+	if not difficulty or not magic or not headshots then return false end
+	difficulty, magic, headshots = tonumber( difficulty ), tonumber( magic ), tonumber( headshots )
+	if difficulty > 2 or magic > 1 or headshots > 1 then return false end
+	Engine.SetGametypeSetting( "zmDifficulty", difficulty )
+	Engine.SetGametypeSetting( "magic", magic )
+	Engine.SetGametypeSetting( "headshotsonly", headshots )
+	return tostring( Engine.GetGametypeSetting( "zmDifficulty" ) ) .. "/" ..
+		tostring( Engine.GetGametypeSetting( "magic" ) ) .. "/" ..
+		tostring( Engine.GetGametypeSetting( "headshotsonly" ) ) == saved
+end
+
 C.CoopStatus = function ( controller )
 	local map = C.CurrentMap( false )
 	local prefix = "zmcp_coop_" .. map .. "_"
@@ -100,23 +115,32 @@ C.CoopStatus = function ( controller )
 	end
 	if not matches then return false, "Reconnect the exact saved team; remove extra players.", details end
 	local settings = tostring( Engine.GetGametypeSetting( "zmDifficulty" ) ) .. "/" .. tostring( Engine.GetGametypeSetting( "magic" ) ) .. "/" .. tostring( Engine.GetGametypeSetting( "headshotsonly" ) )
-	if dvar( "mode" ) ~= C.DvarString( "ui_gametype" ) or
-		dvar( "group" ) ~= C.CoopValue( C.DvarString( "ui_zm_gamemodegroup" ) ) or
-		dvar( "location" ) ~= C.CoopValue( C.DvarString( "ui_zm_mapstartlocation" ) ) or
-		dvar( "mod" ) ~= C.CoopValue( C.DvarString( "fs_game" ) ) or dvar( "settings" ) ~= settings then
-		return false, "Select the saved mode, location, mod and game settings.", details
+	if dvar( "mode" ) ~= C.DvarString( "ui_gametype" ) then
+		return false, "Select the saved mode: " .. dvar( "mode" ) .. ".", details
+	end
+	if dvar( "group" ) ~= C.CoopValue( C.DvarString( "ui_zm_gamemodegroup" ) ) then
+		return false, "Select the saved mode group: " .. dvar( "group" ) .. ".", details
+	end
+	if dvar( "location" ) ~= C.CoopValue( C.DvarString( "ui_zm_mapstartlocation" ) ) then
+		return false, "Select the saved start location: " .. dvar( "location" ) .. ".", details
+	end
+	if dvar( "mod" ) ~= C.CoopValue( C.DvarString( "fs_game" ) ) then
+		return false, "Load the saved mod: " .. dvar( "mod" ) .. ".", details
+	end
+	if dvar( "settings" ) ~= settings then
+		return false, "Restore saved game settings to unlock Resume.", details, true
 	end
 	if Engine.PartyHostIsReadyToStart() then return false, "A launch is already in progress.", details end
 	return true, "Ready: " .. C.SupportedMaps[map] .. " - round " .. dvar( "round" ) .. " - " .. #expected .. " players", details
 end
 
 C.SafeCoopStatus = function ( controller )
-	local ok, ready, message, details = pcall( C.CoopStatus, controller )
+	local ok, ready, message, details, canRestore = pcall( C.CoopStatus, controller )
 	if not ok then
 		if Engine.SetDvar then Engine.SetDvar( "zmcp_coop_ui_error", tostring( ready ) ) end
 		return false, "Cannot verify this lobby. Resume is locked.", {}
 	end
-	return ready, message, details
+	return ready, message, details, canRestore
 end
 
 C.CoopResume = function ( menu, event )
@@ -153,12 +177,23 @@ LUI.createMenu.ZMCheckpointCoop = function ( controller )
 	local resume = list:addButton( "RESUME TEAM CHECKPOINT", "The saved round restarts with the original host and the exact same players." )
 	resume:setActionEventName( "zmcp_coop_resume" )
 	menu:registerEventHandler( "zmcp_coop_resume", C.CoopResume )
+	local restore = list:addButton( "RESTORE SAVED SETTINGS", "Apply the difficulty, Magic and Headshots Only values in this checkpoint." )
+	restore:setActionEventName( "zmcp_coop_restore_settings" )
+	menu:registerEventHandler( "zmcp_coop_restore_settings", function ()
+		if C.ApplyCoopSettings( controller ) then
+			menu:processEvent( { name = "zmcp_coop_refresh" } )
+		else
+			status:setText( "Could not restore saved settings in this lobby." )
+		end
+	end )
 	local wasReady = false
 	local refresh = function ()
-		local ready, message, details = C.SafeCoopStatus( controller )
+		local ready, message, details, canRestore = C.SafeCoopStatus( controller )
 		status:setText( message )
 		for i = 1, 4 do rows[i]:setText( details[i] or "" ) end
 		if ready then resume:enable() else resume:disable() end
+		if canRestore then restore:enable(); restore:setAlpha( 1 )
+		else restore:disable(); restore:setAlpha( 0 ) end
 		if ready and not wasReady then resume:processEvent( { name = "gain_focus" } ) end
 		wasReady = ready
 	end

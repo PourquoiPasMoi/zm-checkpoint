@@ -4,6 +4,17 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.19-alpha — 2026-10-30
+
+### 2026-10-30 — Keep updater results ordered and expose saved co-op settings
+
+- Request: install the latest release locally, repair delayed update checks and installs, unlock the existing two-player checkpoint, and replace Solo preview badges with real perk and weapon images.
+- Change or investigation: **Verified in-game (owner screenshots):** the updater displayed a timeout and later a valid result; CO-OP RESUME recognized Sharelocked and wathson but blocked Resume. The host PC now has a complete `zm_nuked` co-op checkpoint with both IDs and saved `0/1/0` settings. The earlier no-save finding was from an earlier inspection, before this checkpoint existed. **Expected:** the lobby setting mismatch is the remaining blocker, based on the saved file and console dvars. The co-op page now identifies each context mismatch and offers RESTORE SAVED SETTINGS for difficulty, Magic, and Headshots Only when those settings differ. The updater now waits for its own request's terminal result instead of declaring failure after 45 seconds. The watcher handles console markers split between reads, and a successful update restarts the background watcher so future checks use the newly installed script.
+- Files affected: co-op/updater menu Lua, watcher/status PowerShell, co-op test, mod.json, README.md, COOP_TEST_PLAN.md, PROJECT_HANDOFF.md, CHANGELOG.md.
+- Validation: Build.ps1 passed; all six generated T6 GSC scripts, three modified Lua files, and two modified PowerShell scripts parsed. The 25-case co-op suite, an exact host-checkpoint settings scenario, updater request-ID test, and split-marker regression check passed. The complete 20-entry ZIP (102,181 bytes; SHA-256 `71F7771988591C014C7E3228CC99DF2AF56FA37ED5AADDECA42E5626E2FC3686`) has six map scripts and a ten-entry UI IWD; no save files are included. The latest published 0.4.18-alpha was installed locally at the owner's explicit request before these source changes; all six existing checkpoints were preserved.
+- In-game result: 0.4.19 changes not yet tested. The user screenshots establish the failures on the previously installed version.
+- Remaining risk/next step: test RESTORE SAVED SETTINGS and exact-team Resume with both PCs. Confirm that a new update check and install remain pending until the matching result arrives. **Known limitation:** no real perk or weapon images are in this build. Plutonium T6's documented `.iwi` route replaces existing game textures, and the earlier HUD-material attempt produced checkerboards in this menu. A working, distributable menu image pipeline is still needed; colored badges remain for now rather than shipping broken images.
+
 ## 0.4.18-alpha — 2026-10-28
 
 ### 2026-10-28 — Clarify host-only co-op saves and repair slot previews

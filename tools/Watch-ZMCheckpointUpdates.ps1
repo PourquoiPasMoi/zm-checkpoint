@@ -11,6 +11,9 @@ $pendingCheck=$false
 $pendingInstall=$false
 $pendingCheckId=''
 $pendingInstallId=''
+$markerCarry=''
+$lastCheckMarkerId=''
+$lastInstallMarkerId=''
 while($true){
  Start-Sleep -Milliseconds 500
  if(($null -eq $worker -or $worker.HasExited) -and ($pendingInstall -or $pendingCheck)){
@@ -30,7 +33,7 @@ while($true){
  }
  if(-not(Test-Path $log)){continue}
  $file=Get-Item $log
- if($file.Length -lt $position){$position=0}
+ if($file.Length -lt $position){$position=0; $markerCarry=''}
  if($file.Length -eq $position){continue}
  $stream=[IO.File]::Open($log,[IO.FileMode]::Open,[IO.FileAccess]::Read,[IO.FileShare]::ReadWrite)
  try{
@@ -40,17 +43,29 @@ while($true){
   $position=$stream.Position
   $reader.Dispose()
  }finally{ $stream.Dispose() }
- $checkMatches=[regex]::Matches($chunk,"${marker}_([0-9]{9,16})")
+ # A console write can split a request marker across two reads. Keep a small
+ # overlap and deduplicate complete IDs before scheduling work.
+ $scan=$markerCarry+$chunk
+ $markerCarry=if($scan.Length -gt 64){$scan.Substring($scan.Length-64)}else{$scan}
+ $checkMatches=[regex]::Matches($scan,"${marker}_([0-9]{9,16})(?=[^0-9])")
  if($checkMatches.Count){
-  $pendingCheckId=$checkMatches[$checkMatches.Count-1].Groups[1].Value
-  $pendingCheck=$true
-  if(-not $pendingInstall){ & $statusScript -State checking -RequestId $pendingCheckId }
+  $foundId=$checkMatches[$checkMatches.Count-1].Groups[1].Value
+  if($foundId -ne $lastCheckMarkerId){
+   $lastCheckMarkerId=$foundId
+   $pendingCheckId=$foundId
+   $pendingCheck=$true
+   if(-not $pendingInstall){ & $statusScript -State checking -RequestId $pendingCheckId }
+  }
  }
- $installMatches=[regex]::Matches($chunk,"${installMarker}_([0-9]{9,16})")
+ $installMatches=[regex]::Matches($scan,"${installMarker}_([0-9]{9,16})(?=[^0-9])")
  if($installMatches.Count){
-  $pendingInstallId=$installMatches[$installMatches.Count-1].Groups[1].Value
-  $pendingInstall=$true
-  $pendingCheck=$false
-  & $statusScript -State installing -RequestId $pendingInstallId
+  $foundId=$installMatches[$installMatches.Count-1].Groups[1].Value
+  if($foundId -ne $lastInstallMarkerId){
+   $lastInstallMarkerId=$foundId
+   $pendingInstallId=$foundId
+   $pendingInstall=$true
+   $pendingCheck=$false
+   & $statusScript -State installing -RequestId $pendingInstallId
+  }
  }
 }

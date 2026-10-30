@@ -97,3 +97,8 @@ host/player IDs, party order, and observed before/after inventory for failures.
 - `tools/Test-CoopLobby.lua` executes the shipped Lua gate with engine mocks,
   checking exact roster, order/name changes, 64-bit strings, host/context
   mismatches, missing APIs and the launch action. GSC requires actual game tests.
+- If the original host sees all saved members as CONNECTED but Resume stays
+  locked, record the precise status text. When it says saved game settings
+  differ, use RESTORE SAVED SETTINGS, verify the displayed difficulty, Magic,
+  and Headshots Only choices, then try Resume with the same lobby. Never edit
+  the host `.sav` to bypass a context mismatch.
