@@ -46,17 +46,42 @@ local function slotHint( meta )
 end
 
 local perkStyle = {
-	specialty_armorvest = { "JUGGERNOG", "JG", 0.60, 0.13, 0.13 },
-	specialty_deadshot = { "DEADSHOT", "DS", 0.36, 0.36, 0.36 },
-	specialty_fastreload = { "SPEED COLA", "SC", 0.18, 0.48, 0.23 },
-	specialty_longersprint = { "STAMIN-UP", "SU", 0.65, 0.44, 0.12 },
-	specialty_quickrevive = { "QUICK REVIVE", "QR", 0.14, 0.40, 0.62 },
-	specialty_rof = { "DOUBLE TAP", "DT", 0.63, 0.33, 0.12 },
-	specialty_additionalprimaryweapon = { "MULE KICK", "MK", 0.32, 0.40, 0.15 },
-	specialty_finalstand = { "TOMBSTONE", "TS", 0.38, 0.36, 0.50 },
-	specialty_grenadepulldeath = { "CHERRY", "EC", 0.48, 0.16, 0.48 },
-	specialty_flakjacket = { "PHD FLOPPER", "PH", 0.38, 0.19, 0.55 },
-	specialty_chugabud = { "WHO'S WHO", "WW", 0.20, 0.39, 0.56 }
+	specialty_armorvest = { "JUGGERNOG", "zmcp_perk_juggernog" },
+	specialty_deadshot = { "DEADSHOT", "zmcp_perk_deadshot" },
+	specialty_fastreload = { "SPEED COLA", "zmcp_perk_speed_cola" },
+	specialty_longersprint = { "STAMIN-UP", "zmcp_perk_stamin_up" },
+	specialty_movefaster = { "STAMIN-UP", "zmcp_perk_stamin_up" },
+	specialty_quickrevive = { "QUICK REVIVE", "zmcp_perk_quick_revive" },
+	specialty_rof = { "DOUBLE TAP", "zmcp_perk_double_tap" },
+	specialty_additionalprimaryweapon = { "MULE KICK", "zmcp_perk_mule_kick" },
+	specialty_scavenger = { "TOMBSTONE", "zmcp_perk_tombstone" },
+	specialty_finalstand = { "WHO'S WHO", "zmcp_perk_whos_who" },
+	specialty_grenadepulldeath = { "ELECTRIC CHERRY", "zmcp_perk_electric_cherry" },
+	specialty_flakjacket = { "PHD FLOPPER", "zmcp_perk_phd_flopper" },
+	specialty_chugabud = { "WHO'S WHO", "zmcp_perk_whos_who" },
+	specialty_nomotionsensor = { "VULTURE AID", "zmcp_perk_vulture_aid" }
+}
+
+-- These weapon materials are already loaded by the stock Zombies front-end.
+local weaponMaterials = {
+	["1911"] = "menu_mp_weapons_1911_big", m1911 = "menu_mp_weapons_1911_big",
+	["870mcs"] = "menu_mp_weapons_870mcs_big", ak74u = "menu_mp_weapons_ak74u_big",
+	ballistic_80 = "menu_mp_weapons_ballistic_80_big", baretta = "menu_mp_weapons_baretta_big",
+	dsr1 = "menu_mp_weapons_dsr1_big", fal = "menu_mp_weapons_fal_big",
+	five_seven = "menu_mp_weapons_five_seven_big", fiveseven = "menu_mp_weapons_five_seven_big",
+	galil = "menu_mp_weapons_galil_big", hamr = "menu_mp_weapons_hamr_big",
+	judge = "menu_mp_weapons_judge_big", kard = "menu_mp_weapons_kard_big",
+	m14 = "menu_mp_weapons_m14_big", m16 = "menu_mp_weapons_m16_big",
+	m32gl = "menu_mp_weapons_m32gl_big", m82a = "menu_mp_weapons_m82a_big",
+	mp5 = "menu_mp_weapons_mp5_big", python = "menu_mp_weapons_python_big",
+	qcw = "menu_mp_weapons_qcw_big", rottweil72 = "menu_mp_weapons_rottweil72_big",
+	rpd = "menu_mp_weapons_rpd_big", rpg = "menu_mp_weapons_rpg_big",
+	saiga12 = "menu_mp_weapons_saiga12_big", saritch = "menu_mp_weapons_saritch_big",
+	srm = "menu_mp_weapons_srm_big", srm1216 = "menu_mp_weapons_srm_big",
+	tar21 = "menu_mp_weapons_tar21_big", type95 = "menu_mp_weapons_type95_big",
+	xm8 = "menu_mp_weapons_xm8_big", ray_gun = "menu_zm_weapons_raygun_big",
+	raygun = "menu_zm_weapons_raygun_big", jetgun = "menu_zm_weapons_jetgun_big",
+	zombie_shield = "menu_zm_weapons_shield_big"
 }
 
 local function addText( parent, value, left, right, top, bottom, orange )
@@ -71,15 +96,12 @@ local function addText( parent, value, left, right, top, bottom, orange )
 	return label
 end
 
-local function addBadge( parent, letters, left, top, width, height, red, green, blue )
-	local background = LUI.UIImage.new()
-	background:setLeftRight( true, false, left, left + width )
-	background:setTopBottom( true, false, top, top + height )
-	background:setRGB( red, green, blue )
-	background:setAlpha( 0.85 )
-	parent:addElement( background )
-	local mark = addText( parent, letters, left, left + width, top + 3, top + height - 3 )
-	mark:setAlignment( LUI.Alignment.Center )
+local function addImage( parent, material, left, top, width, height )
+	local icon = LUI.UIImage.new()
+	icon:setLeftRight( true, false, left, left + width )
+	icon:setTopBottom( true, false, top, top + height )
+	icon:setImage( RegisterMaterial( material ) )
+	parent:addElement( icon )
 end
 
 local function weaponName( name )
@@ -128,9 +150,11 @@ local function addPreview( menu, list )
 		for i, name in ipairs( meta.weapons ) do
 			local top = 132 + (i - 1) * 43
 			local label = weaponName( name )
-			addBadge( content, string.sub( label, 1, 3 ), 18, top, 76, 34,
-				CoD.BOIIOrange.r * 0.65, CoD.BOIIOrange.g * 0.65, CoD.BOIIOrange.b * 0.65 )
-			addText( content, label, 107, 445, top + 5, top + 31 )
+			local base = string.gsub( name, "_zm.*$", "" )
+			base = string.gsub( base, "_upgraded.*$", "" )
+			local material = weaponMaterials[base]
+			if material then addImage( content, material, 18, top - 2, 76, 38 ) end
+			addText( content, label, material and 107 or 18, 445, top + 5, top + 31 )
 		end
 		addText( content, "PERKS", 18, 445, 298, 325, true )
 		if #meta.perks == 0 then addText( content, "NONE", 18, 445, 333, 359 ) end
@@ -141,9 +165,8 @@ local function addPreview( menu, list )
 			local top = 329 + row * 29
 			local style = perkStyle[name]
 			local label = style and style[1] or string.upper( string.gsub( name, "specialty_", "" ) )
-			addBadge( content, style and style[2] or "?", left, top, 25, 24,
-				style and style[3] or 0.35, style and style[4] or 0.35, style and style[5] or 0.35 )
-			addText( content, label, left + 29, left + 141, top + 2, top + 25 )
+			if style then addImage( content, style[2], left, top, 25, 25 ) end
+			addText( content, label, left + (style and 29 or 0), left + 141, top + 2, top + 25 )
 		end
 	end
 	return show

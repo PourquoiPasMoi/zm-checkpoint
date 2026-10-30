@@ -4,6 +4,17 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.20-alpha — 2026-10-30
+
+### 2026-10-30 — Show real perk and weapon art in save slots
+
+- Request: find a working menu image route and replace the Solo slot's letter badges with real perk and weapon images.
+- Change or investigation: OpenAssetTools inspection of the installed T6 fastfiles found weapon menu materials in `ui_zm.ff` and perk HUD textures in the map fastfiles. The previous HUD-material attempt failed because those map materials were unavailable in the front-end. A new `mod.ff` embeds 12 perk textures under unique `zmcp_perk_*` material names; the Lua preview uses stock front-end weapon materials when available, plus text for weapons without a front-end material. Corrected Tombstone/Who's Who perk ID mapping. An initial asset-link attempt failed because OAT requires embedded image names to begin with `*`; retrying with that format compiled. DLC images initially failed to extract because their `dlczm*` IPaks were not loaded; loading those IPaks first yielded the missing art.
+- Files affected: `assets/menu`, `src/ui/ui/t6/menus/zmcheckpointsolo.lua`, `tools/Build.ps1`, `tools/Build-MenuAssets.ps1`, `mod.json`, `.gitignore`, `README.md`, `THIRD_PARTY_NOTICES.md`, project memory.
+- Validation: modified Lua and PowerShell parsed; `tools/Build-MenuAssets.ps1` compiled a 12,992-byte `mod.ff` with 12 materials and 12 embedded images; all 12 DDS files decode and have nonempty pixels. `tools/Build.ps1` passed and all six generated T6 GSC scripts parsed. The 20-entry ZIP includes `mod.ff`, the UI IWD, and six map scripts, with no save files (SHA-256 `4D07184454311F0FFF4874C4C18893BD9D41F90AE6D0BE627044AD9343DD0A8B`). All six checkpoint hashes recorded at task start remain unchanged. Two additional co-op save files appeared in `scriptdata` during this session; the build did not write there.
+- In-game result: Not yet tested. The owner will update through the in-game updater; 0.4.20 is not copied to the local game.
+- Remaining risk/next step: confirm the Solo slot preview shows perk and weapon art after unloading and reloading the updated mod. Some map-specific weapons have no stock front-end material and display their names only. The co-op Resume and updater fixes in 0.4.19 still need an in-game retest.
+
 ## 0.4.19-alpha — 2026-10-30
 
 ### 2026-10-30 — Keep updater results ordered and expose saved co-op settings

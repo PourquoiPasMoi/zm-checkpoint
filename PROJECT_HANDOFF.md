@@ -12,8 +12,8 @@ failure, installation, or test so the project retains its lessons.
 
 - Project: **ZM Checkpoint** for Call of Duty: Black Ops II Zombies on Plutonium T6.
 - Workspace: `C:\Users\User\Documents\Projects\Bo2 Zombie Plutonium`
-- Current source/package and GitHub release: **0.4.15-alpha**; locally installed metadata: **0.4.14-alpha**. GitHub publication status is recorded in section 24. No project installer was run by the agent.
-- Current date of this handoff: **2026-10-28**
+- Current source/package: **0.4.20-alpha**; locally installed metadata: **0.4.19-alpha**. GitHub publication status is recorded in section 29. No project installer was run for 0.4.20.
+- Current date of this handoff: **2026-10-30**
 - The project is a Git repository with public origin `https://github.com/PourquoiPasMoi/zm-checkpoint`.
 - The standalone mod and companion packages are installed locally.
 - 0.4.2 moves the per-player remaining-enemy HUD to the upper-left safe area
@@ -1297,6 +1297,14 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   0.4.15-alpha. All four task-start checkpoint hashes listed above still
   match after publication. Unload/reload the mod after using the updater;
   Plutonium itself does not need restarting.
+
+## 29. 0.4.20-alpha real front-end slot images — 2026-10-30
+
+- **New evidence replacing the 0.4.19 image limitation:** the owner's BO2 `ui_zm.ff` contains `menu_mp_weapons_xm8_big`, `menu_mp_weapons_m14_big`, and 29 other weapon menu materials that can be referenced by `RegisterMaterial` in the front-end. Map-only perk HUD materials caused the earlier checkerboards. OpenAssetTools v0.34.0 rebuilt 12 perk materials/images as a compact `mod.ff` with unique `zmcp_perk_*` names; `mod.ff` is in the release root next to the UI IWD. `assets/menu/zone_raw/mod` and `zone_source/mod.zone` retain the source, and `tools/Build-MenuAssets.ps1` regenerates the checked-in binary using the locally installed game's `ui_zm.ff` for the stock technique set. `tools/Build.ps1` copies the checked-in `assets/menu/mod.ff` so a normal build does not require OAT.
+- **Failure lessons:** OAT's T6 embedded image loader only accepts names beginning with `*`, stored on disk with a leading `_`; the first no-star trial reported `Missing asset ... image` and was replaced. DLC map textures initially failed to dump because their `dlczm*` IPaks were not loaded. A temporary helper zone loaded those IPaks; all required images then extracted. Neither failure changed the installed mod or saves.
+- **Change:** the Solo slot panel now draws actual perk artwork and known stock front-end weapon art, with text for an unsupported weapon. The prior colored letter badges are removed. The mapping now uses `specialty_scavenger` for Tombstone and `specialty_finalstand` for Who's Who, matching T6's perk-to-client-field mapping. Twelve actual perk icons cover Juggernog, Quick Revive, Speed Cola, Double Tap, Stamin-Up, Tombstone, Deadshot, Electric Cherry, Mule Kick, PHD Flopper, Vulture Aid, and Who's Who.
+- **Validated statically:** the Lua and both changed PowerShell files parsed; the menu asset linker generated 12 materials and 12 embedded images with no warnings/errors; 12 DDS files decode with nonempty pixels; the normal build passed and all six generated GSC scripts parsed. The 20-entry ZIP has `mod.ff`, the UI IWD, and six map scripts, no saves, and SHA-256 `4D07184454311F0FFF4874C4C18893BD9D41F90AE6D0BE627044AD9343DD0A8B`. All six checkpoint hashes captured at task start remain unchanged. Two additional co-op files appeared in `scriptdata` during the session; the build neither created nor modified them. **In-game result: not yet tested.** The owner installs through the updater. Local installed metadata remains 0.4.19-alpha; do not run Install.ps1 for 0.4.20 without a new explicit request. After updating, unload and reload the mod; no Plutonium restart is planned.
+- **Next:** inspect a Solo slot with XM8/M14 and Juggernog/Quick Revive after the update. If the game still shows missing art, capture the console's `mod.ff` load log and inspect the material load order. Also retest the 0.4.19 co-op settings restore and updater result ordering with two PCs.
 
 ## 28. 0.4.19-alpha updater wait and co-op settings repair — 2026-10-30
 

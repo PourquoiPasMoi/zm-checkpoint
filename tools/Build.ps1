@@ -65,6 +65,7 @@ Copy-Item -LiteralPath (Join-Path $projectRoot 'tools\Update-ZMCheckpoint-Window
 Copy-Item -LiteralPath (Join-Path $projectRoot 'tools\Watch-ZMCheckpointUpdates.ps1') -Destination (Join-Path $outputRoot 'Watch-ZMCheckpointUpdates.ps1') -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'tools\Launch-UpdateBridge.vbs') -Destination (Join-Path $outputRoot 'Launch-UpdateBridge.vbs') -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'tools\Update-ZMCheckpoint-Status.ps1') -Destination (Join-Path $outputRoot 'Update-ZMCheckpoint-Status.ps1') -Force
+Copy-Item -LiteralPath (Join-Path $projectRoot 'assets\menu\mod.ff') -Destination (Join-Path $outputRoot 'mod.ff') -Force
 
 $uiStage = Join-Path $distRoot '.zm_checkpoint_iwd'
 $zipPath = Join-Path $distRoot 'zz_zm_checkpoint.zip'

@@ -2,7 +2,7 @@
 
 Experimental save and resume checkpoints for Call of Duty: Black Ops II Zombies on Plutonium T6.
 
-The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.19-alpha). Download `zm_checkpoint-0.4.19-alpha.zip` and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
+The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.20-alpha). Download `zm_checkpoint-0.4.20-alpha.zip` and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
 
 The source, build scripts, test guidance, and project history are in this repository. The user-facing setup and feature details live in [README.md](README.md); contributors should read [AGENTS.md](AGENTS.md) and [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md) first.
 
@@ -16,8 +16,9 @@ choose **SOLO RESUME** to select a saved slot. A successful resume consumes
 only that slot; the other slots remain available.
 
 The Solo Save and Solo Resume pages show a selected slot's points, weapons,
-perks, and match settings. Weapons and perks use colored, labeled badges in the
-game menu because the stock HUD icons did not load there. Older saves gain this preview after the new version
+perks, and match settings. The slot preview now uses real perk artwork bundled
+in `mod.ff` and weapon artwork already present in the Zombies front-end. A
+weapon without front-end artwork is shown by name. Older saves gain this preview after the new version
 loads their map once and reads the checkpoint; the checkpoint file is not
 changed by that read. The new slot preview is **validated statically** and
 still needs an in-game test.
@@ -95,5 +96,5 @@ request marker.
 
 The test PC is normally left on its currently installed version when new
 releases are published. The owner runs the updater to install each release.
-The owner explicitly requested a local 0.4.18-alpha install for the 2026-10-30 investigation.
+The owner explicitly requested a local 0.4.19-alpha install for the 2026-10-30 investigation.
 After installation, unload and reload the mod to apply the updated menu.
