@@ -6,6 +6,15 @@ semantics.
 
 ## 0.4.21-alpha — 2026-10-30
 
+### 2026-10-31 — Continuation baseline inspection
+
+- Request: resume project work, read the complete project memory, inspect source and installed state, and preserve GitHub-only publication unless local installation is explicitly requested.
+- Change or investigation: read AGENTS.md, PROJECT_HANDOFF.md, CHANGELOG.md, README.md and updater Lua. Installed metadata changed from 0.4.20-alpha at the initial inspection to 0.4.21-alpha at the continuation check; this agent performed no local installation. The installed updater IWD matches the built IWD and includes the Esc confirmation. All six standalone map scripts and the 12,992-byte mod.ff are present.
+- Files affected: CHANGELOG.md and PROJECT_HANDOFF.md only.
+- Validation: read-only installed inventory and eight checkpoint SHA-256 hashes inspected; no game or checkpoint files written. No runtime change, so parser/build checks are not applicable.
+- In-game result: Not yet tested; installed files do not establish loaded UI or successful confirmation behavior.
+- Remaining risk/next step: unload/reload the updated mod, then test default NO, STAY, confirmation Esc, and YES, LEAVE. Active-install behavior needs a subsequent update while the 0.4.21 UI is loaded. No Plutonium restart required. No new release needed for this documentation-only session.
+
 ### 2026-10-30 — Confirm Esc before leaving the updater
 
 - Request: prevent an accidental Esc press from immediately closing the updater during installation.
