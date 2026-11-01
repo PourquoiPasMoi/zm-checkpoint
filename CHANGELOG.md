@@ -4,6 +4,17 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.32-alpha — 2026-11-01
+
+### 2026-11-01 — Fix missing weapon icons in SOLO RESUME (Claude Code)
+
+- Request: some weapon icons do not show in the SOLO RESUME preview. The owner's screenshot (slot 4) shows SAIGA12 with its picture but FNFAL as text only; the owner reports other missing ones too.
+- Change or investigation: the preview looks a weapon up in a table of stock front-end materials by base name, but several table keys were not the game's real weapon names (the table has `fal`, the game saves `fnfal_zm`). The 31 stock weapon materials are the ones recorded from `ui_zm.ff` in `.cache/oat-ui-zm`. Added aliases from the real names to those materials: `fnfal`, `mp5k`, `beretta93r`, `dsr50`, `barretm82`, `usrpg`, `m32`, `qcw05`, `fivesevendw`, `m16_gl`, `ak74u_extclip`, `beretta93r_extclip`. The lookup moved into `weaponBase`/`weaponMaterial` (also strips `+attachments`, exported as `C.Ui.WeaponMaterial`). **Known limitation:** weapons with no stock front-end material still show text only: M27 (`hk416`), LSAT, SVU-AS, AN-94, PDW-57, Thompson, UZI, AK-47, MG08/15, STG-44, SCAR-H, KSG, MP40, Skorpion EVO, Ballista, Mauser C96, Blundergat, REMINGTON NMA and the Ray Gun Mark II (deliberately not aliased to the Ray Gun art). Only `ui_zm.ff` is present in the local game's `zonell`, so adding those pictures would need extracting images from other fastfiles with OpenAssetTools into `mod.ff`.
+- Files affected: `src/ui/ui/t6/menus/zmcheckpointsolo.lua`, new `tools/Test-WeaponIcons.lua`, `mod.json`, `README.md`, `CHANGELOG.md`, `PROJECT_HANDOFF.md`.
+- Validation: **Validated statically:** Build.ps1 passed; six T6 GSC parses; luaparse; all nine Lua suites pass (new `Test-WeaponIcons.lua` checks the real game weapon names, upgraded and attachment forms, and that no-icon weapons return nil). The pictures themselves are **expected, not verified in-game**: the materials were already confirmed loadable in 0.4.20 (the SAIGA12 icon renders).
+- In-game result: Not yet tested.
+- Remaining risk/next step: after updating and reloading the mod, SOLO RESUME slot 4 should show a FAL picture. If the owner wants pictures for the remaining weapons, extract them from other fastfiles (needs the right source zone) as a follow-up.
+
 ## 0.4.31-alpha — 2026-11-01
 
 ### 2026-11-01 — Fix the 40-second wait for the update companion (Claude Code)
