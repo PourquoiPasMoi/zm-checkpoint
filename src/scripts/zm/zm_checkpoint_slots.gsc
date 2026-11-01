@@ -15,6 +15,54 @@ zmcp_solo_path( slot )
     return path + ".sav";
 }
 
+// One backup per solo slot: the save that was in the slot before the newest
+// Save is copied to <slot file>_backup.sav (zm_checkpoint_<map>_backup.sav for
+// slot 1). Only a complete checkpoint is copied. If the new write fails
+// validation the previous save is put back; otherwise the backup can be copied
+// over the slot file by hand to return to the earlier save.
+zmcp_solo_backup_path( slot )
+{
+    path = zmcp_solo_path( slot );
+    return getsubstr( path, 0, path.size - 4 ) + "_backup.sav";
+}
+
+zmcp_copy_save( from, to )
+{
+    if ( !fs_testfile( from ) )
+        return 0;
+
+    source = fs_fopen( from, "read" );
+    if ( !isdefined( source ) )
+        return 0;
+
+    lines = [];
+    complete = 0;
+    for ( i = 0; i < 2048; i++ )
+    {
+        line = fs_readline( source );
+        if ( !isdefined( line ) )
+            break;
+
+        lines[lines.size] = line;
+        fields = strtok( line, "," );
+        if ( fields.size > 0 && fields[0] == "END" )
+            complete = 1;
+    }
+    fs_fclose( source );
+
+    if ( !complete )
+        return 0;
+
+    target = fs_fopen( to, "write" );
+    if ( !isdefined( target ) )
+        return 0;
+
+    for ( i = 0; i < lines.size; i++ )
+        fs_writeline( target, lines[i] );
+    fs_fclose( target );
+    return 1;
+}
+
 zmcp_solo_has_dvar( slot )
 {
     name = "zmcp_has_" + level.zmcp_map;
@@ -57,6 +105,15 @@ zmcp_apply_solo_deletes()
 
         fs_writeline( file, "EMPTY" );
         fs_fclose( file );
+
+        // A deleted slot keeps no backup either.
+        backup = fs_fopen( zmcp_solo_backup_path( slot ), "write" );
+        if ( isdefined( backup ) )
+        {
+            fs_writeline( backup, "EMPTY" );
+            fs_fclose( backup );
+        }
+
         cmdexec( "seta " + tombstone + " 0" );
         println( "ZMCP SOLO: deleted slot " + slot + " as requested from SOLO RESUME." );
     }
