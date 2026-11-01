@@ -4,6 +4,17 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.22-alpha — 2026-11-01
+
+### 2026-11-01 — Add UNLIMITED PERKS lobby option
+
+- Request: add a Custom Games option, under CHEATS, that lifts the four-perk limit on every map, with a layout that does not overlap anything.
+- Change or investigation: stock `_zm_perks` sets `level.perk_purchase_limit = 4` and gates every perk purchase through `get_player_perk_purchase_limit()` (Origins' per-player getter falls back to the same level value). `privateonlinegamelobby.lua` now appends a `zmcp_all_perks` entry to the stock `CoD.PrivateGameLobby.Dvars` table, so the stock lobby builds a normal DISABLED/ENABLED selector row directly under CHEATS with the stock spacing, hint and focus handling; the dvar is created at 0 if missing. The shared GSC adds `zmcp_unlimited_perks`, which sets the limit to 99 at init and again after `initial_blackscreen_passed` when the dvar is 1, and prints a one-line confirmation. The same shared source ships to all six maps. Not saved in checkpoints: Resume uses the lobby's current value (restored perks bypass the limit either way).
+- Files affected: `src/ui/ui/t6/menus/privateonlinegamelobby.lua`, `src/scripts/zm/zm_nuked/zm_checkpoint.gsc`, new `tools/Test-LobbyOption.lua`, `mod.json`, `README.md`, `CHANGELOG.md`, `PROJECT_HANDOFF.md`.
+- Validation: lobby Lua parsed; `tools/Build.ps1` passed; all six generated T6 GSC files parsed and contain the new function. Co-op (25 cases), solo Resume and updater-ID suites still pass; the new mocked test confirms the row is appended once after CHEATS and the dvar is initialized without resetting an existing value. Nothing was installed or published; no `scriptdata` written.
+- In-game result: Not yet tested. Layout is expected, not verified: the extra row lengthens the left list by one row and the map card sits in the separate lower-right area.
+- Remaining risk/next step: confirm the row renders without overlap, that the label fits its column, that buying a fifth perk works on each map (Origins uses a per-player getter and Buried/Die Rise perk machines should be checked), and that perk icons stay on screen with many perks. A perk HUD overflow with very many perks is possible and unobserved.
+
 ## 0.4.21-alpha — 2026-10-30
 
 ### 2026-10-31 — Continuation baseline inspection
