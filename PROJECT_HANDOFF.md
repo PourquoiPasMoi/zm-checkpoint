@@ -1300,6 +1300,10 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   match after publication. Unload/reload the mod after using the updater;
   Plutonium itself does not need restarting.
 
+## 53. 0.4.42-alpha keyboard titles — 2026-11-01
+
+- **Verified in-game (owner screenshots, 0.4.41):** typed rows on MORE OPTIONS open the keyboard and work; the keyboard title overflowed its box. **Validated statically (not tested in-game):** titles shortened to about 25 characters or fewer ("STARTING ROUND (1-255)", "POINTS (0 = DEFAULT)", "HEALTH CAP ROUND (0=OFF)"). Rule: keyboard titles must stay near 25 characters.
+
 ## 52. 0.4.41-alpha typed rows fix — 2026-11-01
 
 - **Verified in-game (owner):** on 0.4.40 a click on ZOMBIE HEALTH CAP stepped through the fixed list instead of opening a keyboard, so the label hook does not attach on the MORE OPTIONS page. **Validated statically (not tested in-game):** the page now attaches the typed behaviour directly (`typedRows`). Rule: never rely on label matching for rows built on a popup page; attach to the returned row. If the typed value does not apply, check that `ui_keyboard_input` reaches the page. Published: [GitHub release 0.4.41-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.41-alpha) (source commit `675c5c293437a665faecfd4e55c6328c069baa7a`; 170,581-byte ZIP, 20 entries, no saves/caches, SHA-256 `E5BA73F2AA6933E9288B62F607A2C4553DEFA272DE6D8778D81B380376518E0E`, matches GitHub). No local install was run.

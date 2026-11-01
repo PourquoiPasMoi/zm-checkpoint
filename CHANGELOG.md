@@ -4,6 +4,18 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.42-alpha — 2026-11-01
+
+### 2026-11-01 — Shorter keyboard titles so they fit the box (Claude Code)
+
+- Request: owner confirmed the typed rows now work (0.4.41) and sent screenshots: the keyboard window title overflows its box ("CUSTOM STARTING ROUND (1-255)" runs past the right edge; "STARTING POINTS (0 = DEFAULT, MAX 1000000)" and "ZOMBIE HEALTH CAP ROUND (0 = OFF, MAX 255)" are far outside it).
+- Change or investigation: **Verified in-game (owner, 2026-11-01): the typed ZOMBIE HEALTH CAP, STARTING POINTS and CUSTOM STARTING ROUND keyboards open and work**, so the 0.4.41 direct attach on the MORE OPTIONS page is confirmed. The keyboard box fits about 25 characters of title (700 px at about 24 px per character; 29 characters already overflowed). Titles are now: "STARTING ROUND (1-255)" (22), "POINTS (0 = DEFAULT)" (20), "HEALTH CAP ROUND (0=OFF)" (24). Only the title strings changed. Rule: keep keyboard titles to about 25 characters.
+- Files affected: `src/ui/ui/t6/menus/privateonlinegamelobby.lua`, `mod.json`, `README.md`, `CHANGELOG.md`, `PROJECT_HANDOFF.md`.
+- Validation: **Validated statically:** Build.ps1 passed; six T6 GSC parses; Lua suites pass (the round test still asserts "(1-255)"). Fit is **expected, not verified in-game**.
+- Published: see the publication record below if present.
+- In-game result: 0.4.41: typed rows work, titles overflow (the bug above). 0.4.42: not yet tested.
+- Remaining risk/next step: owner to open all three keyboards and confirm the titles sit inside the box.
+
 ## 0.4.41-alpha — 2026-11-01
 
 ### 2026-11-01 — Typed rows on MORE OPTIONS opened no keyboard (Claude Code)
@@ -13,7 +25,7 @@ semantics.
 - Files affected: `src/ui/ui/t6/menus/privateonlinegamelobby.lua`, `tools/Test-MoreOptions.lua`, `mod.json`, `README.md`, `CHANGELOG.md`, `PROJECT_HANDOFF.md`.
 - Validation: **Validated statically:** Build.ps1 passed; six T6 GSC parses; Lua suites pass; the page test now clicks both typed rows and asserts the keyboard command is issued and the stock cycle is not. The keyboard actually opening and its typed value reaching the page's rows are **expected, not verified in-game**.
 - Published: [GitHub release 0.4.41-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.41-alpha) (source commit `675c5c293437a665faecfd4e55c6328c069baa7a`; 170,581-byte ZIP, 20 entries, no saves/caches, SHA-256 `E5BA73F2AA6933E9288B62F607A2C4553DEFA272DE6D8778D81B380376518E0E`, matches GitHub). No local install was run.
-- In-game result: 0.4.40: click stepped through the fixed list (the bug above). 0.4.41: not yet tested.
+- In-game result: 0.4.40: click stepped through the fixed list (the bug above). **0.4.41: Verified in-game (owner, 2026-11-01): the keyboards open and typed values work** for ZOMBIE HEALTH CAP, STARTING POINTS and CUSTOM STARTING ROUND.
 - Remaining risk/next step: owner to click ZOMBIE HEALTH CAP and STARTING POINTS and confirm the keyboard opens and a typed number is applied. If it opens but the typed value is ignored, the keyboard result event is not reaching the popup page and needs routing.
 
 ## 0.4.40-alpha — 2026-11-01
