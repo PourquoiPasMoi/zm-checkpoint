@@ -12,7 +12,7 @@ failure, installation, or test so the project retains its lessons.
 
 - Project: **ZM Checkpoint** for Call of Duty: Black Ops II Zombies on Plutonium T6.
 - Workspace: `C:\Users\User\Documents\Projects\Bo2 Zombie Plutonium`
-- Current source/package: **0.4.30-alpha** (random loadout, section 41; previously 0.4.29-alpha (faster updater, section 40; previously 0.4.28-alpha (starting loadout, section 39; previously 0.4.27-alpha (custom starting round, section 38; previously 0.4.26-alpha (CO-OP RESUME redesign, section 37; previously 0.4.25-alpha (select, OPTIONS and START flow, section 34; 0.4.24 added per-save OPTIONS, section 33; 0.4.23 added solo save deletion, section 32); latest published: **0.4.29-alpha**; installed locally: **0.4.24-alpha**; locally installed: **0.4.21-alpha**. Older note follows: locally installed metadata was **0.4.20-alpha**. GitHub publication status is recorded in section 30. No project installer was run for 0.4.21.
+- Current source/package: **0.4.30-alpha** (random loadout, section 41; previously 0.4.29-alpha (faster updater, section 40; previously 0.4.28-alpha (starting loadout, section 39; previously 0.4.27-alpha (custom starting round, section 38; previously 0.4.26-alpha (CO-OP RESUME redesign, section 37; previously 0.4.25-alpha (select, OPTIONS and START flow, section 34; 0.4.24 added per-save OPTIONS, section 33; 0.4.23 added solo save deletion, section 32); latest published: **0.4.30-alpha**; installed locally: **0.4.24-alpha**; locally installed: **0.4.21-alpha**. Older note follows: locally installed metadata was **0.4.20-alpha**. GitHub publication status is recorded in section 30. No project installer was run for 0.4.21.
 - Current date of this handoff: **2026-11-01** (latest session notes: section 35; planned next task: section 36; sections 31 to 36 sit newest-first above section 30)
 - The project is a Git repository with public origin `https://github.com/PourquoiPasMoi/zm-checkpoint`.
 - The standalone mod and companion packages are installed locally.
@@ -1303,6 +1303,7 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
 ## 41. 0.4.30-alpha random loadout — 2026-11-01
 
 - **Changed from section 39 (owner request):** STARTING WEAPONS is now a count (0 to 2) of random weapons and STARTING PERK is 0 or 1; there is no weapon picker. Pools live in GSC `zmcp_loadout_pool` (edit there to add weapons); Lua only clamps `zmcp_start_weapons` and `zmcp_start_perks`. Details in the 0.4.30 CHANGELOG entry.
+- Published: [GitHub release 0.4.30-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.30-alpha) (source commit `06049c99369859def0ce26d71a838cdcf0b71a14`; 155,787-byte ZIP, 20 entries, no saves/caches, SHA-256 `0F246734F26FA50120E3379EDC843A49B7E9441CC51EC92FE39C71FDAB8A0D80`, matches GitHub). The installed updater returned `UPDATE_AVAILABLE|0.4.29-alpha|0.4.30-alpha`, so the owner is on 0.4.29. No local install was run.
 - **Open verification:** same as section 39 plus the new random-pool code path in the game.
 
 ## 40. 0.4.29-alpha faster updater — 2026-11-01

@@ -13,6 +13,7 @@ semantics.
 - Files affected: `src/ui/ui/t6/menus/zmcheckpointloadout.lua`, `privateonlinegamelobby.lua`, `src/scripts/zm/zm_checkpoint_slots.gsc`, `tools/Test-Loadout.lua`, `tools/Test-LobbyOption.lua`, `mod.json`, `README.md`, `CHANGELOG.md`, `PROJECT_HANDOFF.md`.
 - Validation: **Validated statically:** Build.ps1 passed; six T6 GSC parses (the old per-weapon validator is gone and the pool function appears in the generated scripts); luaparse; all eight Lua suites pass, with `Test-Loadout.lua` rewritten for the two new rows and clamping. GSC parsed only. No save, game file or local install touched.
 - In-game result: Not yet tested. Still unverified from 0.4.28: the first-spawn grants on each map and the new random pool behavior (including that `switch` and array building in the pool function behave in the game's GSC runtime).
+- Published: [GitHub release 0.4.30-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.30-alpha) (source commit `06049c99369859def0ce26d71a838cdcf0b71a14`; 155,787-byte ZIP, 20 entries, no saves/caches, SHA-256 `0F246734F26FA50120E3379EDC843A49B7E9441CC51EC92FE39C71FDAB8A0D80`, matches GitHub). The installed updater returned `UPDATE_AVAILABLE|0.4.29-alpha|0.4.30-alpha`, so the owner is on 0.4.29. No local install was run.
 - Remaining risk/next step: start Survival matches with 1 and with 2 random weapons and with the random perk, on Nuketown and one other map, and report the console line `ZMCP: starting loadout`.
 
 ## 0.4.29-alpha — 2026-11-01
