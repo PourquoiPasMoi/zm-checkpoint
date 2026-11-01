@@ -13,6 +13,7 @@ semantics.
 - Files affected: `src/ui/ui/t6/menus/zmcheckpointupdater.lua`, `tools/Test-UpdaterRequestId.lua`, `mod.json`, `README.md`, `CHANGELOG.md`, `PROJECT_HANDOFF.md`.
 - Validation: **Validated statically:** Build.ps1 passed; six T6 GSC parses; luaparse; all eight Lua suites pass. The padding's effect on the real log is **expected, not verified in-game**: it assumes each unknown command prints at least its own text to the log (the request marker itself is detected that way).
 - In-game result: Not yet tested. The page code comes from the installed IWD, so the first update to 0.4.31 still uses the old 0.4.30 page and may wait as before; the next update after it should show the difference.
+- Published: [GitHub release 0.4.31-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.31-alpha) (source commit `6be689b699b9bdabcc68edcb7da12005a8317b08`; 156,201-byte ZIP, 20 entries, no saves/caches, SHA-256 `596F1CA46B03747FA71B2006B662B43DC000683BC0447E9E79E5603E2AEFF07D`, matches GitHub). The installed updater returned `UPDATE_AVAILABLE|0.4.30-alpha|0.4.31-alpha`. No local install was run.
 - Remaining risk/next step: after installing 0.4.31 and unloading/reloading the mod, open the updater again. The marker lines in `zmcp_update_timing.log` should follow the click within about a second. If the wait persists, check the log growth again (the padding should cause an immediate growth of 4 KB or more).
 
 ## 0.4.30-alpha — 2026-11-01
