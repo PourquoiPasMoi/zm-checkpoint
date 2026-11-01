@@ -4,6 +4,18 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.38-alpha — 2026-11-01
+
+### 2026-11-01 — Typed starting points (Claude Code)
+
+- Request: owner asked to keep moving through the idea list ("I will do my tests later").
+- Change or investigation: the STARTING POINTS row now accepts any amount from 1 to 1,000,000 instead of nine fixed choices. The lobby hook that already replaces the stock starting-round selector (verified in-game) also matches a selector named `STARTING POINTS` and swaps it in place for a number held in the archived dvar `zmcp_start_points` (0 shows DEFAULT). Left/right and the mouse wheel step by 5,000, a click or Enter opens the stock on-screen keyboard (title "STARTING POINTS (0 = DEFAULT, MAX 1000000)", up to 7 characters), typed digits are validated and clamped, and the value is shown with thousands separators. No new row (lobby stays at 13); the hint became "New match: start with this many points. Click to type." (53 characters, two lines). If the hook cannot attach, the row keeps its old fixed list. `RefreshLoadoutOptions` now clamps the dvar to 0-1,000,000 instead of resetting unknown values. The GSC side already read any 1-1,000,000 value.
+- Files affected: `src/ui/ui/t6/menus/privateonlinegamelobby.lua`, `zmcheckpointloadout.lua`, `tools/Test-StartRound.lua`, `tools/Test-Loadout.lua`, `mod.json`, `README.md`, `CHANGELOG.md`, `PROJECT_HANDOFF.md`.
+- Validation: **Validated statically:** Build.ps1 passed; six T6 GSC parses; nine Lua suites pass (new cases: step, wheel, keyboard command, typed values, clamps, formatting). The same mechanism for the starting round is **verified in-game**; its reuse for points is **expected, not verified**.
+- Published: see the publication record below if present.
+- In-game result: Not yet tested (0.4.37 backup also untested). **Expected, unverified:** the stock lobby passes the literal name `STARTING POINTS` to the selector constructor (if not, the row silently stays on the fixed list).
+- Remaining risk/next step: owner to click STARTING POINTS, type an amount, start a match and compare the score.
+
 ## 0.4.37-alpha — 2026-11-01
 
 ### 2026-11-01 — Solo save backup (Claude Code)

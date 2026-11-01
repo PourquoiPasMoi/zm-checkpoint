@@ -1300,6 +1300,10 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   match after publication. Unload/reload the mod after using the updater;
   Plutonium itself does not need restarting.
 
+## 49. 0.4.38-alpha typed starting points — 2026-11-01
+
+- **Validated statically (not tested in-game):** STARTING POINTS is a typed number (0 = DEFAULT, 1 to 1,000,000, step 5,000, click opens the keyboard), implemented by `C.AttachCustomStartPoints` in `privateonlinegamelobby.lua` with the same selector-replacement technique as the verified custom starting round. Fallback is the old fixed list if the constructor name does not match. Lobby still 13 rows. Next ideas: zombie tuning (needs a layout decision first), autosave (riskiest).
+
 ## 48. 0.4.37-alpha solo save backup — 2026-11-01
 
 - **Verified in-game (owner):** 0.4.36 packed starting weapons work. **Validated statically (not tested in-game):** each solo Save copies the slot's previous complete checkpoint to `<slot file>_backup.sav` before overwriting (`zmcp_copy_save`), restores it automatically if the new write fails validation, and SOLO RESUME DELETE blanks the backup. Backups are never loaded by the game; manual recovery is copying the backup over the slot file. Co-op sessions and the one-use Resume lifecycle are unchanged. Published: [GitHub release 0.4.37-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.37-alpha) (source commit `1c3c9a41a19a918b7424d1fabb3642f13cdd80b9`; 165,993-byte ZIP, 20 entries, no saves/caches, SHA-256 `A608975ECF944738469604041E9E171D7DEFE44DD39C1C753077CE8B0769E233`, matches GitHub). No local install was run. Next ideas: typed starting points, zombie tuning, autosave (riskiest).

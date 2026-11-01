@@ -86,4 +86,26 @@ assert( CoD.LeftRightSelector.new( "STARTING ROUND" ).text == "77" and dvars.zmc
 dvars.zmcp_start_round = "junk"
 assert( C.StartRoundValue() == 1 )
 assert( C.ClampStartRound( "12.9" ) == 12 and C.ClampStartRound( nil ) == nil and C.ClampStartRound( "x" ) == nil )
-print( "PASS: custom starting round row relabelled, stepped, wheel, typed input and 1-255 clamps" )
+
+-- STARTING POINTS: typed or stepped number, 0 means DEFAULT.
+C.PointsMax = 1000000
+local pts = CoD.LeftRightSelector.new( "STARTING POINTS", "stock" )
+assert( pts.zmcpCustomPoints and pts.name == "STARTING POINTS" and pts.text == "DEFAULT" )
+pts:updateChoice(); pts:cycle()
+assert( pts.text == "DEFAULT", "choice building must not move the value" )
+pts:cycle( true, true ); pts:cycle( true, true )
+assert( pts.text == "10,000" and dvars.zmcp_start_points == 10000 )
+pts:cycle( nil, true ); pts:cycle( nil, true ); pts:cycle( nil, true )
+assert( pts.text == "DEFAULT" and dvars.zmcp_start_points == 0, "never below DEFAULT" )
+pts:handleGamepadButton( { qualifier = "mwheel", down = true, button = "up" } )
+assert( pts.text == "5,000" )
+pts.handlers.button_action( pts, { controller = 0 } )
+assert( execs[#execs]:find( "ui_keyboard_new 7 ", 1, true ) and execs[#execs]:find( "\"5000\" 7", 1, true ) )
+local typedPoints = function ( text ) pts.handlers.ui_keyboard_input( pts, { type = 7, input = text } ) end
+typedPoints( "123456" ); assert( pts.text == "123,456" and dvars.zmcp_start_points == 123456 )
+typedPoints( "1000000" ); assert( pts.text == "1,000,000" )
+typedPoints( "99999999" ); assert( pts.text == "1,000,000" and dvars.zmcp_start_points == 1000000, "clamped to 1,000,000" )
+typedPoints( "0" ); assert( pts.text == "DEFAULT" and dvars.zmcp_start_points == 0 )
+typedPoints( "12abc" ); typedPoints( "-5" ); typedPoints( "" ); assert( pts.text == "DEFAULT" )
+assert( C.FormatStartPoints( 250 ) == "250" and C.FormatStartPoints( 1000 ) == "1,000" )
+print( "PASS: custom starting round row relabelled, stepped, wheel, typed input and 1-255 clamps; typed STARTING POINTS row" )
