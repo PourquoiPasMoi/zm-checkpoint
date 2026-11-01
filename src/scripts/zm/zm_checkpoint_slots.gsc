@@ -242,3 +242,45 @@ zmcp_solo_read_settings( checkpoint, fields )
     checkpoint.settings.group = fields[8];
     checkpoint.settings.location = fields[9];
 }
+
+// CUSTOM STARTING ROUND (lobby dvar zmcp_start_round, whole numbers 1-255). The
+// lobby row exists only in Survival, so other modes keep the stock setting. The
+// stock gametype setting is untouched, exactly like a resumed checkpoint.
+zmcp_apply_custom_start_round()
+{
+    if ( getdvar( "g_gametype" ) != "zstandard" )
+        return;
+
+    value = getdvar( "zmcp_start_round" );
+    if ( value == "" || value.size > 3 )
+        return;
+
+    for ( i = 0; i < value.size; i++ )
+    {
+        if ( !issubstr( "0123456789", value[i] ) )
+            return;
+    }
+
+    round = int( value );
+    if ( round < 1 || round > 255 )
+        return;
+
+    level.zmcp_custom_round = round;
+    replacefunc( getfunction( "maps/mp/zombies/_zm", "init_levelvars" ), ::zmcp_custom_levelvars_override, -1 );
+    println( "ZMCP: custom starting round " + round );
+}
+
+zmcp_custom_levelvars_override()
+{
+    original = getfunction( "maps/mp/zombies/_zm", "init_levelvars" );
+    disabledetouronce( original );
+    [[ original ]]();
+
+    if ( !isdefined( level.zmcp_custom_round ) )
+        return;
+
+    level.start_round = level.zmcp_custom_round;
+    level.round_number = level.zmcp_custom_round;
+    // Same rule as the stock init_levelvars for a higher starting round.
+    level.player_starting_points = level.round_number * 500;
+}

@@ -30,6 +30,111 @@ end
 addLobbyDvarOption( "zmcp_all_perks", 0, "UNLIMITED PERKS",
 	"Allow every perk at once instead of the normal limit of four." )
 
+-- CUSTOM STARTING ROUND. The stock STARTING ROUND row only offers a few fixed
+-- values. Its selector is replaced in place (found by its label when the stock
+-- lobby builds it) with a number that is stored in the archived dvar
+-- zmcp_start_round and applied by GSC; the stock gametype setting is left alone.
+-- Left/right and the mouse wheel step by one, a click or Enter opens the stock
+-- on-screen keyboard to type a number. Values are clamped to 1-255.
+local C = CoD.ZMCheckpointMenu
+C.StartRoundMin, C.StartRoundMax = 1, 255
+
+C.ClampStartRound = function ( value )
+	value = tonumber( value )
+	if value == nil or value ~= value then return nil end
+	value = math.floor( value )
+	if value < C.StartRoundMin then return C.StartRoundMin end
+	if value > C.StartRoundMax then return C.StartRoundMax end
+	return value
+end
+
+C.StartRoundValue = function ()
+	return C.ClampStartRound( C.DvarString( "zmcp_start_round" ) ) or C.StartRoundMin
+end
+
+C.SetStartRound = function ( value )
+	value = C.ClampStartRound( value )
+	if value == nil then return nil end
+	Engine.SetDvar( "zmcp_start_round", value )
+	Engine.Exec( 0, "seta zmcp_start_round " .. value .. "\n" )
+	return value
+end
+
+C.AttachCustomStartRound = function ( selector )
+	if selector.zmcpCustomRound then return end
+	selector.zmcpCustomRound = true
+	-- The dvar only exists while this row is active, so a lobby that could not
+	-- be patched keeps using the stock setting.
+	if C.DvarString( "zmcp_start_round" ) == "" then C.SetStartRound( C.StartRoundMin ) end
+	local show = function ( self )
+		if self.choiceText then self.choiceText:setText( tostring( C.StartRoundValue() ) ) end
+	end
+	local step = function ( self, amount )
+		C.SetStartRound( C.StartRoundValue() + amount )
+		show( self )
+	end
+	-- Stock choice-building calls these; only the user-requested cycle counts.
+	selector.updateChoice = show
+	selector.refreshChoice = show
+	selector.setChoice = function ( self ) show( self ) end
+	selector.cycle = function ( self, forward, userRequested )
+		if userRequested then step( self, forward and 1 or -1 ) end
+	end
+	local stockButton = selector.handleGamepadButton
+	selector.handleGamepadButton = function ( self, event )
+		if event.qualifier == "mwheel" and event.down == true and self:isInFocus() then
+			if event.button == "up" then
+				step( self, 1 )
+				return true
+			elseif event.button == "down" then
+				step( self, -1 )
+				return true
+			end
+		end
+		return stockButton( self, event )
+	end
+	local openKeyboard = function ( self, event )
+		local keyboardType = CoD.KEYBOARD_TYPE_TEXT_MESSAGE
+		if keyboardType == nil then
+			step( self, 1 )
+			return true
+		end
+		Engine.Exec( event.controller or 0, "ui_keyboard_new " .. keyboardType ..
+			" \"CUSTOM STARTING ROUND (" .. C.StartRoundMin .. "-" .. C.StartRoundMax .. ")\" \"" ..
+			C.StartRoundValue() .. "\" 3" )
+		return true
+	end
+	selector:registerEventHandler( "button_action", openKeyboard )
+	selector:registerEventHandler( "ui_keyboard_input", function ( self, event )
+		if event.type ~= CoD.KEYBOARD_TYPE_TEXT_MESSAGE or type( event.input ) ~= "string" then return end
+		local digits = string.match( event.input, "^%s*(%d+)%s*$" )
+		if digits and #digits <= 4 then
+			C.SetStartRound( tonumber( digits ) )
+			show( self )
+		end
+	end )
+	show( selector )
+end
+
+local isStartRoundLabel = function ( name )
+	if type( name ) ~= "string" then return false end
+	if name == "ZMUI_STARTING_ROUND_CAPS" then return true end
+	local localized = Engine.Localize( "ZMUI_STARTING_ROUND_CAPS" )
+	return name == localized or string.upper( name ) == "STARTING ROUND"
+end
+
+if CoD.LeftRightSelector and CoD.LeftRightSelector.new and not CoD.LeftRightSelector.zmcpStartRoundHook then
+	CoD.LeftRightSelector.zmcpStartRoundHook = true
+	local stockNew = CoD.LeftRightSelector.new
+	CoD.LeftRightSelector.new = function ( name, ... )
+		if not isStartRoundLabel( name ) then return stockNew( name, ... ) end
+		local selector = stockNew( "CUSTOM STARTING ROUND", ... )
+		local ok = pcall( C.AttachCustomStartRound, selector )
+		if not ok then selector.zmcpCustomRound = nil end
+		return selector
+	end
+end
+
 LUI.createMenu.PrivateOnlineGameLobby = function ( controller )
 	-- The selector reads its dvar when it is built; make sure it exists first.
 	if CoD.ZMCheckpointMenu.DvarString( "zmcp_all_perks" ) == "" then
