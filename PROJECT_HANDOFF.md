@@ -1300,6 +1300,10 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   match after publication. Unload/reload the mod after using the updater;
   Plutonium itself does not need restarting.
 
+## 50. 0.4.39-alpha MORE OPTIONS page — 2026-11-01
+
+- **Validated statically (not tested in-game):** the mod's lobby options moved from five stock-list rows to a MORE OPTIONS popup page (`LUI.createMenu.ZMCheckpointMoreOptions`, options in `CoD.ZMCheckpointMenu.MoreOptions`), opened by one MORE OPTIONS button appended to the lobby button list. Same dvars, GSC untouched. The stock Dvars list is no longer modified, which also removes the old lobby-crowding and hint-overlap concerns. New options (zombie health cap next) are added with `addMoreOption`. Tests: `tools/Test-MoreOptions.lua`.
+
 ## 49. 0.4.38-alpha typed starting points — 2026-11-01
 
 - **Verified in-game (owner): works.** STARTING POINTS is a typed number (0 = DEFAULT, 1 to 1,000,000, step 5,000, click opens the keyboard), implemented by `C.AttachCustomStartPoints` in `privateonlinegamelobby.lua` with the same selector-replacement technique as the verified custom starting round. Fallback is the old fixed list if the constructor name does not match. Lobby still 13 rows. Published: [GitHub release 0.4.38-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.38-alpha) (source commit `3e836dbc669aa7bdb73ff5c295ce68f23ead5315`; 166,430-byte ZIP, 20 entries, no saves/caches, SHA-256 `F00C98975DFB9F026B590A39471554E81351AD1DA3F246EA4CE833A67C3464DE`, matches GitHub). No local install was run. Next ideas: zombie tuning (needs a layout decision first), autosave (riskiest).

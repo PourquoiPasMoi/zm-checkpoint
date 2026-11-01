@@ -31,13 +31,12 @@ local chunk = assert( loadfile( "src/ui/ui/t6/menus/privateonlinegamelobby.lua" 
 chunk()
 chunk() -- loading twice must not duplicate the row
 
-local list = CoD.PrivateGameLobby.Dvars
-assert( #list == 8, "expected five added rows, got " .. #list )
-assert( list[4].id == "zmcp_all_perks" and list[3].id == "sv_cheats", "row must follow CHEATS" )
-assert( list[5].id == "zmcp_start_weapons" and list[6].id == "zmcp_start_perks" )
-assert( list[7].id == "zmcp_start_points" and list[8].id == "zmcp_start_world" )
-assert( list[4].values[1] == 0 and list[4].values[2] == 1 and #list[4].labels == 2 )
-assert( CoD.PrivateGameLobby.DvarDefaults.zmcp_all_perks == 0 )
+local list = CoD.ZMCheckpointMenu.MoreOptions
+assert( #CoD.PrivateGameLobby.Dvars == 3, "the stock option list is left alone" )
+assert( #list == 5, "expected five mod options, got " .. #list )
+assert( list[1].id == "zmcp_all_perks" and list[2].id == "zmcp_start_weapons" and list[3].id == "zmcp_start_perks" )
+assert( list[4].id == "zmcp_start_points" and list[5].id == "zmcp_start_world" )
+assert( list[1].values[1] == 0 and list[1].values[2] == 1 and #list[1].labels == 2 and list[1].default == 0 )
 LUI.createMenu.PrivateOnlineGameLobby( 0 )
 assert( built.dvarAtBuild == 0, "dvar must exist before the selector is built" )
 dvars.zmcp_all_perks = 1

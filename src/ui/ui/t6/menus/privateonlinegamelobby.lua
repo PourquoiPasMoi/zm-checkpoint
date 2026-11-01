@@ -7,39 +7,41 @@ CoD.ZMCheckpointMenu.HookLobby()
 
 CoD.PrivateOnlineGameLobby = {}
 
--- Extra lobby option rows. The stock lobby builds one selector row per entry of
--- CoD.PrivateGameLobby.Dvars, so appending here places the row directly under
--- CHEATS with the same spacing, font, hint and focus behavior as the stock rows.
-local addLobbyDvarOption = function ( id, default, name, hint, labels, values )
-	for _, option in ipairs( CoD.PrivateGameLobby.Dvars ) do
+local C = CoD.ZMCheckpointMenu
+
+-- The mod's own options live on a MORE OPTIONS page (opened by one button in the
+-- lobby list) instead of as extra rows in the stock option list. The page binds
+-- each row to the same dvars the rows used before, so GSC is unchanged.
+C.MoreOptions = C.MoreOptions or {}
+local addMoreOption = function ( id, default, name, hint, labels, values )
+	for _, option in ipairs( C.MoreOptions ) do
 		if option.id == id then
 			return
 		end
 	end
-	local option = {
+	C.MoreOptions[#C.MoreOptions + 1] = {
 		id = id,
+		default = default,
 		name = name,
 		hintText = hint,
 		labels = labels or { "MENU_DISABLED_CAPS", "MENU_ENABLED_CAPS" },
 		values = values or { 0, 1 }
 	}
-	CoD.PrivateGameLobby.DvarDefaults[id] = default
-	CoD.PrivateGameLobby.Dvars[#CoD.PrivateGameLobby.Dvars + 1] = option
 end
 
-addLobbyDvarOption( "zmcp_all_perks", 0, "UNLIMITED PERKS",
+addMoreOption( "zmcp_all_perks", 0, "UNLIMITED PERKS",
 	"Allow every perk at once (normally four)." )
-addLobbyDvarOption( "zmcp_start_weapons", 0, "STARTING WEAPONS",
+addMoreOption( "zmcp_start_weapons", 0, "STARTING WEAPONS",
 	"New match: random map weapons. Two replace the M1911.",
 	{ "NONE", "1 RANDOM WEAPON", "2 RANDOM WEAPONS", "1 PACKED WEAPON", "2 PACKED WEAPONS" }, { 0, 1, 2, 3, 4 } )
-addLobbyDvarOption( "zmcp_start_perks", 0, "STARTING PERK",
+addMoreOption( "zmcp_start_perks", 0, "STARTING PERK",
 	"New match: one random perk from this map.",
 	{ "NONE", "1 RANDOM PERK" }, { 0, 1 } )
-addLobbyDvarOption( "zmcp_start_points", 0, "STARTING POINTS",
+addMoreOption( "zmcp_start_points", 0, "STARTING POINTS",
 	"New match: start with this many points. Click to type.",
 	{ "DEFAULT", "5,000", "10,000", "25,000", "50,000", "100,000", "250,000", "500,000", "1,000,000" },
 	{ 0, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000 } )
-addLobbyDvarOption( "zmcp_start_world", 0, "OPENING",
+addMoreOption( "zmcp_start_world", 0, "OPENING",
 	"New match: power on and/or all doors and debris open.",
 	{ "NORMAL", "POWER ON", "DOORS OPEN", "POWER + DOORS" }, { 0, 1, 2, 3 } )
 
@@ -49,7 +51,6 @@ addLobbyDvarOption( "zmcp_start_world", 0, "OPENING",
 -- zmcp_start_round and applied by GSC; the stock gametype setting is left alone.
 -- Left/right and the mouse wheel step by one, a click or Enter opens the stock
 -- on-screen keyboard to type a number. Values are clamped to 1-255.
-local C = CoD.ZMCheckpointMenu
 C.StartRoundMin, C.StartRoundMax = 1, 255
 
 C.ClampStartRound = function ( value )
@@ -243,6 +244,28 @@ if CoD.LeftRightSelector and CoD.LeftRightSelector.new and not CoD.LeftRightSele
 	end
 end
 
+LUI.createMenu.ZMCheckpointMoreOptions = function ( controller )
+	-- Selectors read their dvar when built, so make sure each one holds a valid value.
+	if C.DvarString( "zmcp_all_perks" ) == "" then Engine.SetDvar( "zmcp_all_perks", 0 ) end
+	if C.RefreshLoadoutOptions then C.RefreshLoadoutOptions() end
+	local menu, status, list = C.Ui.PageBase( "ZMCheckpointMoreOptions", "MORE OPTIONS",
+		"Starting options apply to new matches. Changes take effect at once.", 560 )
+	for _, option in ipairs( C.MoreOptions ) do
+		local row = list:addDvarLeftRightSelector( controller, Engine.Localize( option.name ), option.id,
+			Engine.Localize( option.hintText ), 220 )
+		for index, label in ipairs( option.labels ) do
+			row:addChoice( controller, Engine.Localize( label ), option.values[index] )
+		end
+	end
+	local done = list:addButton( "DONE", "Return to the lobby." )
+	done:setActionEventName( "zmcp_more_done" )
+	menu:registerEventHandler( "zmcp_more_done", function ( owner, event )
+		owner:goBack( event.controller or controller )
+	end )
+	list:processEvent( { name = "gain_focus" } )
+	return menu
+end
+
 LUI.createMenu.PrivateOnlineGameLobby = function ( controller )
 	-- The selector reads its dvar when it is built; make sure it exists first.
 	if CoD.ZMCheckpointMenu.DvarString( "zmcp_all_perks" ) == "" then
@@ -260,6 +283,17 @@ LUI.createMenu.PrivateOnlineGameLobby = function ( controller )
 	menu:addTitle( title )
 	menu.panelManager.panels.buttonPane.titleText = title
 	CoD.ZMCheckpointMenu.AddLobbyResumeButton( menu, controller )
+	-- One button opens the MORE OPTIONS page; it follows the stock option rows.
+	local optionList = menu.panelManager and menu.panelManager.panels and menu.panelManager.panels.buttonPane
+	optionList = optionList and optionList.body and optionList.body.buttonList
+	if optionList and not menu.zmcpMoreButton then
+		local more = optionList:addButton( "MORE OPTIONS", "Starting weapons, perk, points, opening and unlimited perks." )
+		more:setActionEventName( "zmcp_more_options" )
+		menu.zmcpMoreButton = more
+		menu:registerEventHandler( "zmcp_more_options", function ( owner, event )
+			owner:openPopup( "ZMCheckpointMoreOptions", event.controller or controller )
+		end )
+	end
 	-- Keep the stock map card clear of the expanded left-hand button list and
 	-- its focused-row description. The lower right is unused by lobby controls.
 	local pane = menu.panelManager and menu.panelManager.panels and menu.panelManager.panels.buttonPane

@@ -4,6 +4,18 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.39-alpha — 2026-11-01
+
+### 2026-11-01 — MORE OPTIONS page (Claude Code)
+
+- Request: owner (after 0.4.38 typed points worked) asked to stop adding rows to the crowded Custom Games list: one **MORE OPTIONS** option that opens a page holding the mod's added options, toggled there, then back. The SOLO RESUME and CO-OP RESUME buttons stay at the top.
+- Change or investigation: the five mod rows (UNLIMITED PERKS, STARTING WEAPONS, STARTING PERK, STARTING POINTS, OPENING) are no longer appended to `CoD.PrivateGameLobby.Dvars`; the stock list is back to its original rows. They are defined in `CoD.ZMCheckpointMenu.MoreOptions` and shown on a new popup page `ZMCheckpointMoreOptions` (built with the same `PageBase` and `addDvarLeftRightSelector` calls as the verified SOLO RESUME > OPTIONS page), bound to the same dvars, so GSC is unchanged. Changes apply at once; a DONE button and ESC go back. The page re-clamps stored values when it opens. The lobby gets one **MORE OPTIONS** button appended after the stock option rows (same technique as the Resume buttons). The typed STARTING POINTS selector hook still matches because the page's selectors are created through `CoD.LeftRightSelector.new`. The CUSTOM STARTING ROUND row is stock and stays in the lobby.
+- Files affected: `src/ui/ui/t6/menus/privateonlinegamelobby.lua`, `tools/Test-MoreOptions.lua` (new), `tools/Test-Loadout.lua`, `tools/Test-LobbyOption.lua`, `mod.json`, `README.md`, `CHANGELOG.md`, `PROJECT_HANDOFF.md`.
+- Validation: **Validated statically:** Build.ps1 passed; six T6 GSC parses; ten Lua suites pass (new `Test-MoreOptions.lua`: button added once, page rows/choices/dvars, clamping, DONE). The page layout, the button position and the typed points row inside the page are **expected, not verified in-game**.
+- Published: see the publication record below if present.
+- In-game result: Not yet tested.
+- Remaining risk/next step: owner to open the lobby, click MORE OPTIONS, change rows, go back, start a match and check they still apply. If the button sits somewhere awkward, adjust its position. Zombie health cap is the next feature and will go on this page.
+
 ## 0.4.38-alpha — 2026-11-01
 
 ### 2026-11-01 — Typed starting points (Claude Code)

@@ -15,7 +15,9 @@ function require() end
 assert( loadfile( "src/ui/ui/t6/menus/zmcheckpointloadout.lua" ) )()
 local lobby = assert( loadfile( "src/ui/ui/t6/menus/privateonlinegamelobby.lua" ) )
 lobby(); lobby() -- loading twice must not duplicate rows
-local list = CoD.PrivateGameLobby.Dvars
+assert( #CoD.PrivateGameLobby.Dvars == 1, "the stock option list is left alone" )
+local list = { { id = "sv_cheats" } }
+for _, option in ipairs( CoD.ZMCheckpointMenu.MoreOptions ) do list[#list + 1] = option end
 local ids = {}
 for _, option in ipairs( list ) do ids[#ids + 1] = option.id end
 assert( table.concat( ids, "," ) == "sv_cheats,zmcp_all_perks,zmcp_start_weapons,zmcp_start_perks,zmcp_start_points,zmcp_start_world", table.concat( ids, "," ) )
@@ -26,7 +28,7 @@ assert( points.name == "STARTING POINTS" and #points.labels == 9 and #points.val
 assert( points.labels[1] == "DEFAULT" and points.values[1] == 0 and points.values[9] == 1000000 and points.labels[9] == "1,000,000" )
 assert( world.name == "OPENING" and #world.labels == 4 and world.labels[1] == "NORMAL" and world.labels[4] == "POWER + DOORS" )
 assert( world.values[1] == 0 and world.values[2] == 1 and world.values[3] == 2 and world.values[4] == 3 )
-assert( CoD.PrivateGameLobby.DvarDefaults.zmcp_start_points == 0 and CoD.PrivateGameLobby.DvarDefaults.zmcp_start_world == 0 )
+assert( points.default == 0 and world.default == 0 )
 
 -- No weapon list: only how many random weapons, and a single random perk.
 local weapons, perks = list[3], list[4]
@@ -34,7 +36,7 @@ assert( weapons.name == "STARTING WEAPONS" and #weapons.labels == 5 and #weapons
 assert( weapons.labels[1] == "NONE" and weapons.labels[2] == "1 RANDOM WEAPON" and weapons.labels[3] == "2 RANDOM WEAPONS" )
 assert( weapons.labels[4] == "1 PACKED WEAPON" and weapons.labels[5] == "2 PACKED WEAPONS" and weapons.values[4] == 3 and weapons.values[5] == 4 and weapons.values[3] == 2 )
 assert( perks.name == "STARTING PERK" and #perks.labels == 2 and perks.labels[2] == "1 RANDOM PERK" and perks.values[2] == 1 )
-assert( CoD.PrivateGameLobby.DvarDefaults.zmcp_start_weapons == 0 and CoD.PrivateGameLobby.DvarDefaults.zmcp_start_perks == 0 )
+assert( weapons.default == 0 and perks.default == 0 )
 assert( list[1].id == "sv_cheats" and not CoD.ZMCheckpointMenu.LoadoutMaps and not CoD.ZMCheckpointMenu.LoadoutWeapons, "weapon lists are gone" )
 
 -- Stored values are clamped when the lobby opens; valid ones are kept.
