@@ -1305,7 +1305,8 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
 - **Implemented (statically validated, not tested in-game):** see the 0.4.27 CHANGELOG entry. The stock STARTING ROUND selector is replaced in place by wrapping `CoD.LeftRightSelector.new` (matched by label), driven by archived dvar `zmcp_start_round` (1-255), applied in GSC by `zmcp_apply_custom_start_round` through an `init_levelvars` detour for Survival when nothing is being resumed. The stock gametype setting is untouched.
 - **Reusable stock patterns found:** `ui_keyboard_new <type> "title" "default" <maxlen>` with a `ui_keyboard_input` event on the focused element (`serverbrowserfilterspopup.lua`); `mwheel` button events (`event.qualifier == "mwheel"`, `event.button` up/down, `event.down`) as in `serverlist.lua`.
 - **Installed state:** local game stays on 0.4.25-alpha (updater-driven); 0.4.26 and 0.4.27 are published ([0.4.27-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.27-alpha), ZIP 144,071 bytes, SHA-256 `84A9BBFAB4C981F7202A24EBC5C71C22FEEA33E7AE64229428C383FADB5DFA54`, matches GitHub). The owner has since updated the installed mod to 0.4.26 via the updater, which now reports 0.4.27 available.
-- **Open verification:** hook match and label fit, wheel, keyboard entry, high-round stability, plus everything in section 37 and earlier.
+- **Verified in-game (owner, 2026-11-01):** the hook matched and the row shows CUSTOM STARTING ROUND 110 without overlap; owner says it worked perfectly (match start, wheel/keyboard split not itemized).
+- **Open verification:** wheel, keyboard entry, actual start round/points/HUD, high-round stability, plus everything in section 37 and earlier.
 
 ## 37. 0.4.26-alpha CO-OP RESUME redesign — 2026-11-01
 

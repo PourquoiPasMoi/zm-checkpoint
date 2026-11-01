@@ -6,6 +6,10 @@ semantics.
 
 ## 0.4.27-alpha — 2026-11-01
 
+### 2026-11-01 — Owner confirms CUSTOM STARTING ROUND in-game
+
+- **Verified in-game (owner screenshot and report, 2026-11-01):** in the Nuketown Survival lobby the row reads **CUSTOM STARTING ROUND** with value 110 and fits its column; the owner reports it "worked perfectly". This confirms the selector hook matched, the label fits and a typed or stepped value displays. Not itemized: wheel versus keyboard entry, the match actually starting at the chosen round, and starting points/HUD. Files affected: `CHANGELOG.md`, `PROJECT_HANDOFF.md` only.
+
 ### 2026-11-01 — CUSTOM STARTING ROUND (Claude Code)
 
 - Request: replace the stock STARTING ROUND choices with any round number (click and type, or mouse wheel), renamed "Custom Starting Round", without crashing the game. The owner's screenshot shows the Nuketown Survival lobby with the stock row (value 1) between DIFFICULTY and MAGIC.
