@@ -45,7 +45,7 @@ end
 local function slotHint( meta )
 	if not meta.has then return "Empty slot." end
 	if not meta.settings then return "Older checkpoint: current lobby settings will be used." end
-	return "Select to view this checkpoint's equipment and settings."
+	return "Select this checkpoint, then use START or OPTIONS."
 end
 
 local perkStyle = {
@@ -287,9 +287,10 @@ end
 
 LUI.createMenu.ZMCheckpointSoloResume = function ( controller )
 	local menu, status, list = pageBase( "ZMCheckpointSoloResume", "SOLO RESUME",
-		"Choose a checkpoint for the selected map." )
+		"Select a checkpoint, then use OPTIONS or START." )
 	local map = C.CurrentMap( false )
 	local focusedSlot
+	local selectedSlot -- chosen with Enter/click; OPTIONS and START act on this slot
 	local deleteVisible = false
 	local deletePrompt = CoD.ButtonPrompt.new( "alt1", "Delete", menu, "zmcp_delete_slot",
 		false, nil, false, nil, "DEL" )
@@ -299,61 +300,87 @@ LUI.createMenu.ZMCheckpointSoloResume = function ( controller )
 		menu.rightButtonPromptBar:removeAllChildren()
 		if visible then menu:addRightButtonPrompt( deletePrompt ) end
 	end
-	local lastSlot -- the saved slot most recently highlighted; OPTIONS edits this one
 	local watch, showDetails = attachSlotDetails( menu, list, function ( slot, meta )
 		focusedSlot = meta.has and slot or nil
-		if meta.has then lastSlot = slot end
 		setDeleteVisible( meta.has )
 	end )
+	-- DEL deletes the highlighted slot, so hide it while a non-slot row is focused.
+	local function hideDeleteOnFocus( button )
+		local watcher = LUI.UIElement.new()
+		button:addElement( watcher )
+		watcher:registerEventHandler( "gain_focus", function ()
+			focusedSlot = nil
+			setDeleteVisible( false )
+		end )
+	end
 	local function build()
 		local anySaved = false
+		local focusIndex, savedCount = nil, 0
+		if selectedSlot and not C.SoloSlotMeta( map, selectedSlot ).has then selectedSlot = nil end
 		for slot = 1, 4 do
 			local chosenSlot = slot
 			local meta = C.SoloSlotMeta( map, chosenSlot )
 			local title = "SLOT " .. chosenSlot .. (meta.has and (" - ROUND " .. meta.round) or " - EMPTY")
+			if selectedSlot == chosenSlot then title = title .. " - SELECTED" end
 			local button = list:addButton( title, slotHint( meta ) )
 			watch( button, chosenSlot, meta )
 			if meta.has then
 				anySaved = true
-				button:setActionEventName( "zmcp_resume_slot_" .. chosenSlot )
-				menu:registerEventHandler( "zmcp_resume_slot_" .. chosenSlot, function ( owner, event )
-					local ok, reason = C.Resume( owner, event, chosenSlot )
-					if not ok then status:setText( reason ) end
+				savedCount = savedCount + 1
+				if selectedSlot == chosenSlot then focusIndex = savedCount end
+				button:setActionEventName( "zmcp_select_slot_" .. chosenSlot )
+				menu:registerEventHandler( "zmcp_select_slot_" .. chosenSlot, function ( owner )
+					if selectedSlot == chosenSlot then return end
+					selectedSlot = chosenSlot
+					status:setText( "Slot " .. chosenSlot .. " selected. Use START to resume or OPTIONS to change it." )
+					-- Rebuild after this click has finished dispatching.
+					menu:addElement( LUI.UITimer.new( 1, "zmcp_rebuild", true ) )
 				end )
 			else
 				button:disable()
 			end
 		end
-		local options = list:addButton( "OPTIONS",
-			"Change the saved settings of the highlighted checkpoint." )
-		if anySaved then
-			options:setActionEventName( "zmcp_slot_options" )
-			-- DEL deletes the highlighted slot, so it is hidden while OPTIONS is focused.
-			local watcher = LUI.UIElement.new()
-			options:addElement( watcher )
-			watcher:registerEventHandler( "gain_focus", function ()
-				focusedSlot = nil
-				setDeleteVisible( false )
-			end )
-			list:processEvent( { name = "gain_focus" } )
-		else
+		local options = list:addButton( "OPTIONS", "Change the saved settings of the selected checkpoint." )
+		local start = list:addButton( "START", "Start the selected checkpoint." )
+		options:setActionEventName( "zmcp_slot_options" )
+		start:setActionEventName( "zmcp_slot_start" )
+		hideDeleteOnFocus( options )
+		hideDeleteOnFocus( start )
+		if not selectedSlot then
 			options:disable()
-			focusedSlot, lastSlot = nil, nil
+			start:disable()
+		end
+		if anySaved then
+			list:processEvent( { name = "gain_focus" } )
+			if focusIndex and list.selectElementIndex then
+				pcall( function () list:selectElementIndex( focusIndex ) end )
+			end
+		else
+			focusedSlot = nil
 			setDeleteVisible( false )
 			showDetails( 1, C.SoloSlotMeta( map, 1 ) )
 		end
 	end
 	build()
-	menu:registerEventHandler( "zmcp_slot_options", function ( owner, event )
-		if not lastSlot or not C.SoloSlotMeta( map, lastSlot ).has then return end
-		C.OptionsTarget = { map = map, slot = lastSlot, owner = owner }
-		owner:openPopup( "ZMCheckpointSoloOptions", event.controller or controller )
-	end )
-	menu:registerEventHandler( "zmcp_options_applied", function ( owner, event )
-		status:setText( "Slot " .. event.slot .. " options saved. The save file was not changed." )
+	local function rebuild()
 		list:removeAllButtons()
 		focusedSlot = nil
 		build()
+	end
+	menu:registerEventHandler( "zmcp_rebuild", rebuild )
+	menu:registerEventHandler( "zmcp_slot_options", function ( owner, event )
+		if not selectedSlot or not C.SoloSlotMeta( map, selectedSlot ).has then return end
+		C.OptionsTarget = { map = map, slot = selectedSlot, owner = owner }
+		owner:openPopup( "ZMCheckpointSoloOptions", event.controller or controller )
+	end )
+	menu:registerEventHandler( "zmcp_slot_start", function ( owner, event )
+		if not selectedSlot then return end
+		local ok, reason = C.Resume( owner, event, selectedSlot )
+		if not ok then status:setText( reason ) end
+	end )
+	menu:registerEventHandler( "zmcp_options_applied", function ( owner, event )
+		status:setText( "Slot " .. event.slot .. " options saved. The save file was not changed." )
+		rebuild()
 	end )
 	menu:registerEventHandler( "zmcp_delete_slot", function ( owner, event )
 		if not focusedSlot or menu.zmcpDeleteOpen then return end
@@ -373,9 +400,8 @@ LUI.createMenu.ZMCheckpointSoloResume = function ( controller )
 		else
 			status:setText( "That save could not be deleted." )
 		end
-		list:removeAllButtons()
-		focusedSlot = nil
-		build()
+		if selectedSlot == event.slot then selectedSlot = nil end
+		rebuild()
 	end )
 	return menu
 end
