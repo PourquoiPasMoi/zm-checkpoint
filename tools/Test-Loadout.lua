@@ -18,7 +18,15 @@ lobby(); lobby() -- loading twice must not duplicate rows
 local list = CoD.PrivateGameLobby.Dvars
 local ids = {}
 for _, option in ipairs( list ) do ids[#ids + 1] = option.id end
-assert( table.concat( ids, "," ) == "sv_cheats,zmcp_all_perks,zmcp_start_weapons,zmcp_start_perks", table.concat( ids, "," ) )
+assert( table.concat( ids, "," ) == "sv_cheats,zmcp_all_perks,zmcp_start_weapons,zmcp_start_perks,zmcp_start_points,zmcp_start_world", table.concat( ids, "," ) )
+
+-- Starting points: fixed amounts, DEFAULT first. Opening: power/doors bit values.
+local points, world = list[5], list[6]
+assert( points.name == "STARTING POINTS" and #points.labels == 9 and #points.values == 9 )
+assert( points.labels[1] == "DEFAULT" and points.values[1] == 0 and points.values[9] == 1000000 and points.labels[9] == "1,000,000" )
+assert( world.name == "OPENING" and #world.labels == 4 and world.labels[1] == "NORMAL" and world.labels[4] == "POWER + DOORS" )
+assert( world.values[1] == 0 and world.values[2] == 1 and world.values[3] == 2 and world.values[4] == 3 )
+assert( CoD.PrivateGameLobby.DvarDefaults.zmcp_start_points == 0 and CoD.PrivateGameLobby.DvarDefaults.zmcp_start_world == 0 )
 
 -- No weapon list: only how many random weapons, and a single random perk.
 local weapons, perks = list[3], list[4]
@@ -40,4 +48,13 @@ w, p = open( "2", "1" ); assert( w == "2" and p == "1", "valid values are kept" 
 w, p = open( "5", "4" ); assert( w == "2" and p == "1", "old multi-perk and oversized values clamp" )
 w, p = open( "-3", "-1" ); assert( w == "0" and p == "0" )
 w, p = open( "x", "1.7" ); assert( w == "0" and p == "1" )
-print( "PASS: starting loadout rows: random weapon count 0-2 and a single random perk, stored values clamped" )
+dvars.zmcp_start_points, dvars.zmcp_start_world = "50000", "2"
+LUI.createMenu.PrivateOnlineGameLobby( 0 )
+assert( tostring( dvars.zmcp_start_points ) == "50000" and tostring( dvars.zmcp_start_world ) == "2", "valid points/opening kept" )
+dvars.zmcp_start_points, dvars.zmcp_start_world = "123", "9"
+LUI.createMenu.PrivateOnlineGameLobby( 0 )
+assert( tostring( dvars.zmcp_start_points ) == "0" and tostring( dvars.zmcp_start_world ) == "3", "unknown points reset, opening clamps" )
+dvars.zmcp_start_points, dvars.zmcp_start_world = nil, "x"
+LUI.createMenu.PrivateOnlineGameLobby( 0 )
+assert( tostring( dvars.zmcp_start_points ) == "0" and tostring( dvars.zmcp_start_world ) == "0" )
+print( "PASS: starting loadout rows: random weapon count 0-2, single random perk, points and opening rows, stored values clamped" )

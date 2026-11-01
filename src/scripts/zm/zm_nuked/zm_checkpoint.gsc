@@ -79,7 +79,10 @@ init()
     level thread zmcp_unlimited_perks();
 
     if ( !level.zmcp_coop_loading && !level.zmcp_loading )
+    {
         level thread zmcp_starting_loadout();
+        level thread zmcp_starting_world();
+    }
 
     if ( isdefined( level.zmcp_settings_rejected ) )
         level thread zmcp_solo_reject_settings();

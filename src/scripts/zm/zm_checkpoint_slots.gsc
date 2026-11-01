@@ -246,28 +246,48 @@ zmcp_solo_read_settings( checkpoint, fields )
 // CUSTOM STARTING ROUND (lobby dvar zmcp_start_round, whole numbers 1-255). The
 // lobby row exists only in Survival, so other modes keep the stock setting. The
 // stock gametype setting is untouched, exactly like a resumed checkpoint.
-zmcp_apply_custom_start_round()
+zmcp_custom_round_value()
 {
     if ( getdvar( "g_gametype" ) != "zstandard" )
-        return;
+        return 0;
 
     value = getdvar( "zmcp_start_round" );
     if ( value == "" || value.size > 3 )
-        return;
+        return 0;
 
     for ( i = 0; i < value.size; i++ )
     {
         if ( !issubstr( "0123456789", value[i] ) )
-            return;
+            return 0;
     }
 
     round = int( value );
     if ( round < 1 || round > 255 )
+        return 0;
+
+    return round;
+}
+
+// STARTING POINTS (lobby dvar zmcp_start_points, 0 = the normal amount). Applied
+// last, so it also overrides the points a custom starting round would give.
+zmcp_apply_custom_start_round()
+{
+    round = zmcp_custom_round_value();
+    points = getdvarint( "zmcp_start_points" );
+    if ( points < 1 || points > 1000000 )
+        points = 0;
+
+    if ( round < 1 && points < 1 )
         return;
 
-    level.zmcp_custom_round = round;
+    if ( round > 0 )
+        level.zmcp_custom_round = round;
+
+    if ( points > 0 )
+        level.zmcp_custom_points = points;
+
     replacefunc( getfunction( "maps/mp/zombies/_zm", "init_levelvars" ), ::zmcp_custom_levelvars_override, -1 );
-    println( "ZMCP: custom starting round " + round );
+    println( "ZMCP: custom start round=" + round + " points=" + points );
 }
 
 zmcp_custom_levelvars_override()
@@ -276,13 +296,68 @@ zmcp_custom_levelvars_override()
     disabledetouronce( original );
     [[ original ]]();
 
-    if ( !isdefined( level.zmcp_custom_round ) )
+    if ( isdefined( level.zmcp_custom_round ) )
+    {
+        level.start_round = level.zmcp_custom_round;
+        level.round_number = level.zmcp_custom_round;
+        // Same rule as the stock init_levelvars for a higher starting round.
+        level.player_starting_points = level.round_number * 500;
+    }
+
+    if ( isdefined( level.zmcp_custom_points ) )
+        level.player_starting_points = level.zmcp_custom_points;
+}
+
+// OPENING (lobby dvar zmcp_start_world: 1 = power on, 2 = doors and debris open,
+// 3 = both). Fresh matches only, applied right after the opening black screen.
+zmcp_starting_world()
+{
+    level endon( "end_game" );
+
+    world = getdvarint( "zmcp_start_world" );
+    if ( world < 1 || world > 3 )
         return;
 
-    level.start_round = level.zmcp_custom_round;
-    level.round_number = level.zmcp_custom_round;
-    // Same rule as the stock init_levelvars for a higher starting round.
-    level.player_starting_points = level.round_number * 500;
+    flag_wait( "initial_blackscreen_passed" );
+    wait 1;
+
+    if ( world == 1 || world == 3 )
+    {
+        if ( flag_exists( "power_on" ) )
+            flag_set( "power_on" );
+    }
+
+    if ( world == 2 || world == 3 )
+        zmcp_open_all_doors();
+
+    println( "ZMCP: opening applied mode=" + world );
+}
+
+// Same triggers the stock open_sesame debug command uses; the third argument is
+// the stock "force" flag, so no points are taken.
+zmcp_open_all_doors()
+{
+    players = get_players();
+    if ( players.size < 1 )
+        return;
+
+    who = players[0];
+    names = array( "zombie_door", "zombie_debris" );
+
+    for ( n = 0; n < names.size; n++ )
+    {
+        entities = getentarray( names[n], "targetname" );
+
+        for ( i = 0; i < entities.size; i++ )
+        {
+            entities[i] notify( "trigger", who, 1 );
+
+            if ( is_true( entities[i].power_door_ignore_flag_wait ) )
+                entities[i] notify( "power_on" );
+
+            wait 0.05;
+        }
+    }
 }
 
 // STARTING LOADOUT (lobby dvars zmcp_start_weapons = 0-2 random weapons and
