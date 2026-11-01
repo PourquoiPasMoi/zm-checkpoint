@@ -12,7 +12,7 @@ failure, installation, or test so the project retains its lessons.
 
 - Project: **ZM Checkpoint** for Call of Duty: Black Ops II Zombies on Plutonium T6.
 - Workspace: `C:\Users\User\Documents\Projects\Bo2 Zombie Plutonium`
-- Current source/package: **0.4.24-alpha** (adds per-save OPTIONS, section 33; 0.4.23 added solo save deletion, section 32); latest published: **0.4.24-alpha**; installed locally: **0.4.23-alpha**; locally installed: **0.4.21-alpha**. Older note follows: locally installed metadata was **0.4.20-alpha**. GitHub publication status is recorded in section 30. No project installer was run for 0.4.21.
+- Current source/package: **0.4.25-alpha** (select, OPTIONS and START flow, section 34; 0.4.24 added per-save OPTIONS, section 33; 0.4.23 added solo save deletion, section 32); latest published: **0.4.24-alpha**; installed locally: **0.4.23-alpha**; locally installed: **0.4.21-alpha**. Older note follows: locally installed metadata was **0.4.20-alpha**. GitHub publication status is recorded in section 30. No project installer was run for 0.4.21.
 - Current date of this handoff: **2026-10-30**
 - The project is a Git repository with public origin `https://github.com/PourquoiPasMoi/zm-checkpoint`.
 - The standalone mod and companion packages are installed locally.
@@ -1297,6 +1297,12 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   0.4.15-alpha. All four task-start checkpoint hashes listed above still
   match after publication. Unload/reload the mod after using the updater;
   Plutonium itself does not need restarting.
+
+## 34. 0.4.25-alpha select, OPTIONS, START — 2026-11-01
+
+- **0.4.24 result:** owner screenshot confirms the OPTIONS row renders under the slots (**verified in-game**: row and DEL prompt visible; OPTIONS page, apply and per-save effects not yet reported). The owner asked that a save be selected first so it is clear which save OPTIONS edits, and for a START button.
+- **Change (UI only):** slot click now selects (`zmcp_select_slot_N`), shows " - SELECTED", rebuilds via a one-shot `LUI.UITimer(1, "zmcp_rebuild", true)` and re-focuses with `selectElementIndex`; OPTIONS (`zmcp_slot_options`) and START (`zmcp_slot_start`) are disabled until a slot is selected. START calls `C.Resume` for the selected slot. Overrides, tombstones and GSC are unchanged.
+- **Validated statically:** Lua parse, Build.ps1, six GSC parses, five Lua suites (`Test-SoloDelete.lua` updated). **In-game result: not yet tested.**
 
 ## 33. 0.4.24-alpha per-save OPTIONS — 2026-11-01
 

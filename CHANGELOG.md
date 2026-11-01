@@ -4,6 +4,17 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.25-alpha — 2026-11-01
+
+### 2026-11-01 — Select a save first, then OPTIONS or START
+
+- Request: make OPTIONS act on an explicitly selected save (greyed out until one is chosen, so it is clear which save is being edited), and add a START button that launches the selected save.
+- Change or investigation: **Verified in-game (owner screenshot, 2026-11-01):** the 0.4.24 SOLO RESUME page shows the OPTIONS row under the four slots with `DEL Delete` bottom right; in that version OPTIONS acted on the last highlighted slot and was never greyed out, which is what the owner objected to. Now clicking a saved slot only selects it (its row gains " - SELECTED", the status line names it, and focus returns to it); it no longer resumes. OPTIONS and START, in that order below the slots, stay greyed out until a slot is selected. OPTIONS opens the options page for the selected slot; START runs the existing `C.Resume` for it (same settings checks, `zmcp_autoload` + `xpartygo` path). The list is rebuilt from a one-shot `UITimer` after the click so no button is destroyed during its own event. DEL still deletes the highlighted slot and is hidden while OPTIONS or START is focused; deleting the selected slot clears the selection. Slot hint text now reads "Select this checkpoint, then use START or OPTIONS."
+- Files affected: `src/ui/ui/t6/menus/zmcheckpointsolo.lua`, `tools/Test-SoloDelete.lua`, `mod.json`, `README.md`, `CHANGELOG.md`, `PROJECT_HANDOFF.md`. No GSC, save-format or save-file change.
+- Validation: modified Lua parsed; Build.ps1 passed; six T6 GSC parses passed; all five Lua suites pass, including updated mocked cases for greyed-out rows, select-then-rebuild with focus returning, START launching the selected slot, OPTIONS targeting it, and ignoring OPTIONS/START with no selection. Nothing installed; no `scriptdata` written.
+- In-game result: Not yet tested. Focus restoring to the selected row uses `selectElementIndex` and is expected, not verified.
+- Remaining risk/next step: confirm the click selects without resuming, the SELECTED marker fits, OPTIONS/START enable, START launches the match, and DEL/Back still behave. Mouse click versus Enter should both be tried.
+
 ## 0.4.24-alpha — 2026-11-01
 
 ### 2026-11-01 — Per-save OPTIONS on SOLO RESUME

@@ -38,7 +38,8 @@ restore is **validated statically** and still needs an in-game test.
 
 ## Per-save options
 
-On SOLO RESUME, highlight a saved slot and choose **OPTIONS** (last row) to change
+On SOLO RESUME, click a saved slot to select it (it is marked SELECTED); OPTIONS
+and START stay greyed out until then. Choose **START** to resume it, or **OPTIONS** to change
 that save's difficulty, Magic, Headshots Only, Target Assist, Cheats and
 **Unlimited Perks**, then **APPLY CHANGES**. The save file is not modified; the
 choices are stored beside it and used when you Resume, and they are cleared when

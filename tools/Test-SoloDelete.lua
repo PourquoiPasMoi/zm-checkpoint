@@ -19,7 +19,7 @@ local function widget( name )
 	end
 	w.addButton = function ( self, title )
 		local b = proxy()
-		b.title = title
+		b.title, b.disabled = title, false
 		b.setActionEventName = function ( s, n ) s.action = n end
 		b.disable = function ( s ) s.disabled = true end
 		b.watchers = {}
@@ -28,6 +28,7 @@ local function widget( name )
 		return b
 	end
 	w.removeAllButtons = function ( self ) self.buttons = {} end
+	w.selectElementIndex = function ( self, i ) self.selectedIndex = i end
 	w.selectors = {}
 	w.addDvarLeftRightSelector = function ( self, controller, name, dvar )
 		local sel = { name = name, dvar = dvar, choices = {}, value = d[dvar] }
@@ -60,7 +61,7 @@ CoD = {
 	ZMCheckpointMenu = {}
 }
 LUI = { createMenu = {}, Alignment = { Left = 0 }, UIText = { new = function () return proxy() end },
-	UIImage = { new = function () return proxy() end }, UIElement = { new = function () return widget( "el" ) end } }
+	UIImage = { new = function () return proxy() end }, UITimer = { new = function () return proxy() end }, UIElement = { new = function () return widget( "el" ) end } }
 UIExpression = { DvarString = function ( _, k ) return d[k] or "" end }
 Engine = { Localize = function ( s ) return s end, SetDvar = function ( k, v ) d[k] = tostring( v ) end, Exec = function ( _, t ) execs[#execs + 1] = t end,
 	PartyGetPlayerCount = function () return 1 end, PlaySound = function () end }
@@ -90,7 +91,7 @@ seed( 3, 5 ); d.zmcp_del_zm_nuked_slot3 = nil
 -- Page: DELETE prompt shows only for a saved slot; confirm flow removes that slot only.
 local page = LUI.createMenu.ZMCheckpointSoloResume( 0 )
 local buttons = function () return page.list.buttons end
-assert( #buttons() == 5 and buttons()[5].title == "OPTIONS" and buttons()[1].title == "SLOT 1 - ROUND 8" and buttons()[2].disabled )
+assert( #buttons() == 6 and buttons()[5].title == "OPTIONS" and buttons()[6].title == "START" and buttons()[5].disabled and buttons()[6].disabled and buttons()[1].title == "SLOT 1 - ROUND 8" and buttons()[2].disabled )
 page:processEvent( { name = "zmcp_delete_slot", controller = 0 } ) -- nothing focused yet: ignored
 assert( not menus.ZMCheckpointDeleteConfirm, "must not open without a focused saved slot" )
 assert( #page.rightPrompts == 0 )
@@ -108,10 +109,10 @@ assert( page.popup and page.popup.zmcpSlot == 3 and page.popup.text:find( "Slot 
 -- A confirmed delete rebuilds the list without that slot and leaves the others.
 page:processEvent( { name = "zmcp_delete_confirmed", slot = 3, controller = 0 } )
 assert( d.zmcp_has_zm_nuked_slot3 == "0" and d.zmcp_has_zm_nuked == "1" )
-assert( #buttons() == 5 and buttons()[3].title == "SLOT 3 - EMPTY" and buttons()[1].title == "SLOT 1 - ROUND 8" )
+assert( #buttons() == 6 and buttons()[3].title == "SLOT 3 - EMPTY" and buttons()[1].title == "SLOT 1 - ROUND 8" )
 page:processEvent( { name = "zmcp_delete_confirmed", slot = 1, controller = 0 } )
 for i = 1, 4 do assert( buttons()[i].title:find( "EMPTY" ) and buttons()[i].disabled ) end
-assert( buttons()[5].disabled, "OPTIONS needs a saved slot" )
+assert( buttons()[5].disabled and buttons()[6].disabled, "OPTIONS and START need a selected slot" )
 page:processEvent( { name = "zmcp_delete_slot", controller = 0 } )
 assert( not page.popup.zmcpSlot or page.popup.zmcpSlot ~= 1, "no saved slot is left to delete" )
 
@@ -140,12 +141,21 @@ local function seedFull( slot )
 end
 seedFull( 2 ); seed( 4, 3 ) -- slot 4 is an older save without SETTINGS
 local page2 = LUI.createMenu.ZMCheckpointSoloResume( 0 )
+local page2Process = page2.processEvent
 local btns = function () return page2.list.buttons end
-assert( #btns() == 5 and btns()[5].title == "OPTIONS" and btns()[5].action == "zmcp_slot_options" )
-page2:processEvent( { name = "zmcp_slot_options", controller = 0 } ) -- nothing highlighted yet
+assert( #btns() == 6 and btns()[5].title == "OPTIONS" and btns()[6].title == "START" )
+assert( btns()[5].disabled and btns()[6].disabled, "greyed out until a slot is selected" )
+assert( btns()[2].action == "zmcp_select_slot_2", "clicking a slot selects it instead of resuming" )
+page2:processEvent( { name = "zmcp_slot_options", controller = 0 } ) -- nothing selected: ignored
+page2:processEvent( { name = "zmcp_slot_start", controller = 0 } )
+assert( #execs == 0 and not C.OptionsTarget, "no start or options without a selection" )
 btns()[2].watchers[1]:processEvent( { name = "gain_focus" } )
 assert( #page2.rightPrompts == 1 )
-btns()[5].watchers[1]:processEvent( { name = "gain_focus" } )
+page2:processEvent( { name = "zmcp_select_slot_2", controller = 0 } )
+page2:processEvent( { name = "zmcp_rebuild" } )
+assert( btns()[2].title == "SLOT 2 - ROUND 6 - SELECTED" and not btns()[5].disabled and not btns()[6].disabled )
+assert( page2.list.selectedIndex == 1, "focus returns to the selected slot" )
+btns()[6].watchers[1]:processEvent( { name = "gain_focus" } )
 page2.openPopup = function ( self, name ) self.opened = name; return LUI.createMenu[name]( 0 ) end
 page2:processEvent( { name = "zmcp_slot_options", controller = 0 } )
 assert( page2.opened == "ZMCheckpointSoloOptions" and C.OptionsTarget.slot == 2 )
@@ -173,8 +183,9 @@ Engine.SetGametypeSetting = function ( k, v ) settings[k] = v end
 Engine.GetGametypeSetting = function ( k ) return settings[k] end
 d.sv_allowAimAssist, d.sv_cheats = "1", "1"
 execs = {}
-local ok, why = C.Resume( {}, { controller = 0 }, 2 )
-assert( ok, tostring( why ) )
+page2.processEvent = page2Process
+page2:processEvent( { name = "zmcp_slot_start", controller = 0 } ) -- START resumes the selected slot
+assert( table.concat( execs ):find( "set zmcp_solo_slot 2", 1, true ) and table.concat( execs ):find( "xpartygo", 1, true ) )
 assert( d.sv_cheats == "0" and d.zmcp_all_perks == "1", "override cheats off, perks on" )
 assert( table.concat( execs ):find( "seta zmcp_all_perks 1", 1, true ) )
 -- Older save: only perks can change and no settings override is written.
