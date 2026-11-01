@@ -50,11 +50,16 @@ CoD = {
 		local p = proxy(); p.button, p.label, p.event, p.key = btn, label, event, key; return p
 	end },
 	CoD9Button = { Height = 40 },
-	ButtonList = { new = function () return current.list end },
+	ButtonList = { new = function ()
+		local l = widget( "list" )
+		current.lists[#current.lists + 1] = l
+		if current.list == false then current.list = l end
+		return l
+	end },
 	Menu = {
-		New = function ( name ) local m = widget( name ); menus[name] = m; current = m; m.list = widget( "list" ); return m end,
+		New = function ( name ) local m = widget( name ); menus[name] = m; current = m; m.lists, m.list = {}, false; return m end,
 		NewSmallPopup = function ( name )
-			local m = widget( name ); menus[name] = m; m.buttonLists = {}; current = m; m.list = widget( "list" ); return m
+			local m = widget( name ); menus[name] = m; m.buttonLists = {}; current = m; m.lists = {}; m.list = widget( "list" ); m.lists[1] = m.list; return m
 		end,
 		ButtonPromptBack = function ( owner ) owner.closed = true end
 	},
@@ -71,6 +76,9 @@ dofile( "src/ui/ui/t6/menus/zmcheckpointmenu.lua" )
 dofile( "src/ui/ui/t6/menus/zmcheckpointsolo.lua" )
 local C = CoD.ZMCheckpointMenu
 
+-- Resume page: lists[1] holds OPTIONS and START, lists[2] slots 1,3,5,7, lists[3] slots 2,4,6,8.
+local function slotBtn( p, n ) return p.lists[n % 2 == 1 and 2 or 3].buttons[math.ceil( n / 2 )] end
+
 local function seed( slot, round )
 	local suffix = slot == 1 and "" or ( "_slot" .. slot )
 	d["zmcp_has_zm_nuked" .. suffix] = "1"
@@ -81,7 +89,8 @@ d.ui_mapname = "zm_nuked"
 seed( 1, 8 ); seed( 3, 5 )
 
 -- Backend: tombstone set, slot hidden at once, archived with seta.
-assert( not C.DeleteSoloSlot( 0, "zm_bogus", 1 ) and not C.DeleteSoloSlot( 0, "zm_nuked", 5 ) )
+assert( not C.DeleteSoloSlot( 0, "zm_bogus", 1 ) and not C.DeleteSoloSlot( 0, "zm_nuked", 9 ) )
+assert( C.SoloSlotCount == 8 )
 assert( C.DeleteSoloSlot( 0, "zm_nuked", 3 ) )
 assert( d.zmcp_del_zm_nuked_slot3 == "1" and d.zmcp_has_zm_nuked_slot3 == "0" and d.zmcp_round_zm_nuked_slot3 == "0" )
 assert( d.zmcp_has_zm_nuked == "1" and d.zmcp_round_zm_nuked == "8", "other slots untouched" )
@@ -90,12 +99,16 @@ seed( 3, 5 ); d.zmcp_del_zm_nuked_slot3 = nil
 
 -- Page: DELETE prompt shows only for a saved slot; confirm flow removes that slot only.
 local page = LUI.createMenu.ZMCheckpointSoloResume( 0 )
-local buttons = function () return page.list.buttons end
-assert( #buttons() == 6 and buttons()[5].title == "OPTIONS" and buttons()[6].title == "START" and buttons()[5].disabled and buttons()[6].disabled and buttons()[1].title == "SLOT 1 - ROUND 8" and buttons()[2].disabled )
+local actions = function () return page.list.buttons end
+assert( #actions() == 2 and actions()[1].title == "OPTIONS" and actions()[2].title == "START" and actions()[1].disabled and actions()[2].disabled )
+assert( #page.lists == 3 and #page.lists[2].buttons == 4 and #page.lists[3].buttons == 4, "eight slots in two columns" )
+assert( slotBtn( page, 1 ).title == "SLOT 1 - ROUND 8" and slotBtn( page, 2 ).disabled and slotBtn( page, 8 ).title == "SLOT 8 - EMPTY" )
+assert( slotBtn( page, 1 ).navigation.right == slotBtn( page, 2 ) and slotBtn( page, 4 ).navigation.left == slotBtn( page, 3 ), "left/right between a row's two slots" )
+assert( slotBtn( page, 3 ).navigation.down == actions()[1], "down from the last saved slot of a column reaches OPTIONS" )
 page:processEvent( { name = "zmcp_delete_slot", controller = 0 } ) -- nothing focused yet: ignored
 assert( not menus.ZMCheckpointDeleteConfirm, "must not open without a focused saved slot" )
 assert( #page.rightPrompts == 0 )
-buttons()[3].watchers[1]:processEvent( { name = "gain_focus" } )
+slotBtn( page, 3 ).watchers[1]:processEvent( { name = "gain_focus" } )
 assert( #page.rightPrompts == 1 and page.rightPrompts[1].key == "DEL" and page.rightPrompts[1].label == "Delete" )
 assert( page.rightPrompts[1].button == "alt1" and page.rightPrompts[1].event == "zmcp_delete_slot" )
 page.openPopup = function ( self, name )
@@ -109,10 +122,10 @@ assert( page.popup and page.popup.zmcpSlot == 3 and page.popup.text:find( "Slot 
 -- A confirmed delete rebuilds the list without that slot and leaves the others.
 page:processEvent( { name = "zmcp_delete_confirmed", slot = 3, controller = 0 } )
 assert( d.zmcp_has_zm_nuked_slot3 == "0" and d.zmcp_has_zm_nuked == "1" )
-assert( #buttons() == 6 and buttons()[3].title == "SLOT 3 - EMPTY" and buttons()[1].title == "SLOT 1 - ROUND 8" )
+assert( #actions() == 2 and slotBtn( page, 3 ).title == "SLOT 3 - EMPTY" and slotBtn( page, 1 ).title == "SLOT 1 - ROUND 8" )
 page:processEvent( { name = "zmcp_delete_confirmed", slot = 1, controller = 0 } )
-for i = 1, 4 do assert( buttons()[i].title:find( "EMPTY" ) and buttons()[i].disabled ) end
-assert( buttons()[5].disabled and buttons()[6].disabled, "OPTIONS and START need a selected slot" )
+for i = 1, 8 do assert( slotBtn( page, i ).title:find( "EMPTY" ) and slotBtn( page, i ).disabled ) end
+assert( actions()[1].disabled and actions()[2].disabled, "OPTIONS and START need a selected slot" )
 page:processEvent( { name = "zmcp_delete_slot", controller = 0 } )
 assert( not page.popup.zmcpSlot or page.popup.zmcpSlot ~= 1, "no saved slot is left to delete" )
 
@@ -143,29 +156,32 @@ seedFull( 2 ); seed( 4, 3 ) -- slot 4 is an older save without SETTINGS
 local page2 = LUI.createMenu.ZMCheckpointSoloResume( 0 )
 local page2Process = page2.processEvent
 local btns = function () return page2.list.buttons end
-assert( #btns() == 6 and btns()[5].title == "OPTIONS" and btns()[6].title == "START" )
-assert( btns()[5].disabled and btns()[6].disabled, "greyed out until a slot is selected" )
-assert( btns()[2].action == "zmcp_select_slot_2", "clicking a slot selects it instead of resuming" )
+assert( #btns() == 2 and btns()[1].title == "OPTIONS" and btns()[2].title == "START" )
+assert( btns()[1].disabled and btns()[2].disabled, "greyed out until a slot is selected" )
+assert( slotBtn( page2, 2 ).action == "zmcp_select_slot_2", "clicking a slot selects it instead of resuming" )
 page2:processEvent( { name = "zmcp_slot_options", controller = 0 } ) -- nothing selected: ignored
 page2:processEvent( { name = "zmcp_slot_start", controller = 0 } )
 assert( #execs == 0 and not C.OptionsTarget, "no start or options without a selection" )
-btns()[2].watchers[1]:processEvent( { name = "gain_focus" } )
+slotBtn( page2, 2 ).watchers[1]:processEvent( { name = "gain_focus" } )
 assert( #page2.rightPrompts == 1 )
 page2:processEvent( { name = "zmcp_select_slot_2", controller = 0 } )
 page2:processEvent( { name = "zmcp_rebuild" } )
-assert( btns()[2].title == "SLOT 2 - ROUND 6 - SELECTED" and not btns()[5].disabled and not btns()[6].disabled )
-assert( page2.list.selectedIndex == 1, "focus returns to the selected slot" )
-btns()[6].watchers[1]:processEvent( { name = "gain_focus" } )
+assert( slotBtn( page2, 2 ).title == "> SLOT 2 - ROUND 6" and not btns()[1].disabled and not btns()[2].disabled )
+assert( page2.lists[3].selectedIndex == 1, "focus returns to the selected slot" )
+btns()[2].watchers[1]:processEvent( { name = "gain_focus" } )
 page2.openPopup = function ( self, name ) self.opened = name; return LUI.createMenu[name]( 0 ) end
 page2:processEvent( { name = "zmcp_slot_options", controller = 0 } )
 assert( page2.opened == "ZMCheckpointSoloOptions" and C.OptionsTarget.slot == 2 )
 local opts = LUI.createMenu.ZMCheckpointSoloOptions( 0 )
 local rows = opts.list.selectors
-assert( #rows == 6 and rows[1].dvar == "zmcp_edit_difficulty" and rows[6].dvar == "zmcp_edit_perks" )
+assert( #rows == 8 and rows[1].dvar == "zmcp_edit_difficulty" and rows[6].dvar == "zmcp_edit_perks" )
+assert( rows[7].dvar == "zmcp_edit_healthcap" and rows[8].dvar == "zmcp_edit_autosave" and #rows[8].choices == 9 and rows[8].choices[9][2] == 8 )
+assert( d.zmcp_edit_healthcap == "0" and d.zmcp_edit_autosave == "0", "new rows start from the lobby values" )
 assert( d.zmcp_edit_difficulty == "0" and d.zmcp_edit_cheats == "1" and d.zmcp_edit_perks == "0" )
 assert( #opts.list.buttons == 2 and opts.list.buttons[1].title == "APPLY CHANGES" )
 -- Apply: disable cheats, enable unlimited perks.
 d.zmcp_edit_cheats, d.zmcp_edit_perks = "0", "1"
+d.zmcp_edit_healthcap, d.zmcp_edit_autosave = "50", "3"
 local applied
 page2.processEvent = function ( self, e ) applied = e end
 opts:processEvent( { name = "zmcp_options_apply", controller = 0 } )
@@ -175,6 +191,7 @@ assert( d.zmcp_solo_zm_nuked_slot2_cheats == "0" and d.zmcp_solo_zm_nuked_slot2_
 assert( d.zmcp_has_zm_nuked_slot2 == "1" and d.zmcp_round_zm_nuked_slot2 == "6", "save metadata untouched" )
 local m = C.SoloSlotMeta( "zm_nuked", 2 )
 assert( m.cheats == 0 and m.unlimited == 1 and m.magic == 1 )
+assert( d.zmcp_ovr_zm_nuked_slot2_healthcap == "50" and d.zmcp_ovr_zm_nuked_slot2_autosave == "3" and m.healthcap == 50 and m.autosave == 3 )
 -- Resume applies the saved-with-override settings and the perks choice.
 d.ui_gametype, d.ui_zm_gamemodegroup, d.ui_zm_mapstartlocation = "zclassic", "zclassic", "nuked"
 C.CoopValue = function ( v ) return v end
@@ -187,11 +204,13 @@ page2.processEvent = page2Process
 page2:processEvent( { name = "zmcp_slot_start", controller = 0 } ) -- START resumes the selected slot
 assert( table.concat( execs ):find( "set zmcp_solo_slot 2", 1, true ) and table.concat( execs ):find( "xpartygo", 1, true ) )
 assert( d.sv_cheats == "0" and d.zmcp_all_perks == "1", "override cheats off, perks on" )
+assert( d.zmcp_health_cap == "50" and d.zmcp_autosave == "3", "per-save health cap and autosave slot applied at START" )
+assert( table.concat( execs ):find( "seta zmcp_health_cap 50", 1, true ) and table.concat( execs ):find( "seta zmcp_autosave 3", 1, true ) )
 assert( table.concat( execs ):find( "seta zmcp_all_perks 1", 1, true ) )
 -- Older save: only perks can change and no settings override is written.
 C.OptionsTarget = { map = "zm_nuked", slot = 4 }
 local old = LUI.createMenu.ZMCheckpointSoloOptions( 0 )
-assert( #old.list.selectors == 1 and old.list.selectors[1].dvar == "zmcp_edit_perks" )
+assert( #old.list.selectors == 3 and old.list.selectors[1].dvar == "zmcp_edit_perks" and old.list.selectors[2].dvar == "zmcp_edit_healthcap" )
 assert( C.ApplySoloOptions( 0, "zm_nuked", 4, { perks = 1 } ) )
 assert( d.zmcp_ovr_zm_nuked_slot4_perks == "1" and d.zmcp_ovr_zm_nuked_slot4_set == nil )
 -- Invalid values are refused without writing anything.
@@ -199,10 +218,21 @@ local before = {}
 for k, v in pairs( d ) do before[k] = v end
 assert( not C.ApplySoloOptions( 0, "zm_nuked", 2, { difficulty = 2, magic = 1, headshots = 0, assist = 1, cheats = 0, perks = 0 } ) )
 assert( not C.ApplySoloOptions( 0, "zm_nuked", 3, { perks = 1 } ), "empty slot" )
+assert( not C.ApplySoloOptions( 0, "zm_nuked", 4, { perks = 1, healthcap = 300 } ) and not C.ApplySoloOptions( 0, "zm_nuked", 4, { perks = 1, autosave = 9 } ) )
+assert( not C.ApplySoloOptions( 0, "zm_nuked", 9, { perks = 1 } ), "slot 9 does not exist" )
 for k, v in pairs( d ) do assert( before[k] == v ) end
 -- Deleting a slot also drops its override.
 C.DeleteSoloSlot( 0, "zm_nuked", 2 )
 assert( d.zmcp_ovr_zm_nuked_slot2_set == "0" and d.zmcp_ovr_zm_nuked_slot2_perks == "-1" )
-assert( C.SoloSlotMeta( "zm_nuked", 2 ).unlimited == nil )
+assert( d.zmcp_ovr_zm_nuked_slot2_healthcap == "-1" and d.zmcp_ovr_zm_nuked_slot2_autosave == "-1" )
+assert( C.SoloSlotMeta( "zm_nuked", 2 ).unlimited == nil and C.SoloSlotMeta( "zm_nuked", 2 ).healthcap == nil )
+-- SAVE popup: the same eight-slot grid, odd slots left and even slots right.
+d = { mapname = "zm_nuked", ui_mapname = "zm_nuked" }
+seed( 1, 8 ); seed( 8, 2 )
+local save = LUI.createMenu.ZMCheckpointSoloSave( 0 )
+assert( #save.lists == 2 and #save.lists[1].buttons == 4 and #save.lists[2].buttons == 4 )
+assert( save.lists[1].buttons[1].action == "zmcp_save_slot_1" and save.lists[2].buttons[1].action == "zmcp_save_slot_2" )
+assert( save.lists[2].buttons[4].action == "zmcp_save_slot_8" and save.lists[2].buttons[4].title == "SLOT 8 - ROUND 2" )
+assert( save.lists[1].buttons[2].navigation.right == save.lists[2].buttons[2], "slot 3 moves right to slot 4" )
 print( "PASS: solo delete tombstone, slot rebuild and confirmation popup events" )
 print( "PASS: solo OPTIONS page, overrides, perks on Resume, older saves, invalid input" )

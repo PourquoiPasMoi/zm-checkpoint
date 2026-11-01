@@ -8,7 +8,7 @@ C.LoadoutWeaponMax = 4
 C.LoadoutPerkMax = 1
 C.LoadoutWorldMax = 3
 C.HealthCapMax = 255
-C.AutosaveMax = 4
+C.AutosaveMax = 8
 
 local function normalize( dvar, maximum )
 	local value = tonumber( C.DvarString( dvar ) )

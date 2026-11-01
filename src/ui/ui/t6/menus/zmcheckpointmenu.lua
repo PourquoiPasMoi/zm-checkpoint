@@ -15,6 +15,9 @@ C.SupportedMaps = {
 	zm_tomb = "ORIGINS"
 }
 
+-- Solo checkpoints: slot 1 uses the legacy file, slots 2 and up add _slotN.
+C.SoloSlotCount = 8
+
 C.DvarString = function ( name )
 	local value = UIExpression.DvarString( nil, name )
 	if value == nil then
@@ -38,7 +41,7 @@ end
 C.HasCheckpoint = function ( mapName )
 	local name = mapName or C.CurrentMap( false )
 	if C.SupportedMaps[name] == nil then return false end
-	for slot = 1, 4 do
+	for slot = 1, C.SoloSlotCount do
 		local suffix = slot == 1 and "" or ("_slot" .. slot)
 		if C.DvarString( "zmcp_has_" .. name .. suffix ) == "1" then return true end
 	end
@@ -79,7 +82,7 @@ C.SaveAndExit = function ( menu, event )
 end
 
 C.CommitSaveAndExit = function ( menu, controller, slot )
-	if slot < 1 or slot > 4 then return end
+	if slot < 1 or slot > C.SoloSlotCount then return end
 	Engine.SetDvar( "zmcp_solo_slot", slot )
 	Engine.SendMenuResponse( controller, C.MenuResponseName, "hello_040" )
 	-- The dvar bridge is intentionally sent as well as the stock menu response.
@@ -127,6 +130,15 @@ C.Resume = function ( menu, event, slot )
 	if meta.unlimited ~= nil then
 		Engine.SetDvar( "zmcp_all_perks", meta.unlimited )
 		Engine.Exec( controller, "seta zmcp_all_perks " .. meta.unlimited .. "\n" )
+	end
+	-- Likewise the per-save zombie health cap and autosave slot, when it has them.
+	if meta.healthcap ~= nil then
+		Engine.SetDvar( "zmcp_health_cap", meta.healthcap )
+		Engine.Exec( controller, "seta zmcp_health_cap " .. meta.healthcap .. "\n" )
+	end
+	if meta.autosave ~= nil then
+		Engine.SetDvar( "zmcp_autosave", meta.autosave )
+		Engine.Exec( controller, "seta zmcp_autosave " .. meta.autosave .. "\n" )
 	end
 	Engine.Exec( controller, "set zmcp_coop_autoload 0\n" )
 	-- Resume through the stock private-lobby launch path. A raw `map` command

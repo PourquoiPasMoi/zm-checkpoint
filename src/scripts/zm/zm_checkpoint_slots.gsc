@@ -1,8 +1,8 @@
 // Appended by Build.ps1. Solo slot 1 retains the original format-3 filename.
-// Slots 2-4 are separate files; all are consumed independently after Resume.
+// Slots 2-8 are separate files; all are consumed independently after Resume.
 zmcp_solo_slot( value )
 {
-    if ( value < 1 || value > 4 )
+    if ( value < 1 || value > 8 )
         return 1;
     return value;
 }
@@ -44,7 +44,7 @@ zmcp_autosave_loop()
     level endon( "end_game" );
 
     slot = getdvarint( "zmcp_autosave" );
-    if ( slot < 1 || slot > 4 )
+    if ( slot < 1 || slot > 8 )
         return;
 
     println( "ZMCP: autosave on, slot " + slot );
@@ -138,7 +138,7 @@ zmcp_solo_meta_prefix( slot )
 // If the write fails, the tombstone stays and the slot remains hidden.
 zmcp_apply_solo_deletes()
 {
-    for ( slot = 1; slot <= 4; slot++ )
+    for ( slot = 1; slot <= 8; slot++ )
     {
         tombstone = "zmcp_del_" + level.zmcp_map + "_slot" + slot;
         if ( !getdvarint( tombstone ) )
@@ -189,8 +189,12 @@ zmcp_solo_clear_overrides( slot )
     // cmdexec runs later; setdvar makes the change visible to the very next read.
     setdvar( prefix + "set", "0" );
     setdvar( prefix + "perks", "-1" );
+    setdvar( prefix + "healthcap", "-1" );
+    setdvar( prefix + "autosave", "-1" );
     cmdexec( "seta " + prefix + "set 0" );
     cmdexec( "seta " + prefix + "perks -1" );
+    cmdexec( "seta " + prefix + "healthcap -1" );
+    cmdexec( "seta " + prefix + "autosave -1" );
 }
 
 zmcp_solo_override_flag( name )

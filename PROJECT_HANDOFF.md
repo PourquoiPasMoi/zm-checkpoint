@@ -1300,6 +1300,10 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   match after publication. Unload/reload the mod after using the updater;
   Plutonium itself does not need restarting.
 
+## 55. 0.4.44-alpha eight solo slots in a grid and per-save run options — 2026-11-01
+
+- **Validated statically (not tested in-game):** solo slots 1-8 (`C.SoloSlotCount`, GSC loops and limits), shown as two ButtonList columns (odd left, even right) on SOLO RESUME and the SAVE popup, with a third list for OPTIONS and START that owns the shared hint; left/right via `button.navigation`. Selected slot is marked "> ". The per-save OPTIONS page also has ZOMBIE HEALTH CAP and AUTOSAVE (`zmcp_ovr_<map>_slotN_healthcap`/`_autosave`, applied at START). **Rule:** every future MORE OPTIONS setting that matters during a run must also be added to the per-save OPTIONS page; start-only settings stay lobby-only. Co-op stays at four sessions. Unknowns: column layout, shared hint position and sideways focus in the real UI.
+
 ## 54. 0.4.43-alpha autosave — 2026-11-01
 
 - **Validated statically (not tested in-game):** AUTOSAVE on MORE OPTIONS (`zmcp_autosave`: OFF or solo slot 1-4). `zmcp_autosave_loop` (slots.gsc, started from `init`) saves at the next round's start via `zmcp_save_checkpoint( player, 0, 1 )`; the `auto` path is silent, solo only, skips downed/last-stand/busy, keeps `<slot>_prev.sav` (per-write restore point) and, once per match, `<slot>_backup.sav`. Default OFF; never writes unless the owner picks a slot. Known limits: solo only; the chosen slot is replaced every round; no co-op autosave; unverified on all maps. Published: [GitHub release 0.4.43-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.43-alpha) (source commit `a469e72e62614f1d4c85d2281d8db44d90a972ed`; 176,061-byte ZIP, 20 entries, no saves/caches, SHA-256 `ADC8276F967BEE6A5459DF9E7B522DDD4AD9F951A3321122494F79968E5BC678`, matches GitHub). No local install was run. Next ideas: zombie speed cap; autosave for co-op only after the solo version is verified.
