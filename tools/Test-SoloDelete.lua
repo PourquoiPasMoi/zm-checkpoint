@@ -28,6 +28,13 @@ local function widget( name )
 		return b
 	end
 	w.removeAllButtons = function ( self ) self.buttons = {} end
+	w.selectors = {}
+	w.addDvarLeftRightSelector = function ( self, controller, name, dvar )
+		local sel = { name = name, dvar = dvar, choices = {}, value = d[dvar] }
+		sel.addChoice = function ( s, c, label, value ) s.choices[#s.choices + 1] = { label, value } end
+		self.selectors[#self.selectors + 1] = sel
+		return sel
+	end
 	w.rightPrompts = {}
 	w.addRightButtonPrompt = function ( self, p ) self.rightPrompts[#self.rightPrompts + 1] = p end
 	w.rightButtonPromptBar = { removeAllChildren = function () end }
@@ -55,7 +62,7 @@ CoD = {
 LUI = { createMenu = {}, Alignment = { Left = 0 }, UIText = { new = function () return proxy() end },
 	UIImage = { new = function () return proxy() end }, UIElement = { new = function () return widget( "el" ) end } }
 UIExpression = { DvarString = function ( _, k ) return d[k] or "" end }
-Engine = { SetDvar = function ( k, v ) d[k] = tostring( v ) end, Exec = function ( _, t ) execs[#execs + 1] = t end,
+Engine = { Localize = function ( s ) return s end, SetDvar = function ( k, v ) d[k] = tostring( v ) end, Exec = function ( _, t ) execs[#execs + 1] = t end,
 	PartyGetPlayerCount = function () return 1 end, PlaySound = function () end }
 function RegisterMaterial() return 0 end
 function require() end
@@ -83,7 +90,7 @@ seed( 3, 5 ); d.zmcp_del_zm_nuked_slot3 = nil
 -- Page: DELETE prompt shows only for a saved slot; confirm flow removes that slot only.
 local page = LUI.createMenu.ZMCheckpointSoloResume( 0 )
 local buttons = function () return page.list.buttons end
-assert( #buttons() == 4 and buttons()[1].title == "SLOT 1 - ROUND 8" and buttons()[2].disabled )
+assert( #buttons() == 5 and buttons()[5].title == "OPTIONS" and buttons()[1].title == "SLOT 1 - ROUND 8" and buttons()[2].disabled )
 page:processEvent( { name = "zmcp_delete_slot", controller = 0 } ) -- nothing focused yet: ignored
 assert( not menus.ZMCheckpointDeleteConfirm, "must not open without a focused saved slot" )
 assert( #page.rightPrompts == 0 )
@@ -101,9 +108,10 @@ assert( page.popup and page.popup.zmcpSlot == 3 and page.popup.text:find( "Slot 
 -- A confirmed delete rebuilds the list without that slot and leaves the others.
 page:processEvent( { name = "zmcp_delete_confirmed", slot = 3, controller = 0 } )
 assert( d.zmcp_has_zm_nuked_slot3 == "0" and d.zmcp_has_zm_nuked == "1" )
-assert( #buttons() == 4 and buttons()[3].title == "SLOT 3 - EMPTY" and buttons()[1].title == "SLOT 1 - ROUND 8" )
+assert( #buttons() == 5 and buttons()[3].title == "SLOT 3 - EMPTY" and buttons()[1].title == "SLOT 1 - ROUND 8" )
 page:processEvent( { name = "zmcp_delete_confirmed", slot = 1, controller = 0 } )
-for _, b in ipairs( buttons() ) do assert( b.title:find( "EMPTY" ) and b.disabled ) end
+for i = 1, 4 do assert( buttons()[i].title:find( "EMPTY" ) and buttons()[i].disabled ) end
+assert( buttons()[5].disabled, "OPTIONS needs a saved slot" )
 page:processEvent( { name = "zmcp_delete_slot", controller = 0 } )
 assert( not page.popup.zmcpSlot or page.popup.zmcpSlot ~= 1, "no saved slot is left to delete" )
 
@@ -120,4 +128,70 @@ assert( got.name == "zmcp_delete_closed" )
 popup.closed, got = nil, nil
 popup:processEvent( { name = "zmcp_delete_yes", controller = 0 } )
 assert( got.name == "zmcp_delete_confirmed" and got.slot == 2 and popup.closed )
+-- OPTIONS: per-save overrides are stored in dvars; the save itself is never touched.
+d = { ui_mapname = "zm_nuked" }
+execs = {}
+local function seedFull( slot )
+	seed( slot, 6 )
+	local pre = "zmcp_solo_zm_nuked_slot" .. slot .. "_"
+	d[pre .. "settings"], d[pre .. "difficulty"], d[pre .. "magic"] = "1", "0", "1"
+	d[pre .. "headshots"], d[pre .. "assist"], d[pre .. "cheats"] = "0", "1", "1"
+	d[pre .. "mode"], d[pre .. "group"], d[pre .. "location"] = "zclassic", "zclassic", "nuked"
+end
+seedFull( 2 ); seed( 4, 3 ) -- slot 4 is an older save without SETTINGS
+local page2 = LUI.createMenu.ZMCheckpointSoloResume( 0 )
+local btns = function () return page2.list.buttons end
+assert( #btns() == 5 and btns()[5].title == "OPTIONS" and btns()[5].action == "zmcp_slot_options" )
+page2:processEvent( { name = "zmcp_slot_options", controller = 0 } ) -- nothing highlighted yet
+btns()[2].watchers[1]:processEvent( { name = "gain_focus" } )
+assert( #page2.rightPrompts == 1 )
+btns()[5].watchers[1]:processEvent( { name = "gain_focus" } )
+page2.openPopup = function ( self, name ) self.opened = name; return LUI.createMenu[name]( 0 ) end
+page2:processEvent( { name = "zmcp_slot_options", controller = 0 } )
+assert( page2.opened == "ZMCheckpointSoloOptions" and C.OptionsTarget.slot == 2 )
+local opts = LUI.createMenu.ZMCheckpointSoloOptions( 0 )
+local rows = opts.list.selectors
+assert( #rows == 6 and rows[1].dvar == "zmcp_edit_difficulty" and rows[6].dvar == "zmcp_edit_perks" )
+assert( d.zmcp_edit_difficulty == "0" and d.zmcp_edit_cheats == "1" and d.zmcp_edit_perks == "0" )
+assert( #opts.list.buttons == 2 and opts.list.buttons[1].title == "APPLY CHANGES" )
+-- Apply: disable cheats, enable unlimited perks.
+d.zmcp_edit_cheats, d.zmcp_edit_perks = "0", "1"
+local applied
+page2.processEvent = function ( self, e ) applied = e end
+opts:processEvent( { name = "zmcp_options_apply", controller = 0 } )
+assert( opts.closed and applied.name == "zmcp_options_applied" and applied.slot == 2 )
+assert( d.zmcp_ovr_zm_nuked_slot2_set == "1" and d.zmcp_ovr_zm_nuked_slot2_cheats == "0" and d.zmcp_ovr_zm_nuked_slot2_perks == "1" )
+assert( d.zmcp_solo_zm_nuked_slot2_cheats == "0" and d.zmcp_solo_zm_nuked_slot2_difficulty == "0", "published values follow" )
+assert( d.zmcp_has_zm_nuked_slot2 == "1" and d.zmcp_round_zm_nuked_slot2 == "6", "save metadata untouched" )
+local m = C.SoloSlotMeta( "zm_nuked", 2 )
+assert( m.cheats == 0 and m.unlimited == 1 and m.magic == 1 )
+-- Resume applies the saved-with-override settings and the perks choice.
+d.ui_gametype, d.ui_zm_gamemodegroup, d.ui_zm_mapstartlocation = "zclassic", "zclassic", "nuked"
+C.CoopValue = function ( v ) return v end
+local settings = {}
+Engine.SetGametypeSetting = function ( k, v ) settings[k] = v end
+Engine.GetGametypeSetting = function ( k ) return settings[k] end
+d.sv_allowAimAssist, d.sv_cheats = "1", "1"
+execs = {}
+local ok, why = C.Resume( {}, { controller = 0 }, 2 )
+assert( ok, tostring( why ) )
+assert( d.sv_cheats == "0" and d.zmcp_all_perks == "1", "override cheats off, perks on" )
+assert( table.concat( execs ):find( "seta zmcp_all_perks 1", 1, true ) )
+-- Older save: only perks can change and no settings override is written.
+C.OptionsTarget = { map = "zm_nuked", slot = 4 }
+local old = LUI.createMenu.ZMCheckpointSoloOptions( 0 )
+assert( #old.list.selectors == 1 and old.list.selectors[1].dvar == "zmcp_edit_perks" )
+assert( C.ApplySoloOptions( 0, "zm_nuked", 4, { perks = 1 } ) )
+assert( d.zmcp_ovr_zm_nuked_slot4_perks == "1" and d.zmcp_ovr_zm_nuked_slot4_set == nil )
+-- Invalid values are refused without writing anything.
+local before = {}
+for k, v in pairs( d ) do before[k] = v end
+assert( not C.ApplySoloOptions( 0, "zm_nuked", 2, { difficulty = 2, magic = 1, headshots = 0, assist = 1, cheats = 0, perks = 0 } ) )
+assert( not C.ApplySoloOptions( 0, "zm_nuked", 3, { perks = 1 } ), "empty slot" )
+for k, v in pairs( d ) do assert( before[k] == v ) end
+-- Deleting a slot also drops its override.
+C.DeleteSoloSlot( 0, "zm_nuked", 2 )
+assert( d.zmcp_ovr_zm_nuked_slot2_set == "0" and d.zmcp_ovr_zm_nuked_slot2_perks == "-1" )
+assert( C.SoloSlotMeta( "zm_nuked", 2 ).unlimited == nil )
 print( "PASS: solo delete tombstone, slot rebuild and confirmation popup events" )
+print( "PASS: solo OPTIONS page, overrides, perks on Resume, older saves, invalid input" )

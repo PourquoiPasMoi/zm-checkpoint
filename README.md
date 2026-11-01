@@ -36,6 +36,16 @@ arrivals. Checkpoints made before 0.4.14-alpha did not record the assignments,
 so their original perk locations cannot be reconstructed. The new placement
 restore is **validated statically** and still needs an in-game test.
 
+## Per-save options
+
+On SOLO RESUME, highlight a saved slot and choose **OPTIONS** (last row) to change
+that save's difficulty, Magic, Headshots Only, Target Assist, Cheats and
+**Unlimited Perks**, then **APPLY CHANGES**. The save file is not modified; the
+choices are stored beside it and used when you Resume, and they are cleared when
+you save over, resume, or delete that slot. Older saves without stored settings
+can change only Unlimited Perks. This is **validated statically** and still needs
+an in-game test.
+
 ## Deleting a solo save
 
 On the SOLO RESUME page, highlight a saved slot and press **DEL** (the bottom-right

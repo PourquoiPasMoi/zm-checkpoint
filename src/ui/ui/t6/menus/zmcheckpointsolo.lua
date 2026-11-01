@@ -11,6 +11,8 @@ C.SoloSlotMeta = function ( map, slot )
 		return value
 	end
 	local preview = read( "preview" ) == "1"
+	local perksChoice = tonumber( C.DvarString( "zmcp_ovr_" .. map .. "_slot" .. slot .. "_perks" ) )
+	if perksChoice ~= 0 and perksChoice ~= 1 then perksChoice = nil end
 	local collect = function ( kind, count, maximum )
 		local values = {}
 		if not preview then return values end
@@ -33,6 +35,7 @@ C.SoloSlotMeta = function ( map, slot )
 		group = read( "group" ),
 		location = read( "location" ),
 		preview = preview,
+		unlimited = perksChoice,
 		score = tonumber( read( "score" ) ) or 0,
 		weapons = collect( "weapon", "weapons", 4 ),
 		perks = collect( "perk", "perks", 12 )
@@ -172,7 +175,7 @@ local function addPreview( menu, list )
 	return show
 end
 
-local function pageBase( name, title, message )
+local function pageBase( name, title, message, listBottom )
 	local menu = CoD.Menu.New( name )
 	menu:addLargePopupBackground()
 	menu:addTitle( title )
@@ -186,7 +189,7 @@ local function pageBase( name, title, message )
 	menu:addElement( status )
 	local list = CoD.ButtonList.new( { leftAnchor = true, rightAnchor = false,
 		left = 0, right = 600, topAnchor = true, bottomAnchor = false,
-		top = 170, bottom = 410 } )
+		top = 170, bottom = listBottom or 410 } )
 	menu:addElement( list )
 	return menu, status, list
 end
@@ -207,11 +210,17 @@ local function attachSlotDetails( menu, list, onFocus )
 		settings:addElement( content )
 		if not meta.has then return end
 		addText( content, "SAVED SETTINGS", 0, 545, 0, 27, true )
+		local enabled = function ( value ) return value == 1 and "ON" or "OFF" end
 		if not meta.settings then
 			addText( content, "Older save: current lobby settings apply.", 0, 545, 34, 62 )
+			if meta.unlimited ~= nil then
+				addText( content, "UNLIMITED PERKS " .. enabled( meta.unlimited ), 0, 555, 66, 92 )
+			end
 			return
 		end
-		local enabled = function ( value ) return value == 1 and "ON" or "OFF" end
+		if meta.unlimited ~= nil then
+			addText( content, "UNLIMITED PERKS " .. enabled( meta.unlimited ), 0, 555, 98, 124 )
+		end
 		addText( content, "DIFFICULTY " .. (meta.difficulty == 0 and "EASY" or "ORIGINAL") ..
 			"    MAGIC " .. enabled( meta.magic ) .. "    HEADSHOTS " .. enabled( meta.headshots ), 0, 555, 34, 60 )
 		addText( content, "ASSIST " .. enabled( meta.assist ) .. "    CHEATS " .. enabled( meta.cheats ), 0, 555, 66, 92 )
@@ -264,7 +273,9 @@ C.DeleteSoloSlot = function ( controller, map, slot )
 		[ "zmcp_has_" .. map .. suffix ] = 0,
 		[ "zmcp_round_" .. map .. suffix ] = 0,
 		[ prefix .. "preview" ] = 0,
-		[ prefix .. "settings" ] = 0
+		[ prefix .. "settings" ] = 0,
+		[ "zmcp_ovr_" .. map .. "_slot" .. slot .. "_set" ] = 0,
+		[ "zmcp_ovr_" .. map .. "_slot" .. slot .. "_perks" ] = -1
 	}
 	for name, value in pairs( values ) do
 		-- seta keeps the value across restarts; SetDvar applies it to this frame.
@@ -288,8 +299,10 @@ LUI.createMenu.ZMCheckpointSoloResume = function ( controller )
 		menu.rightButtonPromptBar:removeAllChildren()
 		if visible then menu:addRightButtonPrompt( deletePrompt ) end
 	end
+	local lastSlot -- the saved slot most recently highlighted; OPTIONS edits this one
 	local watch, showDetails = attachSlotDetails( menu, list, function ( slot, meta )
 		focusedSlot = meta.has and slot or nil
+		if meta.has then lastSlot = slot end
 		setDeleteVisible( meta.has )
 	end )
 	local function build()
@@ -311,15 +324,37 @@ LUI.createMenu.ZMCheckpointSoloResume = function ( controller )
 				button:disable()
 			end
 		end
+		local options = list:addButton( "OPTIONS",
+			"Change the saved settings of the highlighted checkpoint." )
 		if anySaved then
+			options:setActionEventName( "zmcp_slot_options" )
+			-- DEL deletes the highlighted slot, so it is hidden while OPTIONS is focused.
+			local watcher = LUI.UIElement.new()
+			options:addElement( watcher )
+			watcher:registerEventHandler( "gain_focus", function ()
+				focusedSlot = nil
+				setDeleteVisible( false )
+			end )
 			list:processEvent( { name = "gain_focus" } )
 		else
-			focusedSlot = nil
+			options:disable()
+			focusedSlot, lastSlot = nil, nil
 			setDeleteVisible( false )
 			showDetails( 1, C.SoloSlotMeta( map, 1 ) )
 		end
 	end
 	build()
+	menu:registerEventHandler( "zmcp_slot_options", function ( owner, event )
+		if not lastSlot or not C.SoloSlotMeta( map, lastSlot ).has then return end
+		C.OptionsTarget = { map = map, slot = lastSlot, owner = owner }
+		owner:openPopup( "ZMCheckpointSoloOptions", event.controller or controller )
+	end )
+	menu:registerEventHandler( "zmcp_options_applied", function ( owner, event )
+		status:setText( "Slot " .. event.slot .. " options saved. The save file was not changed." )
+		list:removeAllButtons()
+		focusedSlot = nil
+		build()
+	end )
 	menu:registerEventHandler( "zmcp_delete_slot", function ( owner, event )
 		if not focusedSlot or menu.zmcpDeleteOpen then return end
 		local meta = C.SoloSlotMeta( map, focusedSlot )
@@ -395,4 +430,87 @@ LUI.createMenu.ZMCheckpointDeleteConfirm = function ( controller )
 	popup:registerEventHandler( "button_prompt_back", function ( owner, event ) close( owner, event, false ) end )
 	keep:processEvent( { name = "gain_focus" } )
 	return popup
+end
+
+-- Per-save setting changes are stored beside the save, never inside it. GSC
+-- applies them whenever it reads the checkpoint (see zmcp_apply_solo_overrides)
+-- and drops them when the slot is saved over, consumed or deleted.
+C.SoloOptionKeys = { "difficulty", "magic", "headshots", "assist", "cheats" }
+
+C.ApplySoloOptions = function ( controller, map, slot, values )
+	if C.SupportedMaps[map] == nil or slot < 1 or slot > 4 then return false end
+	local meta = C.SoloSlotMeta( map, slot )
+	if not meta.has then return false end
+	local out = {}
+	if meta.settings then
+		for _, key in ipairs( C.SoloOptionKeys ) do
+			local value = values[key]
+			if value ~= 0 and value ~= 1 then return false end
+			local prefix = "zmcp_solo_" .. map .. "_slot" .. slot .. "_"
+			out[ "zmcp_ovr_" .. map .. "_slot" .. slot .. "_" .. key ] = value
+			-- The lobby reads these published values when Resume applies the settings.
+			out[ prefix .. key ] = value
+		end
+		out[ "zmcp_ovr_" .. map .. "_slot" .. slot .. "_set" ] = 1
+	end
+	if values.perks ~= 0 and values.perks ~= 1 then return false end
+	out[ "zmcp_ovr_" .. map .. "_slot" .. slot .. "_perks" ] = values.perks
+	for name, value in pairs( out ) do
+		Engine.Exec( controller, "seta " .. name .. " " .. value .. "\n" )
+		Engine.SetDvar( name, value )
+	end
+	return true
+end
+
+LUI.createMenu.ZMCheckpointSoloOptions = function ( controller )
+	local target = C.OptionsTarget or {}
+	local map, slot = target.map, target.slot
+	local meta = C.SoloSlotMeta( map or "", slot or 0 )
+	local menu, status, list = pageBase( "ZMCheckpointSoloOptions",
+		"SLOT " .. tostring( slot ) .. " OPTIONS",
+		"Changes are stored beside the save. The save file itself is not modified.", 560 )
+	local disabledLabel, enabledLabel = "MENU_DISABLED_CAPS", "MENU_ENABLED_CAPS"
+	local function toggle( key, name, hint, value )
+		local dvar = "zmcp_edit_" .. key
+		Engine.SetDvar( dvar, value )
+		local row = list:addDvarLeftRightSelector( controller, Engine.Localize( name ), dvar,
+			Engine.Localize( hint ), 220 )
+		row:addChoice( controller, Engine.Localize( disabledLabel ), 0 )
+		row:addChoice( controller, Engine.Localize( enabledLabel ), 1 )
+		return row
+	end
+	if meta.settings then
+		-- Selectors read their dvar when built, so seed it first.
+		Engine.SetDvar( "zmcp_edit_difficulty", meta.difficulty or 1 )
+		local difficulty = list:addDvarLeftRightSelector( controller, Engine.Localize( "DIFFICULTY" ),
+			"zmcp_edit_difficulty", Engine.Localize( "Zombie difficulty used when this save is resumed." ), 220 )
+		difficulty:addChoice( controller, Engine.Localize( "EASY" ), 0 )
+		difficulty:addChoice( controller, Engine.Localize( "ORIGINAL" ), 1 )
+		toggle( "magic", "MAGIC", "Mystery box and other magic items.", meta.magic or 1 )
+		toggle( "headshots", "HEADSHOTS ONLY", "Only headshots damage zombies.", meta.headshots or 0 )
+		toggle( "assist", "TARGET ASSIST", "Aim assist for this checkpoint.", meta.assist or 1 )
+		toggle( "cheats", "CHEATS", "Enable cheats when this save is resumed.", meta.cheats or 0 )
+	else
+		status:setText( "Older save: only unlimited perks can be changed." )
+	end
+	toggle( "perks", "UNLIMITED PERKS", "Allow every perk at once when this save is resumed.", meta.unlimited or 0 )
+	local apply = list:addButton( "APPLY CHANGES", "Store these settings for this checkpoint." )
+	local cancel = list:addButton( "CANCEL", "Leave this checkpoint's settings as they are." )
+	apply:setActionEventName( "zmcp_options_apply" )
+	cancel:setActionEventName( "zmcp_options_cancel" )
+	menu:registerEventHandler( "zmcp_options_cancel", function ( owner, event ) owner:goBack( event.controller or controller ) end )
+	menu:registerEventHandler( "zmcp_options_apply", function ( owner, event )
+		local read = function ( key ) return tonumber( C.DvarString( "zmcp_edit_" .. key ) ) end
+		local values = { perks = read( "perks" ) }
+		for _, key in ipairs( C.SoloOptionKeys ) do values[key] = read( key ) end
+		if not C.ApplySoloOptions( controller, map, slot, values ) then
+			status:setText( "Those settings could not be stored." )
+			return
+		end
+		owner:goBack( event.controller or controller )
+		local resume = target.owner
+		if resume then resume:processEvent( { name = "zmcp_options_applied", slot = slot, controller = controller } ) end
+	end )
+	list:processEvent( { name = "gain_focus" } )
+	return menu
 end

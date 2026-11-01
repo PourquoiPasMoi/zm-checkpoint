@@ -37,6 +37,7 @@ main()
         level.zmcp_has_dvar = zmcp_solo_has_dvar( level.zmcp_selected_slot );
         level.zmcp_round_dvar = zmcp_solo_round_dvar( level.zmcp_selected_slot );
         level.zmcp_existing = zmcp_read_checkpoint();
+        zmcp_apply_solo_overrides( level.zmcp_selected_slot, level.zmcp_existing );
         level.zmcp_pending = level.zmcp_existing;
 
         if ( isdefined( level.zmcp_pending ) )
@@ -352,6 +353,8 @@ zmcp_save_checkpoint( player, exit_after_save )
 
     if ( isdefined( saved_checkpoint ) && saved_checkpoint.round == level.round_number )
     {
+        // A fresh save has its own settings; drop any override of the old save.
+        zmcp_solo_clear_overrides( slot );
         zmcp_solo_publish( slot, saved_checkpoint );
         player iprintlnbold( "^2Slot " + slot + " saved - round " + level.round_number );
         player iprintln( "^7Resume will appear when this map is selected." );
