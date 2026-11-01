@@ -4,6 +4,15 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+### 2026-11-01 — Plan the CO-OP RESUME redesign and record 0.4.25 evidence
+
+- Request: prepare the best prompt for a new chat to make CO-OP RESUME like SOLO RESUME (host-visible, greyed-out sessions with per-player points, weapons and perks, plus select, OPTIONS, START and delete).
+- Change or investigation: read-only review of `zmcp_coop_publish` and the co-op save format. **Verified in-game (owner screenshots):** 0.4.25 SOLO RESUME shows greyed OPTIONS/START until selection, updated hint text, the `UNLIMITED PERKS ON` settings line after an OPTIONS change, and the DEL prompt; the non-host co-op page shows its "No team checkpoint on this PC" message with a disabled resume row. A second weapon showed `UNKNOWN` in the preview (cosmetic, to investigate). Found that co-op currently stores one session per map and publishes only summary dvars, so the redesign needs multiple sessions per map and a bounded per-player publish. Full notes and the ready-to-paste prompt are in `PROJECT_HANDOFF.md` section 36.
+- Files affected: `CHANGELOG.md`, `PROJECT_HANDOFF.md` only.
+- Validation: documentation only; no build, install, publish or save change.
+- In-game result: n/a for the plan; observations above are from the owner's screenshots.
+- Remaining risk/next step: start the new chat with the section 36 prompt. Nothing in the co-op code has changed.
+
 ### 2026-11-01 — Claude Code session log: setup, tooling and workflow
 
 - Request: join the project alongside ChatGPT, read all project memory, install REA, then build the features recorded in 0.4.22 to 0.4.25, and keep everything logged for continuation in any new chat.
