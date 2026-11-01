@@ -29,13 +29,12 @@ end
 
 addLobbyDvarOption( "zmcp_all_perks", 0, "UNLIMITED PERKS",
 	"Allow every perk at once instead of the normal limit of four." )
-addLobbyDvarOption( "zmcp_start_weapon1", "none", "STARTING WEAPON 1",
-	"Begin a new match with this weapon. Only weapons from this map are listed.", { "NONE" }, { "none" } )
-addLobbyDvarOption( "zmcp_start_weapon2", "none", "STARTING WEAPON 2",
-	"A second starting weapon. With two, the M1911 is replaced.", { "NONE" }, { "none" } )
-addLobbyDvarOption( "zmcp_start_perks", 0, "STARTING PERKS",
-	"Begin a new match with random perks from this map's perk machines.",
-	{ "NONE", "1 RANDOM PERK", "2 RANDOM PERKS", "3 RANDOM PERKS", "4 RANDOM PERKS" }, { 0, 1, 2, 3, 4 } )
+addLobbyDvarOption( "zmcp_start_weapons", 0, "STARTING WEAPONS",
+	"Begin a new match with random weapons from this map. With two, the M1911 is replaced.",
+	{ "NONE", "1 RANDOM WEAPON", "2 RANDOM WEAPONS" }, { 0, 1, 2 } )
+addLobbyDvarOption( "zmcp_start_perks", 0, "STARTING PERK",
+	"Begin a new match with one random perk from this map's perk machines.",
+	{ "NONE", "1 RANDOM PERK" }, { 0, 1 } )
 
 -- CUSTOM STARTING ROUND. The stock STARTING ROUND row only offers a few fixed
 -- values. Its selector is replaced in place (found by its label when the stock
@@ -147,9 +146,9 @@ LUI.createMenu.PrivateOnlineGameLobby = function ( controller )
 	if CoD.ZMCheckpointMenu.DvarString( "zmcp_all_perks" ) == "" then
 		Engine.SetDvar( "zmcp_all_perks", 0 )
 	end
-	-- Weapon rows list the weapons of the map being shown; stale choices reset.
+	-- Stored loadout values are clamped so the rows and GSC agree.
 	if CoD.ZMCheckpointMenu.RefreshLoadoutOptions then
-		CoD.ZMCheckpointMenu.RefreshLoadoutOptions( CoD.ZMCheckpointMenu.CurrentMap( false ) )
+		CoD.ZMCheckpointMenu.RefreshLoadoutOptions()
 	end
 	local menu = CoD.PrivateGameLobby.New( "PrivateOnlineGameLobby", controller )
 	if CoD.isMultiplayer then

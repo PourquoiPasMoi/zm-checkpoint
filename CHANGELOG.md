@@ -4,6 +4,17 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.30-alpha — 2026-11-01
+
+### 2026-11-01 — Random starting weapons and a single random perk (Claude Code)
+
+- Request: no weapon list to pick from; the owner wants STARTING WEAPONS to mean 1 or 2 weapons chosen at random by the game, and the perk option to offer only 1 random perk.
+- Change or investigation: the lobby rows STARTING WEAPON 1 and STARTING WEAPON 2 are replaced by one row, **STARTING WEAPONS** (NONE, 1 RANDOM WEAPON, 2 RANDOM WEAPONS; dvar `zmcp_start_weapons`), and **STARTING PERKS** becomes **STARTING PERK** (NONE, 1 RANDOM PERK; dvar `zmcp_start_perks`, now 0 to 1). The per-map weapon lists moved from the Lua file into GSC (`zmcp_loadout_pool` in `zm_checkpoint_slots.gsc`, same curated lists as 0.4.28), where each entry is checked with `is_weapon_included` after the map has loaded. Each player rolls their own random weapons from that pool (distinct picks, skipping weapons they already hold); with two, the starting pistol is taken first; perks still use the map's perk machines. `zmcheckpointloadout.lua` now only clamps stored values when the lobby opens, so a previously stored 2 to 4 random perks becomes 1 and an oversized weapon count becomes 2. The old `zmcp_start_weapon1/2` dvars are no longer read.
+- Files affected: `src/ui/ui/t6/menus/zmcheckpointloadout.lua`, `privateonlinegamelobby.lua`, `src/scripts/zm/zm_checkpoint_slots.gsc`, `tools/Test-Loadout.lua`, `tools/Test-LobbyOption.lua`, `mod.json`, `README.md`, `CHANGELOG.md`, `PROJECT_HANDOFF.md`.
+- Validation: **Validated statically:** Build.ps1 passed; six T6 GSC parses (the old per-weapon validator is gone and the pool function appears in the generated scripts); luaparse; all eight Lua suites pass, with `Test-Loadout.lua` rewritten for the two new rows and clamping. GSC parsed only. No save, game file or local install touched.
+- In-game result: Not yet tested. Still unverified from 0.4.28: the first-spawn grants on each map and the new random pool behavior (including that `switch` and array building in the pool function behave in the game's GSC runtime).
+- Remaining risk/next step: start Survival matches with 1 and with 2 random weapons and with the random perk, on Nuketown and one other map, and report the console line `ZMCP: starting loadout`.
+
 ## 0.4.29-alpha — 2026-11-01
 
 ### 2026-11-01 — Faster updater and timing diagnostics (Claude Code)

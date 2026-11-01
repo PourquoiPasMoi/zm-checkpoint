@@ -2,7 +2,7 @@
 
 Experimental save and resume checkpoints for Call of Duty: Black Ops II Zombies on Plutonium T6.
 
-The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.29-alpha). Download `zm_checkpoint-0.4.29-alpha.zip` and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
+The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.30-alpha). Download `zm_checkpoint-0.4.30-alpha.zip` and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
 
 The source, build scripts, test guidance, and project history are in this repository. The user-facing setup and feature details live in [README.md](README.md); contributors should read [AGENTS.md](AGENTS.md) and [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md) first.
 
@@ -114,13 +114,13 @@ faster unpacking, and a 100 ms companion poll. The speedup applies from the
 update after this one (the updater scripts come from the installed version). The
 page now shows seconds spent waiting for the companion, and
 `%TEMP%\zmcp_update_timing.log` records each step with timestamps.
-Version 0.4.28-alpha adds starting loadout rows under UNLIMITED PERKS in
-Custom Games: **STARTING WEAPON 1** and **STARTING WEAPON 2** (any normal wall-buy
-or Mystery Box weapon of the selected map; with two, the M1911 is replaced) and
-**STARTING PERKS** (1 to 4 random perks from that map's perk machines). They
-apply to new matches only, for every player; a resumed checkpoint keeps its own
-state. Buildable and quest weapons (for example the Thrustodyne, Sliquifier,
-Paralyzer and elemental staffs) are not offered.
+Version 0.4.30-alpha simplifies the starting loadout rows under UNLIMITED PERKS in
+Custom Games: **STARTING WEAPONS** (NONE, 1 or 2 random weapons from the selected map's
+normal wall-buy and Mystery Box guns; with two, the M1911 is replaced) and **STARTING
+PERK** (NONE or 1 random perk from that map's perk machines). There is no weapon
+list to choose from. They apply to new matches only, each player rolls their own, and a
+resumed checkpoint keeps its own state. Buildable and quest weapons (for example the
+Thrustodyne, Sliquifier, Paralyzer and elemental staffs) are never given.
 Version 0.4.27-alpha turns the Survival lobby's STARTING ROUND row into
 **CUSTOM STARTING ROUND**: use left/right or the mouse wheel to change it by one,
 or click it (or press Enter) and type any number from 1 to 255. The value is
