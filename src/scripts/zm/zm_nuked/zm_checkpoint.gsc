@@ -23,6 +23,7 @@ main()
     level.zmcp_coop_ready = 0;
     level.zmcp_coop_session = 0;
     level.zmcp_selected_slot = 1;
+    zmcp_apply_solo_deletes();
     level.zmcp_existing = zmcp_read_checkpoint();
     for ( slot = 1; slot <= 4; slot++ )
         zmcp_solo_publish( slot, zmcp_read_checkpoint( zmcp_solo_path( slot ) ) );

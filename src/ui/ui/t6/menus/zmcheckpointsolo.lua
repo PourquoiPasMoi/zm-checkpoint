@@ -191,7 +191,7 @@ local function pageBase( name, title, message )
 	return menu, status, list
 end
 
-local function attachSlotDetails( menu, list )
+local function attachSlotDetails( menu, list, onFocus )
 	local showPreview = addPreview( menu, list )
 	local settings = LUI.UIElement.new()
 	settings:setLeftRight( true, false, 0, 565 )
@@ -219,8 +219,11 @@ local function attachSlotDetails( menu, list )
 	return function ( button, slot, meta )
 		local watcher = LUI.UIElement.new()
 		button:addElement( watcher )
-		watcher:registerEventHandler( "gain_focus", function () show( slot, meta ) end )
-	end
+		watcher:registerEventHandler( "gain_focus", function ()
+			show( slot, meta )
+			if onFocus then onFocus( slot, meta ) end
+		end )
+	end, show
 end
 
 LUI.createMenu.ZMCheckpointSoloSave = function ( controller )
@@ -249,27 +252,147 @@ LUI.createMenu.ZMCheckpointSoloSave = function ( controller )
 	return menu
 end
 
+-- Deleting works from the front-end, where no GSC is running, so it hides the
+-- slot immediately through its archived dvars and leaves a tombstone dvar. The
+-- next load of that map overwrites the old file (see zmcp_apply_solo_deletes).
+C.DeleteSoloSlot = function ( controller, map, slot )
+	if C.SupportedMaps[map] == nil or slot < 1 or slot > 4 then return false end
+	local suffix = slot == 1 and "" or ("_slot" .. slot)
+	local prefix = "zmcp_solo_" .. map .. "_slot" .. slot .. "_"
+	local values = {
+		[ "zmcp_del_" .. map .. "_slot" .. slot ] = 1,
+		[ "zmcp_has_" .. map .. suffix ] = 0,
+		[ "zmcp_round_" .. map .. suffix ] = 0,
+		[ prefix .. "preview" ] = 0,
+		[ prefix .. "settings" ] = 0
+	}
+	for name, value in pairs( values ) do
+		-- seta keeps the value across restarts; SetDvar applies it to this frame.
+		Engine.Exec( controller, "seta " .. name .. " " .. value .. "\n" )
+		Engine.SetDvar( name, value )
+	end
+	return true
+end
+
 LUI.createMenu.ZMCheckpointSoloResume = function ( controller )
 	local menu, status, list = pageBase( "ZMCheckpointSoloResume", "SOLO RESUME",
 		"Choose a checkpoint for the selected map." )
 	local map = C.CurrentMap( false )
-	local watch = attachSlotDetails( menu, list )
-	for slot = 1, 4 do
-		local chosenSlot = slot
-		local meta = C.SoloSlotMeta( map, chosenSlot )
-		local title = "SLOT " .. chosenSlot .. (meta.has and (" - ROUND " .. meta.round) or " - EMPTY")
-		local button = list:addButton( title, slotHint( meta ) )
-		watch( button, chosenSlot, meta )
-		if meta.has then
-			button:setActionEventName( "zmcp_resume_slot_" .. chosenSlot )
-			menu:registerEventHandler( "zmcp_resume_slot_" .. chosenSlot, function ( owner, event )
-				local ok, reason = C.Resume( owner, event, chosenSlot )
-				if not ok then status:setText( reason ) end
-			end )
+	local focusedSlot
+	local deleteVisible = false
+	local deletePrompt = CoD.ButtonPrompt.new( "alt1", "Delete", menu, "zmcp_delete_slot",
+		false, nil, false, nil, "DEL" )
+	local function setDeleteVisible( visible )
+		if deleteVisible == visible then return end
+		deleteVisible = visible
+		menu.rightButtonPromptBar:removeAllChildren()
+		if visible then menu:addRightButtonPrompt( deletePrompt ) end
+	end
+	local watch, showDetails = attachSlotDetails( menu, list, function ( slot, meta )
+		focusedSlot = meta.has and slot or nil
+		setDeleteVisible( meta.has )
+	end )
+	local function build()
+		local anySaved = false
+		for slot = 1, 4 do
+			local chosenSlot = slot
+			local meta = C.SoloSlotMeta( map, chosenSlot )
+			local title = "SLOT " .. chosenSlot .. (meta.has and (" - ROUND " .. meta.round) or " - EMPTY")
+			local button = list:addButton( title, slotHint( meta ) )
+			watch( button, chosenSlot, meta )
+			if meta.has then
+				anySaved = true
+				button:setActionEventName( "zmcp_resume_slot_" .. chosenSlot )
+				menu:registerEventHandler( "zmcp_resume_slot_" .. chosenSlot, function ( owner, event )
+					local ok, reason = C.Resume( owner, event, chosenSlot )
+					if not ok then status:setText( reason ) end
+				end )
+			else
+				button:disable()
+			end
+		end
+		if anySaved then
+			list:processEvent( { name = "gain_focus" } )
 		else
-			button:disable()
+			focusedSlot = nil
+			setDeleteVisible( false )
+			showDetails( 1, C.SoloSlotMeta( map, 1 ) )
 		end
 	end
-	list:processEvent( { name = "gain_focus" } )
+	build()
+	menu:registerEventHandler( "zmcp_delete_slot", function ( owner, event )
+		if not focusedSlot or menu.zmcpDeleteOpen then return end
+		local meta = C.SoloSlotMeta( map, focusedSlot )
+		if not meta.has then return end
+		menu.zmcpDeleteOpen = true
+		local popup = owner:openPopup( "ZMCheckpointDeleteConfirm", event.controller or controller )
+		popup.zmcpResume = owner
+		popup.zmcpSlot = focusedSlot
+		popup.zmcpMessage:setText( "Slot " .. focusedSlot .. ", round " .. meta.round .. " will be deleted." )
+	end )
+	menu:registerEventHandler( "zmcp_delete_closed", function () menu.zmcpDeleteOpen = false end )
+	menu:registerEventHandler( "zmcp_delete_confirmed", function ( owner, event )
+		menu.zmcpDeleteOpen = false
+		if C.DeleteSoloSlot( controller, map, event.slot ) then
+			status:setText( "Slot " .. event.slot .. " deleted." )
+		else
+			status:setText( "That save could not be deleted." )
+		end
+		list:removeAllButtons()
+		focusedSlot = nil
+		build()
+	end )
 	return menu
+end
+
+LUI.createMenu.ZMCheckpointDeleteConfirm = function ( controller )
+	local popup = CoD.Menu.NewSmallPopup( "ZMCheckpointDeleteConfirm" )
+	popup:setOwner( controller )
+	popup:addSelectButton()
+	popup:addBackButton()
+	local title = LUI.UIText.new()
+	title:setLeftRight( true, true, 0, 0 )
+	title:setTopBottom( true, false, 5, 5 + CoD.textSize.Big )
+	title:setFont( CoD.fonts.Big )
+	title:setAlignment( LUI.Alignment.Left )
+	title:setText( "DELETE SAVE?" )
+	popup:addElement( title )
+	local message = LUI.UIText.new()
+	message:setLeftRight( true, true, 0, 0 )
+	message:setTopBottom( true, false, 12 + CoD.textSize.Big, 12 + CoD.textSize.Big + CoD.textSize.Default )
+	message:setFont( CoD.fonts.Default )
+	message:setAlignment( LUI.Alignment.Left )
+	message:setText( "This save will be deleted." )
+	popup:addElement( message )
+	popup.zmcpMessage = message
+	local warning = LUI.UIText.new()
+	warning:setLeftRight( true, true, 0, 0 )
+	warning:setTopBottom( true, false, 16 + CoD.textSize.Big + CoD.textSize.Default,
+		16 + CoD.textSize.Big + CoD.textSize.Default * 2 )
+	warning:setFont( CoD.fonts.Default )
+	warning:setAlignment( LUI.Alignment.Left )
+	warning:setText( "This cannot be undone." )
+	popup:addElement( warning )
+	local buttons = CoD.ButtonList.new( { leftAnchor = true, rightAnchor = true,
+		left = 0, right = 0, topAnchor = false, bottomAnchor = true,
+		top = -CoD.ButtonPrompt.Height - CoD.CoD9Button.Height * 3 + 10, bottom = 0 } )
+	popup:addElement( buttons )
+	local confirm = buttons:addButton( "YES, DELETE" )
+	local keep = buttons:addButton( "NO, KEEP" )
+	confirm:setActionEventName( "zmcp_delete_yes" )
+	keep:setActionEventName( "zmcp_delete_no" )
+	-- Esc and NO both leave the save untouched; either way the page may be asked again.
+	local function close( owner, event, deleted )
+		local resume, slot = owner.zmcpResume, owner.zmcpSlot
+		CoD.Menu.ButtonPromptBack( owner, event )
+		if resume then
+			resume:processEvent( deleted and { name = "zmcp_delete_confirmed", slot = slot,
+				controller = event.controller } or { name = "zmcp_delete_closed" } )
+		end
+	end
+	popup:registerEventHandler( "zmcp_delete_yes", function ( owner, event ) close( owner, event, true ) end )
+	popup:registerEventHandler( "zmcp_delete_no", function ( owner, event ) close( owner, event, false ) end )
+	popup:registerEventHandler( "button_prompt_back", function ( owner, event ) close( owner, event, false ) end )
+	keep:processEvent( { name = "gain_focus" } )
+	return popup
 end
