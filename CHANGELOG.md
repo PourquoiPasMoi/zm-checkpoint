@@ -12,7 +12,7 @@ semantics.
 - Change or investigation: **Verified in-game (owner, 2026-11-01): the typed ZOMBIE HEALTH CAP, STARTING POINTS and CUSTOM STARTING ROUND keyboards open and work**, so the 0.4.41 direct attach on the MORE OPTIONS page is confirmed. The keyboard box fits about 25 characters of title (700 px at about 24 px per character; 29 characters already overflowed). Titles are now: "STARTING ROUND (1-255)" (22), "POINTS (0 = DEFAULT)" (20), "HEALTH CAP ROUND (0=OFF)" (24). Only the title strings changed. Rule: keep keyboard titles to about 25 characters.
 - Files affected: `src/ui/ui/t6/menus/privateonlinegamelobby.lua`, `mod.json`, `README.md`, `CHANGELOG.md`, `PROJECT_HANDOFF.md`.
 - Validation: **Validated statically:** Build.ps1 passed; six T6 GSC parses; Lua suites pass (the round test still asserts "(1-255)"). Fit is **expected, not verified in-game**.
-- Published: see the publication record below if present.
+- Published: [GitHub release 0.4.42-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.42-alpha) (source commit `2b041a476d51929d85d8e78ce61aed3c5137b519`; 170,620-byte ZIP, 20 entries, no saves/caches, SHA-256 `C98E84726EB9AFCE39C943B38AB727BE1CC3D145B6A8E7F04F715D9F4E2E4B37`, matches GitHub). No local install was run.
 - In-game result: 0.4.41: typed rows work, titles overflow (the bug above). 0.4.42: not yet tested.
 - Remaining risk/next step: owner to open all three keyboards and confirm the titles sit inside the box.
 

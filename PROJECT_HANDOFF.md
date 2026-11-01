@@ -1302,7 +1302,7 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
 
 ## 53. 0.4.42-alpha keyboard titles — 2026-11-01
 
-- **Verified in-game (owner screenshots, 0.4.41):** typed rows on MORE OPTIONS open the keyboard and work; the keyboard title overflowed its box. **Validated statically (not tested in-game):** titles shortened to about 25 characters or fewer ("STARTING ROUND (1-255)", "POINTS (0 = DEFAULT)", "HEALTH CAP ROUND (0=OFF)"). Rule: keyboard titles must stay near 25 characters.
+- **Verified in-game (owner screenshots, 0.4.41):** typed rows on MORE OPTIONS open the keyboard and work; the keyboard title overflowed its box. **Validated statically (not tested in-game):** titles shortened to about 25 characters or fewer ("STARTING ROUND (1-255)", "POINTS (0 = DEFAULT)", "HEALTH CAP ROUND (0=OFF)"). Rule: keyboard titles must stay near 25 characters. Published: [GitHub release 0.4.42-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.42-alpha) (source commit `2b041a476d51929d85d8e78ce61aed3c5137b519`; 170,620-byte ZIP, 20 entries, no saves/caches, SHA-256 `C98E84726EB9AFCE39C943B38AB727BE1CC3D145B6A8E7F04F715D9F4E2E4B37`, matches GitHub). No local install was run.
 
 ## 52. 0.4.41-alpha typed rows fix — 2026-11-01
 
