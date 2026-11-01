@@ -36,6 +36,14 @@ arrivals. Checkpoints made before 0.4.14-alpha did not record the assignments,
 so their original perk locations cannot be reconstructed. The new placement
 restore is **validated statically** and still needs an in-game test.
 
+## Deleting a solo save
+
+On the SOLO RESUME page, highlight a saved slot and press **DEL** (the bottom-right
+**Delete** prompt) to delete it. A confirmation asks first; **NO, KEEP** is selected
+by default and Esc also keeps the save. The slot disappears immediately and the
+old file is erased the next time that map loads. This feature is **validated
+statically** and still needs an in-game test.
+
 ## Unlimited perks option
 
 Custom Games has an **UNLIMITED PERKS** row under CHEATS. When it is ENABLED

@@ -12,7 +12,7 @@ failure, installation, or test so the project retains its lessons.
 
 - Project: **ZM Checkpoint** for Call of Duty: Black Ops II Zombies on Plutonium T6.
 - Workspace: `C:\Users\User\Documents\Projects\Bo2 Zombie Plutonium`
-- Current source/package: **0.4.22-alpha** (published to GitHub, adds the UNLIMITED PERKS option, section 31); latest published: **0.4.22-alpha**; locally installed: **0.4.21-alpha**. Older note follows: locally installed metadata was **0.4.20-alpha**. GitHub publication status is recorded in section 30. No project installer was run for 0.4.21.
+- Current source/package: **0.4.23-alpha** (adds solo save deletion, section 32); latest published: **0.4.22-alpha** until the 0.4.23 release below is recorded; locally installed: **0.4.21-alpha**. Older note follows: locally installed metadata was **0.4.20-alpha**. GitHub publication status is recorded in section 30. No project installer was run for 0.4.21.
 - Current date of this handoff: **2026-10-30**
 - The project is a Git repository with public origin `https://github.com/PourquoiPasMoi/zm-checkpoint`.
 - The standalone mod and companion packages are installed locally.
@@ -1298,10 +1298,18 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   match after publication. Unload/reload the mod after using the updater;
   Plutonium itself does not need restarting.
 
+## 32. 0.4.23-alpha delete a solo save — 2026-11-01
+
+- **0.4.22 result:** the owner reported UNLIMITED PERKS worked and sent a screenshot with five perks on the HUD (map not stated). Per-map coverage is still untested.
+- **Feature, source and package built:** SOLO RESUME shows a bottom-right `DEL Delete` prompt (`CoD.ButtonPrompt.new("alt1","Delete",menu,"zmcp_delete_slot",false,nil,false,nil,"DEL")`) while a saved slot is highlighted; the 9th argument is matched against `key_shortcut` events on PC, exactly like the stock `R`/`U`/`S` prompts. It opens `ZMCheckpointDeleteConfirm`, a `NewSmallPopup` copied from the updater's leave popup (NO, KEEP default; Esc keeps). Deleting zeroes `zmcp_has_<map>[_slotN]`, `zmcp_round_...` and the slot's `preview`/`settings` dvars with both `seta` and `Engine.SetDvar`, and sets archived tombstone `zmcp_del_<map>_slotN`. `zmcp_apply_solo_deletes` in `zm_checkpoint_slots.gsc` runs at the top of `main()` and writes `EMPTY` to that slot file before anything is read or republished, then clears the tombstone; on write failure the tombstone stays.
+- **Limits:** the file is overwritten only when that map next loads (the lobby has no file access); until then it is hidden, not erased. Co-op saves and the in-match SAVE & EXIT page are unchanged. The `DEL` key name is expected, not verified.
+- **Validated statically:** Lua parse, Build.ps1, six T6 GSC parses, and all five Lua suites including `tools/Test-SoloDelete.lua`. **In-game result: not yet tested.**
+- **Next:** delete a slot, confirm the page rebuilds and the Delete prompt hides when no save is highlighted, restart the game, load the map and confirm the slot is still empty and its old file reads `EMPTY`. If Delete does nothing, capture the key name the engine reports.
+
 ## 31. 0.4.22-alpha UNLIMITED PERKS option — 2026-11-01
 
 - **Source change, published, not installed locally.** New Custom Games row UNLIMITED PERKS (dvar `zmcp_all_perks`, 0/1) sits under CHEATS. Mechanism: the stock lobby loops over `CoD.PrivateGameLobby.Dvars`; `privateonlinegamelobby.lua` appends one entry (idempotent) and creates the dvar at 0 before the lobby is built. GSC `zmcp_unlimited_perks` raises `level.perk_purchase_limit` to 99 at init and after `initial_blackscreen_passed` (stock `_zm_perks` init sets 4). Origins' `get_player_perk_purchase_limit` falls back to the level value. Applies to all six maps through the shared source; the setting is not stored in checkpoints.
-- **Validated statically:** Lua parse, Build.ps1, six T6 GSC parses, existing three Lua suites plus new `tools/Test-LobbyOption.lua`. **In-game result: not yet tested**; layout, label width and per-map behavior are expected only. Evidence base: reconstructed stock scripts in `.cache/bo2-recompilable-gscs` and stock lobby Lua in `.cache/client-raw-assets`.
+- **Verified in-game (owner, 2026-11-01):** "it worked", screenshot shows five perks on the HUD (map unstated). **Validated statically:** Lua parse, Build.ps1, six T6 GSC parses, existing three Lua suites plus new `tools/Test-LobbyOption.lua`. Per-map and layout details not itemized; layout, label width and per-map behavior are expected only. Evidence base: reconstructed stock scripts in `.cache/bo2-recompilable-gscs` and stock lobby Lua in `.cache/client-raw-assets`.
 - **Published:** source commit `8a857d4` preceded [0.4.22-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.22-alpha) (117,725-byte ZIP, SHA-256 `E1C8537FC073415898F9F79142AD3868849CEE691B67D10B619F3C9D0F07B045`, matches GitHub). Installed game stays on 0.4.21-alpha; updater reports `UPDATE_AVAILABLE|0.4.21-alpha|0.4.22-alpha`; all eight save hashes unchanged. Owner installs via the updater, then unloads/reloads the mod; no Plutonium restart.
 - **Next:** test on each map: buy more than four perks, check perk HUD placement, check the lobby row layout.
 

@@ -36,6 +36,32 @@ zmcp_solo_meta_prefix( slot )
     return "zmcp_solo_" + level.zmcp_map + "_slot" + slot + "_";
 }
 
+// The lobby cannot delete files, so SOLO RESUME's DELETE sets an archived
+// zmcp_del_<map>_slotN tombstone and hides the slot. The next load of that map
+// overwrites the file with EMPTY before any checkpoint is read or republished.
+// If the write fails, the tombstone stays and the slot remains hidden.
+zmcp_apply_solo_deletes()
+{
+    for ( slot = 1; slot <= 4; slot++ )
+    {
+        tombstone = "zmcp_del_" + level.zmcp_map + "_slot" + slot;
+        if ( !getdvarint( tombstone ) )
+            continue;
+
+        file = fs_fopen( zmcp_solo_path( slot ), "write" );
+        if ( !isdefined( file ) )
+        {
+            println( "ZMCP SOLO: could not delete slot " + slot + "; it stays hidden until the next map load." );
+            continue;
+        }
+
+        fs_writeline( file, "EMPTY" );
+        fs_fclose( file );
+        cmdexec( "seta " + tombstone + " 0" );
+        println( "ZMCP SOLO: deleted slot " + slot + " as requested from SOLO RESUME." );
+    }
+}
+
 zmcp_solo_publish( slot, checkpoint )
 {
     has = zmcp_solo_has_dvar( slot );
