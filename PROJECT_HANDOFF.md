@@ -1302,7 +1302,7 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
 
 ## 51. 0.4.40-alpha zombie health cap — 2026-11-01
 
-- **Validated statically (not tested in-game):** ZOMBIE HEALTH CAP on the MORE OPTIONS page (`zmcp_health_cap`, OFF or round 1-255, typed row via `C.AttachCustomHealthCap`). GSC detours `ai_calculate_health` with the same formula limited to the cap round; installed from `main()` for every load, so resumed saves are covered. Page hints are now long plain-language explanations. Next idea: zombie speed cap (zombies already top out at sprint, so it can only slow them).
+- **Validated statically (not tested in-game):** ZOMBIE HEALTH CAP on the MORE OPTIONS page (`zmcp_health_cap`, OFF or round 1-255, typed row via `C.AttachCustomHealthCap`). GSC detours `ai_calculate_health` with the same formula limited to the cap round; installed from `main()` for every load, so resumed saves are covered. Page hints are now long plain-language explanations. Published: [GitHub release 0.4.40-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.40-alpha) (source commit `641857edcbb108f26cbb9e1e81199d5c7377a3a4`; 170,281-byte ZIP, 20 entries, no saves/caches, SHA-256 `5D815C57FA8621CAEDF80D165F10076F376156A31EAC8BEF10EFB03888E1507E`, matches GitHub). No local install was run. Next idea: zombie speed cap (zombies already top out at sprint, so it can only slow them).
 
 ## 50. 0.4.39-alpha MORE OPTIONS page — 2026-11-01
 
