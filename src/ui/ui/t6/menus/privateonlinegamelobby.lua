@@ -36,7 +36,7 @@ addLobbyDvarOption( "zmcp_start_perks", 0, "STARTING PERK",
 	"New match: one random perk from this map.",
 	{ "NONE", "1 RANDOM PERK" }, { 0, 1 } )
 addLobbyDvarOption( "zmcp_start_points", 0, "STARTING POINTS",
-	"New match: start with this many points.",
+	"New match: start with this many points. Click to type.",
 	{ "DEFAULT", "5,000", "10,000", "25,000", "50,000", "100,000", "250,000", "500,000", "1,000,000" },
 	{ 0, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000 } )
 addLobbyDvarOption( "zmcp_start_world", 0, "OPENING",
@@ -129,6 +129,95 @@ C.AttachCustomStartRound = function ( selector )
 	show( selector )
 end
 
+-- STARTING POINTS. The row keeps its fixed list as a fallback; when the stock
+-- lobby builds it, the selector is replaced in place by a number (0 = DEFAULT)
+-- stored in the archived dvar zmcp_start_points. Left/right and the mouse wheel
+-- step by 5,000; a click or Enter opens the on-screen keyboard to type a value.
+C.PointsStep = 5000
+
+C.ClampStartPoints = function ( value )
+	value = tonumber( value )
+	if value == nil or value ~= value then return nil end
+	value = math.floor( value )
+	if value < 0 then return 0 end
+	if value > C.PointsMax then return C.PointsMax end
+	return value
+end
+
+C.StartPointsValue = function ()
+	return C.ClampStartPoints( C.DvarString( "zmcp_start_points" ) ) or 0
+end
+
+C.FormatStartPoints = function ( value )
+	if value < 1 then return "DEFAULT" end
+	local text = tostring( value )
+	while true do
+		local replaced, count = string.gsub( text, "^(%d+)(%d%d%d)", "%1,%2" )
+		text = replaced
+		if count == 0 then break end
+	end
+	return text
+end
+
+C.SetStartPoints = function ( value )
+	value = C.ClampStartPoints( value )
+	if value == nil then return nil end
+	Engine.SetDvar( "zmcp_start_points", value )
+	Engine.Exec( 0, "seta zmcp_start_points " .. value .. "\n" )
+	return value
+end
+
+C.AttachCustomStartPoints = function ( selector )
+	if selector.zmcpCustomPoints then return end
+	selector.zmcpCustomPoints = true
+	local show = function ( self )
+		if self.choiceText then self.choiceText:setText( C.FormatStartPoints( C.StartPointsValue() ) ) end
+	end
+	local step = function ( self, amount )
+		C.SetStartPoints( C.StartPointsValue() + amount )
+		show( self )
+	end
+	selector.updateChoice = show
+	selector.refreshChoice = show
+	selector.setChoice = function ( self ) show( self ) end
+	selector.cycle = function ( self, forward, userRequested )
+		if userRequested then step( self, forward and C.PointsStep or -C.PointsStep ) end
+	end
+	local stockButton = selector.handleGamepadButton
+	selector.handleGamepadButton = function ( self, event )
+		if event.qualifier == "mwheel" and event.down == true and self:isInFocus() then
+			if event.button == "up" then
+				step( self, C.PointsStep )
+				return true
+			elseif event.button == "down" then
+				step( self, -C.PointsStep )
+				return true
+			end
+		end
+		return stockButton( self, event )
+	end
+	selector:registerEventHandler( "button_action", function ( self, event )
+		local keyboardType = CoD.KEYBOARD_TYPE_TEXT_MESSAGE
+		if keyboardType == nil then
+			step( self, C.PointsStep )
+			return true
+		end
+		Engine.Exec( event.controller or 0, "ui_keyboard_new " .. keyboardType ..
+			" \"STARTING POINTS (0 = DEFAULT, MAX " .. C.PointsMax .. ")\" \"" ..
+			C.StartPointsValue() .. "\" 7" )
+		return true
+	end )
+	selector:registerEventHandler( "ui_keyboard_input", function ( self, event )
+		if event.type ~= CoD.KEYBOARD_TYPE_TEXT_MESSAGE or type( event.input ) ~= "string" then return end
+		local digits = string.match( event.input, "^%s*(%d+)%s*$" )
+		if digits and #digits <= 8 then
+			C.SetStartPoints( tonumber( digits ) )
+			show( self )
+		end
+	end )
+	show( selector )
+end
+
 local isStartRoundLabel = function ( name )
 	if type( name ) ~= "string" then return false end
 	if name == "ZMUI_STARTING_ROUND_CAPS" then return true end
@@ -140,6 +229,12 @@ if CoD.LeftRightSelector and CoD.LeftRightSelector.new and not CoD.LeftRightSele
 	CoD.LeftRightSelector.zmcpStartRoundHook = true
 	local stockNew = CoD.LeftRightSelector.new
 	CoD.LeftRightSelector.new = function ( name, ... )
+		if name == "STARTING POINTS" then
+			local selector = stockNew( name, ... )
+			local ok = pcall( C.AttachCustomStartPoints, selector )
+			if not ok then selector.zmcpCustomPoints = nil end
+			return selector
+		end
 		if not isStartRoundLabel( name ) then return stockNew( name, ... ) end
 		local selector = stockNew( "CUSTOM STARTING ROUND", ... )
 		local ok = pcall( C.AttachCustomStartRound, selector )

@@ -53,7 +53,13 @@ LUI.createMenu.PrivateOnlineGameLobby( 0 )
 assert( tostring( dvars.zmcp_start_points ) == "50000" and tostring( dvars.zmcp_start_world ) == "2", "valid points/opening kept" )
 dvars.zmcp_start_points, dvars.zmcp_start_world = "123", "9"
 LUI.createMenu.PrivateOnlineGameLobby( 0 )
-assert( tostring( dvars.zmcp_start_points ) == "0" and tostring( dvars.zmcp_start_world ) == "3", "unknown points reset, opening clamps" )
+assert( tostring( dvars.zmcp_start_points ) == "123" and tostring( dvars.zmcp_start_world ) == "3", "typed points kept, opening clamps" )
+dvars.zmcp_start_points = "99999999"
+LUI.createMenu.PrivateOnlineGameLobby( 0 )
+assert( tostring( dvars.zmcp_start_points ) == "1000000", "points clamp to 1,000,000" )
+dvars.zmcp_start_points = "-5"
+LUI.createMenu.PrivateOnlineGameLobby( 0 )
+assert( tostring( dvars.zmcp_start_points ) == "0" )
 dvars.zmcp_start_points, dvars.zmcp_start_world = nil, "x"
 LUI.createMenu.PrivateOnlineGameLobby( 0 )
 assert( tostring( dvars.zmcp_start_points ) == "0" and tostring( dvars.zmcp_start_world ) == "0" )

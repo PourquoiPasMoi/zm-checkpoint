@@ -7,7 +7,6 @@ local C = CoD.ZMCheckpointMenu
 C.LoadoutWeaponMax = 4
 C.LoadoutPerkMax = 1
 C.LoadoutWorldMax = 3
-C.LoadoutPointValues = { 0, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000 }
 
 local function normalize( dvar, maximum )
 	local value = tonumber( C.DvarString( dvar ) )
@@ -21,19 +20,19 @@ local function normalize( dvar, maximum )
 	if tostring( value ) ~= C.DvarString( dvar ) then Engine.SetDvar( dvar, value ) end
 end
 
--- The points row only offers fixed amounts; anything else becomes DEFAULT.
+-- Starting points can be any whole number from 1 to 1,000,000 (typed in the
+-- lobby); anything else becomes 0, which means DEFAULT.
+C.PointsMax = 1000000
 local function normalizePoints()
 	local value = tonumber( C.DvarString( "zmcp_start_points" ) )
-	if value ~= nil and value == value then
-		value = math.floor( value )
-		for _, allowed in ipairs( C.LoadoutPointValues ) do
-			if value == allowed then
-				if tostring( value ) ~= C.DvarString( "zmcp_start_points" ) then Engine.SetDvar( "zmcp_start_points", value ) end
-				return
-			end
-		end
+	if value == nil or value ~= value then
+		Engine.SetDvar( "zmcp_start_points", 0 )
+		return
 	end
-	Engine.SetDvar( "zmcp_start_points", 0 )
+	value = math.floor( value )
+	if value < 0 then value = 0 end
+	if value > C.PointsMax then value = C.PointsMax end
+	if tostring( value ) ~= C.DvarString( "zmcp_start_points" ) then Engine.SetDvar( "zmcp_start_points", value ) end
 end
 
 -- Clamps stored values so the rows and GSC always agree (older versions allowed
