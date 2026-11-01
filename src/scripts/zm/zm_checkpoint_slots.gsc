@@ -285,65 +285,120 @@ zmcp_custom_levelvars_override()
     level.player_starting_points = level.round_number * 500;
 }
 
-// STARTING LOADOUT (lobby dvars zmcp_start_weapon1/2 and zmcp_start_perks). Only
-// a fresh match uses it; a resumed checkpoint restores its own state. Every
-// weapon is re-validated against this map's own weapon list.
-zmcp_loadout_weapon( dvar )
+// STARTING LOADOUT (lobby dvars zmcp_start_weapons = 0-2 random weapons and
+// zmcp_start_perks = 0-1 random perk). Only a fresh match uses it; a resumed
+// checkpoint restores its own state. The weapon pool is curated per map (normal
+// wall-buy and Mystery Box guns) and every entry is checked against the map's
+// own weapon list before it can be given.
+zmcp_loadout_add( list, names )
 {
-    value = getdvar( dvar );
-    if ( value == "" || value == "none" )
-        return "";
+    for ( i = 0; i < names.size; i++ )
+        list[list.size] = names[i] + "_zm";
 
-    if ( !zmcp_coop_token( value ) || value.size < 5 || getsubstr( value, value.size - 3 ) != "_zm" || issubstr( value, "upgraded" ) )
+    return list;
+}
+
+zmcp_loadout_pool()
+{
+    core = [];
+    core[core.size] = "python";
+    core[core.size] = "judge";
+    core[core.size] = "kard";
+    core[core.size] = "fiveseven";
+    core[core.size] = "beretta93r";
+    core[core.size] = "fivesevendw";
+    core[core.size] = "ak74u";
+    core[core.size] = "mp5k";
+    core[core.size] = "qcw05";
+    core[core.size] = "870mcs";
+    core[core.size] = "rottweil72";
+    core[core.size] = "saiga12";
+    core[core.size] = "srm1216";
+    core[core.size] = "m14";
+    core[core.size] = "saritch";
+    core[core.size] = "m16";
+    core[core.size] = "galil";
+    core[core.size] = "fnfal";
+    core[core.size] = "dsr50";
+    core[core.size] = "barretm82";
+    core[core.size] = "hamr";
+    core[core.size] = "usrpg";
+    core[core.size] = "m32";
+    core[core.size] = "ray_gun";
+    core[core.size] = "raygun_mark2";
+
+    extra = [];
+    pool = [];
+
+    switch ( level.zmcp_map )
     {
-        println( "ZMCP: ignored invalid starting weapon " + dvar );
-        return "";
+        case "zm_nuked":
+            extra = array( "xm8", "type95", "tar21", "rpd", "hk416", "lsat" );
+            pool = zmcp_loadout_add( pool, core );
+            return zmcp_loadout_add( pool, extra );
+        case "zm_transit":
+            extra = array( "xm8", "type95", "tar21", "rpd" );
+            pool = zmcp_loadout_add( pool, core );
+            return zmcp_loadout_add( pool, extra );
+        case "zm_highrise":
+            extra = array( "xm8", "type95", "tar21", "rpd", "svu", "pdw57", "an94" );
+            pool = zmcp_loadout_add( pool, core );
+            return zmcp_loadout_add( pool, extra );
+        case "zm_buried":
+            extra = array( "tar21", "rnma", "svu", "lsat", "pdw57", "an94" );
+            pool = zmcp_loadout_add( pool, core );
+            return zmcp_loadout_add( pool, extra );
+        case "zm_prison":
+            pool = array( "judge_zm", "beretta93r_zm", "fivesevendw_zm", "uzi_zm", "thompson_zm", "870mcs_zm", "mp5k_zm", "pdw57_zm", "saiga12_zm", "rottweil72_zm", "m14_zm", "ak47_zm", "tar21_zm", "galil_zm", "fnfal_zm", "dsr50_zm", "barretm82_zm", "lsat_zm", "usrpg_zm", "ray_gun_zm", "raygun_mark2_zm", "blundergat_zm" );
+            return pool;
+        case "zm_tomb":
+            pool = array( "hamr_zm", "mg08_zm", "type95_zm", "galil_zm", "fnfal_zm", "m14_zm", "mp44_zm", "scar_zm", "870mcs_zm", "ksg_zm", "srm1216_zm", "ak74u_zm", "ak74u_extclip_zm", "pdw57_zm", "thompson_zm", "qcw05_zm", "mp40_zm", "mp40_stalker_zm", "evoskorpion_zm", "ballista_zm", "dsr50_zm", "beretta93r_zm", "beretta93r_extclip_zm", "kard_zm", "fiveseven_zm", "python_zm", "c96_zm", "fivesevendw_zm", "m32_zm", "ray_gun_zm", "raygun_mark2_zm" );
+            return pool;
     }
 
-    if ( !is_weapon_included( value ) )
-    {
-        println( "ZMCP: starting weapon " + value + " is not on this map" );
-        return "";
-    }
-
-    return value;
+    return [];
 }
 
 zmcp_starting_loadout()
 {
     level endon( "end_game" );
 
+    weapons = getdvarint( "zmcp_start_weapons" );
+    if ( weapons < 0 )
+        weapons = 0;
+    if ( weapons > 2 )
+        weapons = 2;
+
     perks = getdvarint( "zmcp_start_perks" );
     if ( perks < 0 )
         perks = 0;
-    if ( perks > 4 )
-        perks = 4;
+    if ( perks > 1 )
+        perks = 1;
 
-    if ( getdvar( "zmcp_start_weapon1" ) == "none" && getdvar( "zmcp_start_weapon2" ) == "none" && perks < 1 )
+    if ( weapons < 1 && perks < 1 )
         return;
 
     // The map has registered its weapons and perk machines by this point.
     flag_wait( "initial_blackscreen_passed" );
     wait 1;
 
-    first = zmcp_loadout_weapon( "zmcp_start_weapon1" );
-    second = zmcp_loadout_weapon( "zmcp_start_weapon2" );
-    if ( first == second )
-        second = "";
-    if ( first == "" )
+    pool = [];
+    candidates = zmcp_loadout_pool();
+    for ( i = 0; i < candidates.size; i++ )
     {
-        first = second;
-        second = "";
+        if ( is_weapon_included( candidates[i] ) )
+            pool[pool.size] = candidates[i];
     }
-    if ( first == "" && perks < 1 )
-        return;
+
+    if ( weapons > 0 && pool.size < 1 )
+        println( "ZMCP: no starting weapons are available on this map" );
 
     players = get_players();
     for ( i = 0; i < players.size; i++ )
-        players[i] thread zmcp_give_starting_loadout( first, second, perks );
+        players[i] thread zmcp_give_starting_loadout( pool, weapons, perks );
 }
 
-zmcp_give_starting_loadout( first, second, perks )
+zmcp_give_starting_loadout( pool, weapons, perks )
 {
     self endon( "disconnect" );
     level endon( "end_game" );
@@ -351,38 +406,40 @@ zmcp_give_starting_loadout( first, second, perks )
     while ( self.sessionstate != "playing" || !isalive( self ) )
         wait 0.1;
 
-    given = "";
-    // Two weapons fill both primary slots, so the starting pistol makes room.
-    if ( second != "" && isdefined( level.start_weapon ) && self hasweapon( level.start_weapon ) )
-        self takeweapon( level.start_weapon );
-
-    if ( first != "" )
+    // Each player rolls their own weapons from the map's pool.
+    picks = [];
+    shuffled = array_randomize( pool );
+    for ( i = 0; i < shuffled.size && picks.size < weapons; i++ )
     {
-        self maps\mp\zombies\_zm_weapons::weapon_give( first, 0, 0, 1 );
-        given += first;
-        wait 0.2;
+        if ( !self hasweapon( shuffled[i] ) )
+            picks[picks.size] = shuffled[i];
     }
 
-    if ( second != "" )
+    given = "";
+    // Two weapons fill both primary slots, so the starting pistol makes room.
+    if ( picks.size > 1 && isdefined( level.start_weapon ) && self hasweapon( level.start_weapon ) )
+        self takeweapon( level.start_weapon );
+
+    for ( i = 0; i < picks.size; i++ )
     {
-        self maps\mp\zombies\_zm_weapons::weapon_give( second, 0, 0, 1 );
-        given += " " + second;
+        self maps\mp\zombies\_zm_weapons::weapon_give( picks[i], 0, 0, 1 );
+        given += picks[i] + " ";
         wait 0.2;
     }
 
     count = 0;
-    for ( i = 0; i < perks; i++ )
+    if ( perks > 0 )
     {
         perk = zmcp_random_start_perk();
-        if ( !isdefined( perk ) )
-            break;
-        self maps\mp\zombies\_zm_perks::give_perk( perk, 0 );
-        count++;
-        wait 0.2;
+        if ( isdefined( perk ) )
+        {
+            self maps\mp\zombies\_zm_perks::give_perk( perk, 0 );
+            count = 1;
+        }
     }
 
     println( "ZMCP: starting loadout weapons=[" + given + "] perks=" + count );
-    if ( given != "" || count > 0 )
+    if ( picks.size > 0 || count > 0 )
         self iprintln( "^2Starting loadout applied" );
 }
 

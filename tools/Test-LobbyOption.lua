@@ -32,9 +32,9 @@ chunk()
 chunk() -- loading twice must not duplicate the row
 
 local list = CoD.PrivateGameLobby.Dvars
-assert( #list == 7, "expected four added rows, got " .. #list )
+assert( #list == 6, "expected three added rows, got " .. #list )
 assert( list[4].id == "zmcp_all_perks" and list[3].id == "sv_cheats", "row must follow CHEATS" )
-assert( list[5].id == "zmcp_start_weapon1" and list[6].id == "zmcp_start_weapon2" and list[7].id == "zmcp_start_perks" )
+assert( list[5].id == "zmcp_start_weapons" and list[6].id == "zmcp_start_perks" )
 assert( list[4].values[1] == 0 and list[4].values[2] == 1 and #list[4].labels == 2 )
 assert( CoD.PrivateGameLobby.DvarDefaults.zmcp_all_perks == 0 )
 LUI.createMenu.PrivateOnlineGameLobby( 0 )
