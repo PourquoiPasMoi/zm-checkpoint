@@ -117,7 +117,7 @@ C.AttachCustomStartRound = function ( selector )
 			return true
 		end
 		Engine.Exec( event.controller or 0, "ui_keyboard_new " .. keyboardType ..
-			" \"CUSTOM STARTING ROUND (" .. C.StartRoundMin .. "-" .. C.StartRoundMax .. ")\" \"" ..
+			" \"STARTING ROUND (" .. C.StartRoundMin .. "-" .. C.StartRoundMax .. ")\" \"" ..
 			C.StartRoundValue() .. "\" 3" )
 		return true
 	end
@@ -207,7 +207,7 @@ C.AttachCustomStartPoints = function ( selector )
 			return true
 		end
 		Engine.Exec( event.controller or 0, "ui_keyboard_new " .. keyboardType ..
-			" \"STARTING POINTS (0 = DEFAULT, MAX " .. C.PointsMax .. ")\" \"" ..
+			" \"POINTS (0 = DEFAULT)\" \"" ..
 			C.StartPointsValue() .. "\" 7" )
 		return true
 	end )
@@ -289,7 +289,7 @@ C.AttachCustomHealthCap = function ( selector )
 			return true
 		end
 		Engine.Exec( event.controller or 0, "ui_keyboard_new " .. keyboardType ..
-			" \"ZOMBIE HEALTH CAP ROUND (0 = OFF, MAX " .. C.HealthCapMax .. ")\" \"" ..
+			" \"HEALTH CAP ROUND (0=OFF)\" \"" ..
 			C.HealthCapValue() .. "\" 3" )
 		return true
 	end )
