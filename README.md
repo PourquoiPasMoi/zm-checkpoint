@@ -2,7 +2,7 @@
 
 Experimental save and resume checkpoints for Call of Duty: Black Ops II Zombies on Plutonium T6.
 
-The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.26-alpha). Download `zm_checkpoint-0.4.26-alpha.zip` and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
+The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.27-alpha). Download `zm_checkpoint-0.4.27-alpha.zip` and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
 
 The source, build scripts, test guidance, and project history are in this repository. The user-facing setup and feature details live in [README.md](README.md); contributors should read [AGENTS.md](AGENTS.md) and [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md) first.
 
@@ -108,6 +108,13 @@ Guests will see no team checkpoint on their own PC; the original host must
 open CO-OP RESUME. Lobby account IDs may appear in decimal while saved IDs
 appear in hexadecimal; the menu compares both without rounding the 64-bit ID.
 This comparison still needs a two-PC in-game test.
+Version 0.4.27-alpha turns the Survival lobby's STARTING ROUND row into
+**CUSTOM STARTING ROUND**: use left/right or the mouse wheel to change it by one,
+or click it (or press Enter) and type any number from 1 to 255. The value is
+remembered and applies to new Survival matches; the stock row's fixed list is
+no longer used. A resumed checkpoint always uses its own saved round.
+Extremely high rounds are very demanding for the game; 255 is the engine's own
+round limit.
 Version 0.4.26-alpha redesigns CO-OP RESUME like SOLO RESUME. The host sees up
 to four co-op sessions per map, even when the other players are not connected
 (those rows are dimmed and START stays locked until the original host and the

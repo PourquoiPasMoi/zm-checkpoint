@@ -4,6 +4,17 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.27-alpha — 2026-11-01
+
+### 2026-11-01 — CUSTOM STARTING ROUND (Claude Code)
+
+- Request: replace the stock STARTING ROUND choices with any round number (click and type, or mouse wheel), renamed "Custom Starting Round", without crashing the game. The owner's screenshot shows the Nuketown Survival lobby with the stock row (value 1) between DIFFICULTY and MAGIC.
+- Change or investigation: the stock lobby builder is not in the local reference copies, so the row is patched where it is created: `privateonlinegamelobby.lua` wraps `CoD.LeftRightSelector.new` once and, for a selector labelled STARTING ROUND (localized or raw `ZMUI_STARTING_ROUND_CAPS`), builds it as **CUSTOM STARTING ROUND** and replaces its behavior: left/right and the mouse wheel (`mwheel` button events, same pattern as the stock server list) step by one; click or Enter opens the stock on-screen keyboard (`ui_keyboard_new`, answered by `ui_keyboard_input`, same pattern as the stock server-browser filter) and accepts digits only. Values clamp to 1-255 (the engine's own round limit); invalid text is ignored. The number lives in archived dvar `zmcp_start_round`, created only when the row was successfully replaced so an unpatched lobby keeps the stock behavior. The stock `startRound` gametype setting is never written, the same situation as a resumed checkpoint, which the round HUD already handles (`startRound < roundsPlayed` branch). GSC `zmcp_apply_custom_start_round` (Survival only, called from `main()` when no solo/co-op resume is loading) validates the dvar and detours `init_levelvars` to set `level.start_round`, `level.round_number` and starting points (`round * 500`, the stock rule). Stock `ai_calculate_health` already stops growth if the health value would overflow. Resume always uses its saved round.
+- Files affected: `src/ui/ui/t6/menus/privateonlinegamelobby.lua`, `src/scripts/zm/zm_checkpoint_slots.gsc`, `src/scripts/zm/zm_nuked/zm_checkpoint.gsc`, new `tools/Test-StartRound.lua`, `mod.json`, `README.md`, `CHANGELOG.md`, `PROJECT_HANDOFF.md`.
+- Validation: **Validated statically:** Build.ps1 passed; six T6 GSC parses; luaparse; all seven Lua suites pass, including the new mocked test (relabel, no change from stock choice building, steps, clamps at 1 and 255, wheel only while focused, keyboard command text, typed/invalid/overlong input, stored values). GSC parsed only. Seven of eight save hashes matched the earlier baseline; the solo `zm_nuked` slot 1 file changed again during the owner's own play (no agent write). Nothing installed.
+- In-game result: Not yet tested. **Unverified assumptions:** the stock row's selector is built through `CoD.LeftRightSelector.new` with a label matching the check; the mouse wheel event reaches the focused row; `CoD.KEYBOARD_TYPE_TEXT_MESSAGE` exists in the lobby; the label fits its column; very high rounds (above roughly 100) may be slow or unstable because of the engine, not this mod. If the row still reads STARTING ROUND, the hook did not match and the stock row is unchanged and harmless.
+- Remaining risk/next step: owner updates via the updater, unloads/reloads the mod, opens a Survival lobby, tries arrows, wheel and click-to-type, then starts a match and checks the round, points and HUD.
+
 ## 0.4.26-alpha — 2026-11-01
 
 ### 2026-11-01 — CO-OP RESUME redesigned like SOLO RESUME (Claude Code)
