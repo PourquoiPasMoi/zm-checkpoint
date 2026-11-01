@@ -1303,6 +1303,7 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
 ## 44. 0.4.33-alpha starting points and opening — 2026-11-01
 
 - Lobby rows **STARTING POINTS** (`zmcp_start_points`, fixed list DEFAULT to 1,000,000) and **OPENING** (`zmcp_start_world`: 1 power, 2 doors/debris, 3 both). Points are applied in `zmcp_custom_levelvars_override` (after the custom round rule, so they win); opening runs in `zmcp_starting_world` after `initial_blackscreen_passed` + 1 s using the stock force-notify on `zombie_door` and `zombie_debris` (airlock triggers are not included). Fresh matches only. Details in the 0.4.33 CHANGELOG entry.
+- Published: [GitHub release 0.4.33-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.33-alpha) (source commit `c2a7c73e82c6a0a32a118a0e91404c4ea96d09ff`; 160,393-byte ZIP, 20 entries, no saves/caches, SHA-256 `5335F39AA965A8154C78D006C5E7F882388B9E55BDCB14A23FC0AF0F2466682E`, matches GitHub). Installed updater: `UPDATE_AVAILABLE|0.4.32-alpha|0.4.33-alpha`. No local install was run.
 - **Validated statically only.** Open verification: lobby fit with 8 rows, point amounts on HUD, power/door behavior per map, and whether any door stays closed.
 - Ideas not yet done: typed starting points, Pack-a-Punched random weapon, zombie tuning, richer SOLO RESUME cards, slot notes, autosave, remaining weapon icons, save backup (see the owner's suggestion list in the 2026-11-01 session).
 

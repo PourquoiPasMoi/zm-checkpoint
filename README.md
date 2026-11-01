@@ -114,7 +114,7 @@ faster unpacking, and a 100 ms companion poll. The speedup applies from the
 update after this one (the updater scripts come from the installed version). The
 page now shows seconds spent waiting for the companion, and
 `%TEMP%\zmcp_update_timing.log` records each step with timestamps.
-Version 0.4.33-alpha fixes missing weapon pictures in SOLO RESUME: the picture table used\nnames that differ from the game's real weapon names, so weapons such as the FAL, MP5K, B23R,\nDSR 50, Barrett M82A1, RPG, War Machine, Chicom CQB and Five-seven DW showed text only.\nWeapons that the game ships no front-end picture for (for example the M27, LSAT, SVU-AS,\nAN-94, PDW-57, Thompson and the Ray Gun Mark II) still show text only.\nVersion 0.4.31-alpha fixes the long wait for the update companion. The game writes its
+Version 0.4.32-alpha fixes missing weapon pictures in SOLO RESUME: the picture table used\nnames that differ from the game's real weapon names, so weapons such as the FAL, MP5K, B23R,\nDSR 50, Barrett M82A1, RPG, War Machine, Chicom CQB and Five-seven DW showed text only.\nWeapons that the game ships no front-end picture for (for example the M27, LSAT, SVU-AS,\nAN-94, PDW-57, Thompson and the Ray Gun Mark II) still show text only.\nVersion 0.4.31-alpha fixes the long wait for the update companion. The game writes its
 console log in 4 KB blocks, so a small update request could sit unseen for about a minute;
 the updater page now prints enough harmless console lines after each request to write it out at
 once. The speedup applies from the update after this one, because the page code comes from the
