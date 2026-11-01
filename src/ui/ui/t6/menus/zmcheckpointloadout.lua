@@ -8,6 +8,7 @@ C.LoadoutWeaponMax = 4
 C.LoadoutPerkMax = 1
 C.LoadoutWorldMax = 3
 C.HealthCapMax = 255
+C.AutosaveMax = 4
 
 local function normalize( dvar, maximum )
 	local value = tonumber( C.DvarString( dvar ) )
@@ -44,5 +45,6 @@ C.RefreshLoadoutOptions = function ()
 	normalize( "zmcp_start_perks", C.LoadoutPerkMax )
 	normalize( "zmcp_start_world", C.LoadoutWorldMax )
 	normalize( "zmcp_health_cap", C.HealthCapMax )
+	normalize( "zmcp_autosave", C.AutosaveMax )
 	normalizePoints()
 end

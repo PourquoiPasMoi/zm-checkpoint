@@ -26,6 +26,54 @@ zmcp_solo_backup_path( slot )
     return getsubstr( path, 0, path.size - 4 ) + "_backup.sav";
 }
 
+// Autosave keeps the save it is about to replace here, so a failed autosave
+// write can be undone. One file per slot, rewritten by every autosave.
+zmcp_solo_prev_path( slot )
+{
+    path = zmcp_solo_path( slot );
+    return getsubstr( path, 0, path.size - 4 ) + "_prev.sav";
+}
+
+// AUTOSAVE (lobby dvar zmcp_autosave: 0 = off, 1-4 = the solo slot to use).
+// When a round ends and the next round number is set, the checkpoint is written
+// to that slot with the normal save routine (zmcp_save_checkpoint, auto = 1), so
+// Resume restores the start of the next round. Solo only; skipped while down,
+// while another save is running, and in co-op.
+zmcp_autosave_loop()
+{
+    level endon( "end_game" );
+
+    slot = getdvarint( "zmcp_autosave" );
+    if ( slot < 1 || slot > 4 )
+        return;
+
+    println( "ZMCP: autosave on, slot " + slot );
+
+    for ( ;; )
+    {
+        level waittill( "end_of_round" );
+        before = level.round_number;
+        waited = 0;
+
+        // The stock round loop raises the round number right after end_of_round.
+        while ( level.round_number <= before && waited < 5 )
+        {
+            wait 0.25;
+            waited += 0.25;
+        }
+
+        if ( level.round_number <= before )
+            continue;
+
+        wait 0.5;
+        players = get_players();
+        if ( players.size != 1 )
+            continue;
+
+        zmcp_save_checkpoint( players[0], 0, 1 );
+    }
+}
+
 zmcp_copy_save( from, to )
 {
     if ( !fs_testfile( from ) )
@@ -108,6 +156,13 @@ zmcp_apply_solo_deletes()
 
         // A deleted slot keeps no backup either.
         backup = fs_fopen( zmcp_solo_backup_path( slot ), "write" );
+        if ( isdefined( backup ) )
+        {
+            fs_writeline( backup, "EMPTY" );
+            fs_fclose( backup );
+        }
+
+        backup = fs_fopen( zmcp_solo_prev_path( slot ), "write" );
         if ( isdefined( backup ) )
         {
             fs_writeline( backup, "EMPTY" );

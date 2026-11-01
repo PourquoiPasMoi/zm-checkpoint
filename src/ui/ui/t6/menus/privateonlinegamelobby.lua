@@ -47,6 +47,9 @@ addMoreOption( "zmcp_start_world", 0, "OPENING",
 addMoreOption( "zmcp_health_cap", 0, "ZOMBIE HEALTH CAP",
 	"Zombies get tougher every round. A cap stops that after the round you pick (try 50): they never need more bullets than at that round, while rounds and zombie numbers keep growing. OFF = normal. Click to type 1-255. Also works on resumed saves.",
 	{ "OFF", "ROUND 20", "ROUND 30", "ROUND 40", "ROUND 50", "ROUND 75", "ROUND 100" }, { 0, 20, 30, 40, 50, 75, 100 } )
+addMoreOption( "zmcp_autosave", 0, "AUTOSAVE",
+	"Saves your game by itself the moment each round ends, into the slot you pick, so you can quit any time and Resume from SOLO RESUME. It replaces that slot's save (the old one is kept once as a backup). Solo only.",
+	{ "OFF", "SLOT 1", "SLOT 2", "SLOT 3", "SLOT 4" }, { 0, 1, 2, 3, 4 } )
 
 -- CUSTOM STARTING ROUND. The stock STARTING ROUND row only offers a few fixed
 -- values. Its selector is replaced in place (found by its label when the stock
