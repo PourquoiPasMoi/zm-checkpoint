@@ -4,6 +4,18 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.36-alpha — 2026-11-01
+
+### 2026-11-01 — Pack-a-Punched starting weapons (Claude Code)
+
+- Request: owner said "go" on the proposed next item, a Pack-a-Punched random starting weapon, without adding another lobby row.
+- Change or investigation: STARTING WEAPONS gained two choices, **1 PACKED WEAPON** and **2 PACKED WEAPONS** (dvar `zmcp_start_weapons` values 3 and 4). `zmcp_starting_loadout` maps 3/4 to 1/2 random weapons plus a `packed` flag; `zmcp_give_starting_loadout` upgrades each pick with the stock `can_upgrade_weapon` / `get_upgrade_weapon` (so default attachments follow the stock rules) and gives it with `weapon_give( pick, 1, 0, 1 )`. A weapon with no upgrade on the map, or whose upgrade the player already has, is given unpacked. Two weapons still replace the starting pistol. Lobby clamp maximum is now 4. The lobby stays at 13 rows and the labels are the same length as the longest existing one.
+- Files affected: `src/scripts/zm/zm_checkpoint_slots.gsc`, `src/ui/ui/t6/menus/privateonlinegamelobby.lua`, `zmcheckpointloadout.lua`, `tools/Test-Loadout.lua`, `mod.json`, `README.md`, `CHANGELOG.md`, `PROJECT_HANDOFF.md`.
+- Validation: **Validated statically:** Build.ps1 passed; six T6 GSC parses; nine Lua suites pass (loadout test extended to five labels and clamp 4). Stock `get_upgrade_weapon`, `can_upgrade_weapon` and `weapon_give` were read from the Core source in `.cache`.
+- Published: see the publication record below if present.
+- In-game result: Not yet tested. **Expected, unverified:** the upgraded weapon appears with its Pack-a-Punch camo and full ammo; the `+attachment` suffix for weapons with a default attachment gives a valid weapon; the label fits the selector.
+- Remaining risk/next step: owner to start a match with 1 and 2 PACKED WEAPONS on a map and report the weapons received and any error text in the log.
+
 ## 0.4.35-alpha — 2026-11-01
 
 ### 2026-11-01 — Stop the lobby hint overlapping ESC Back (Claude Code)

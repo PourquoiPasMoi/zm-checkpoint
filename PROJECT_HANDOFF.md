@@ -1300,6 +1300,10 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   match after publication. Unload/reload the mod after using the updater;
   Plutonium itself does not need restarting.
 
+## 47. 0.4.36-alpha Pack-a-Punched starting weapons — 2026-11-01
+
+- **Validated statically (not tested in-game):** STARTING WEAPONS now has 5 values: 0 NONE, 1 and 2 random weapons, 3 and 4 random weapons that are Pack-a-Punched (`zmcp_start_weapons`). GSC: values above 2 set `packed` and subtract 2; each pick is upgraded with stock `get_upgrade_weapon` when `can_upgrade_weapon` allows and the player does not already hold the upgrade, then given with `weapon_give( pick, 1, 0, 1 )`; otherwise the unpacked weapon is given. Lobby clamp max 4. No new lobby row (still 13). Next ideas: save backup, typed starting points, zombie tuning.
+
 ## 46. 0.4.35-alpha lobby hint overlap — 2026-11-01
 
 - **Verified in-game (owner screenshot, 0.4.34):** the focused row's hint under the last option wrapped to three lines and overlapped ESC Back. The stock hint area holds two lines of about 40 characters, so all five hints added by the mod are now 55 characters or less. Rule: keep any new lobby row hint to two lines. The lobby is now crowded (13 option rows); a further row needs a different layout. Published: [GitHub release 0.4.35-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.35-alpha) (source commit `143ac22f9b37fe7fa97f4bbfc244b278883fd925`; 162,167-byte ZIP, 20 entries, no saves/caches, SHA-256 `0326F98470C74CE464EED6DE444A66E12F1E183328C019F4709D415BAAB6379C`, matches GitHub). No local install was run. Fix not yet verified in-game. 0.4.34 release: [GitHub release 0.4.34-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.34-alpha) (source commit `75b245cd6c0568f1bf18bf9f821aaddb0c58b0b4`, 162,203-byte ZIP, SHA-256 `82C05CD64B9E1F7D62CD902F5791F5A97C38CDD22EA22A0BFC80ADED6B22A593`, matches GitHub).
