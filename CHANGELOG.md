@@ -4,6 +4,18 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.45-alpha — 2026-11-01
+
+### 2026-11-01 — SOLO RESUME grid broke after selecting a slot (Claude Code)
+
+- Request: owner screenshots of 0.4.44: the two-column grid looked right until a slot was selected; after selecting slot 2 the rows were spread 96 px apart with the right column offset, the hint line overlapped SLOT 5, SAVED SETTINGS sat among the slots, and OPTIONS and START had dropped to the bottom of the page.
+- Change or investigation: **Verified in-game (owner, 0.4.44):** the initial grid, with saved slots enabled and empty slots greyed, is correct. **Failure:** clicking a slot rebuilds the page. The rebuild called the stock `removeAllButtons` on the two columns and the actions list; that stock function re-adds the list's `hintText` element to the list it clears, and in 0.4.44 all three lists share one hint element, so the hint ended up inside every list and pushed the buttons apart. **Cause confidence:** high (the stock function and the shared hint are both in the code; the symptom matches), not proven in-game. **Fix:** the rebuild now removes the page's buttons one by one with `removeElement` (the slot buttons from `grid.buttons`, plus OPTIONS and START), never calling `removeAllButtons`. The first build was unaffected, which fits the cause. The test mock now fails if a rebuild calls `removeAllButtons`. Rule: never call `removeAllButtons` on a list that shares its hint element.
+- Files affected: `src/ui/ui/t6/menus/zmcheckpointsolo.lua`, `tools/Test-SoloDelete.lua`, `mod.json`, `README.md`, `CHANGELOG.md`, `PROJECT_HANDOFF.md`.
+- Validation: **Validated statically:** Build.ps1 passed; six T6 GSC parses; all Lua suites pass. The fixed layout after selecting, deleting and applying options is **expected, not verified in-game**.
+- Published: see the publication record below if present.
+- In-game result: 0.4.44: grid correct before selection, broken after (the bug above). 0.4.45: not yet tested.
+- Remaining risk/next step: owner to select a slot, check the grid, OPTIONS and START stay in place, then delete a slot and apply OPTIONS (both rebuild the page too).
+
 ## 0.4.44-alpha — 2026-11-01
 
 ### 2026-11-01 — Eight solo slots in a two-column grid; run options per save (Claude Code)

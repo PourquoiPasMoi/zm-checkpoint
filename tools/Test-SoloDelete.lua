@@ -11,7 +11,7 @@ end
 local function widget( name )
 	local w = proxy()
 	w.handlers, w.menuName, w.opened, w.buttons = {}, name, {}, {}
-	w.zmcpDeleteOpen, w.popup = false, false -- real menus start nil; stop proxy auto-creation
+	w.zmcpDeleteOpen, w.popup, w.removedAll = false, false, false -- real menus start nil; stop proxy auto-creation
 	w.registerEventHandler = function ( self, event, fn ) self.handlers[event] = fn end
 	w.processEvent = function ( self, event )
 		local fn = self.handlers[event.name]
@@ -27,7 +27,12 @@ local function widget( name )
 		self.buttons[#self.buttons + 1] = b
 		return b
 	end
-	w.removeAllButtons = function ( self ) self.buttons = {} end
+	w.removeAllButtons = function ( self ) self.buttons, self.removedAll = {}, true end
+	w.removeElement = function ( self, el )
+		for i, b in ipairs( self.buttons ) do
+			if b == el then table.remove( self.buttons, i ) break end
+		end
+	end
 	w.selectElementIndex = function ( self, i ) self.selectedIndex = i end
 	w.selectors = {}
 	w.addDvarLeftRightSelector = function ( self, controller, name, dvar )
@@ -122,6 +127,7 @@ assert( page.popup and page.popup.zmcpSlot == 3 and page.popup.text:find( "Slot 
 -- A confirmed delete rebuilds the list without that slot and leaves the others.
 page:processEvent( { name = "zmcp_delete_confirmed", slot = 3, controller = 0 } )
 assert( d.zmcp_has_zm_nuked_slot3 == "0" and d.zmcp_has_zm_nuked == "1" )
+for _, l in ipairs( page.lists ) do assert( not l.removedAll, "rebuild must not use removeAllButtons (shared hint element)" ) end
 assert( #actions() == 2 and slotBtn( page, 3 ).title == "SLOT 3 - EMPTY" and slotBtn( page, 1 ).title == "SLOT 1 - ROUND 8" )
 page:processEvent( { name = "zmcp_delete_confirmed", slot = 1, controller = 0 } )
 for i = 1, 8 do assert( slotBtn( page, i ).title:find( "EMPTY" ) and slotBtn( page, i ).disabled ) end

@@ -1300,6 +1300,10 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   match after publication. Unload/reload the mod after using the updater;
   Plutonium itself does not need restarting.
 
+## 56. 0.4.45-alpha grid rebuild fix — 2026-11-01
+
+- **Verified in-game (owner, 0.4.44):** the grid is correct until a slot is selected, then the layout breaks. **Cause (high confidence):** the rebuild called stock `removeAllButtons`, which re-adds the list's `hintText` to the list; the three lists share one hint element, so it ended up in all of them. **Validated statically (not tested in-game):** buttons are now removed individually with `removeElement`. **Rule:** never call `removeAllButtons` on a list that shares its hint element; a regression assertion is in `tools/Test-SoloDelete.lua`.
+
 ## 55. 0.4.44-alpha eight solo slots in a grid and per-save run options — 2026-11-01
 
 - **Validated statically (not tested in-game):** solo slots 1-8 (`C.SoloSlotCount`, GSC loops and limits), shown as two ButtonList columns (odd left, even right) on SOLO RESUME and the SAVE popup, with a third list for OPTIONS and START that owns the shared hint; left/right via `button.navigation`. Selected slot is marked "> ". The per-save OPTIONS page also has ZOMBIE HEALTH CAP and AUTOSAVE (`zmcp_ovr_<map>_slotN_healthcap`/`_autosave`, applied at START). **Rule:** every future MORE OPTIONS setting that matters during a run must also be added to the per-save OPTIONS page; start-only settings stay lobby-only. Co-op stays at four sessions. Unknowns: column layout, shared hint position and sideways focus in the real UI. Published: [GitHub release 0.4.44-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.44-alpha) (source commit `1cb078e94b4cf5901cd84c28f4bf296a087641ad`; 178,580-byte ZIP, 20 entries, no saves/caches, SHA-256 `495CC5F1488CDE14183A483AA41F7DDEE67CCA15AB987E60A64C7FD1E7DF6523`, matches GitHub). No local install was run.
