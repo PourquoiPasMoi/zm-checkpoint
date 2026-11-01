@@ -1302,7 +1302,7 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
 
 ## 56. 0.4.45-alpha grid rebuild fix — 2026-11-01
 
-- **Verified in-game (owner, 0.4.44):** the grid is correct until a slot is selected, then the layout breaks. **Cause (high confidence):** the rebuild called stock `removeAllButtons`, which re-adds the list's `hintText` to the list; the three lists share one hint element, so it ended up in all of them. **Validated statically (not tested in-game):** buttons are now removed individually with `removeElement`. **Rule:** never call `removeAllButtons` on a list that shares its hint element; a regression assertion is in `tools/Test-SoloDelete.lua`.
+- **Verified in-game (owner, 0.4.44):** the grid is correct until a slot is selected, then the layout breaks. **Cause (high confidence):** the rebuild called stock `removeAllButtons`, which re-adds the list's `hintText` to the list; the three lists share one hint element, so it ended up in all of them. **Validated statically (not tested in-game):** buttons are now removed individually with `removeElement`. **Rule:** never call `removeAllButtons` on a list that shares its hint element; a regression assertion is in `tools/Test-SoloDelete.lua`. Published: [GitHub release 0.4.45-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.45-alpha) (source commit `9098a5210fefffc526658a0b5b198741cb36bcf0`; 178,801-byte ZIP, 20 entries, no saves/caches, SHA-256 `89CB06478E101DE6F70A10DF03B7DED0E75CDC67B0D6E17FA74D7625F53652F2`, matches GitHub). No local install was run.
 
 ## 55. 0.4.44-alpha eight solo slots in a grid and per-save run options — 2026-11-01
 
