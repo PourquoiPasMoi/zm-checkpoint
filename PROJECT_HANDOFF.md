@@ -12,7 +12,7 @@ failure, installation, or test so the project retains its lessons.
 
 - Project: **ZM Checkpoint** for Call of Duty: Black Ops II Zombies on Plutonium T6.
 - Workspace: `C:\Users\User\Documents\Projects\Bo2 Zombie Plutonium`
-- Current source/package: **0.4.27-alpha** (custom starting round, section 38; previously 0.4.26-alpha (CO-OP RESUME redesign, section 37; previously 0.4.25-alpha (select, OPTIONS and START flow, section 34; 0.4.24 added per-save OPTIONS, section 33; 0.4.23 added solo save deletion, section 32); latest published: **0.4.26-alpha**; installed locally: **0.4.24-alpha**; locally installed: **0.4.21-alpha**. Older note follows: locally installed metadata was **0.4.20-alpha**. GitHub publication status is recorded in section 30. No project installer was run for 0.4.21.
+- Current source/package: **0.4.27-alpha** (custom starting round, section 38; previously 0.4.26-alpha (CO-OP RESUME redesign, section 37; previously 0.4.25-alpha (select, OPTIONS and START flow, section 34; 0.4.24 added per-save OPTIONS, section 33; 0.4.23 added solo save deletion, section 32); latest published: **0.4.27-alpha**; installed locally: **0.4.24-alpha**; locally installed: **0.4.21-alpha**. Older note follows: locally installed metadata was **0.4.20-alpha**. GitHub publication status is recorded in section 30. No project installer was run for 0.4.21.
 - Current date of this handoff: **2026-11-01** (latest session notes: section 35; planned next task: section 36; sections 31 to 36 sit newest-first above section 30)
 - The project is a Git repository with public origin `https://github.com/PourquoiPasMoi/zm-checkpoint`.
 - The standalone mod and companion packages are installed locally.
@@ -1304,7 +1304,7 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
 
 - **Implemented (statically validated, not tested in-game):** see the 0.4.27 CHANGELOG entry. The stock STARTING ROUND selector is replaced in place by wrapping `CoD.LeftRightSelector.new` (matched by label), driven by archived dvar `zmcp_start_round` (1-255), applied in GSC by `zmcp_apply_custom_start_round` through an `init_levelvars` detour for Survival when nothing is being resumed. The stock gametype setting is untouched.
 - **Reusable stock patterns found:** `ui_keyboard_new <type> "title" "default" <maxlen>` with a `ui_keyboard_input` event on the focused element (`serverbrowserfilterspopup.lua`); `mwheel` button events (`event.qualifier == "mwheel"`, `event.button` up/down, `event.down`) as in `serverlist.lua`.
-- **Installed state:** local game stays on 0.4.25-alpha (updater-driven); 0.4.26 is published; **0.4.27 source is pushed to `main` (commit `562a065`) but its GitHub release/ZIP has not been created yet** because the owner has not asked for it this turn (release creation was declined by the permission layer). Create it with the section 35 recipe when asked; the README link already points at the future 0.4.27-alpha release.
+- **Installed state:** local game stays on 0.4.25-alpha (updater-driven); 0.4.26 and 0.4.27 are published ([0.4.27-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.27-alpha), ZIP 144,071 bytes, SHA-256 `84A9BBFAB4C981F7202A24EBC5C71C22FEEA33E7AE64229428C383FADB5DFA54`, matches GitHub). The owner has since updated the installed mod to 0.4.26 via the updater, which now reports 0.4.27 available.
 - **Open verification:** hook match and label fit, wheel, keyboard entry, high-round stability, plus everything in section 37 and earlier.
 
 ## 37. 0.4.26-alpha CO-OP RESUME redesign — 2026-11-01
