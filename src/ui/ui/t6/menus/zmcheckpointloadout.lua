@@ -4,7 +4,7 @@
 -- only stores how many to give.
 local C = CoD.ZMCheckpointMenu
 
-C.LoadoutWeaponMax = 2
+C.LoadoutWeaponMax = 4
 C.LoadoutPerkMax = 1
 C.LoadoutWorldMax = 3
 C.LoadoutPointValues = { 0, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000 }

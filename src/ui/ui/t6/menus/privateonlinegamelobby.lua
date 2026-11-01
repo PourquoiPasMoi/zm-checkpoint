@@ -31,7 +31,7 @@ addLobbyDvarOption( "zmcp_all_perks", 0, "UNLIMITED PERKS",
 	"Allow every perk at once (normally four)." )
 addLobbyDvarOption( "zmcp_start_weapons", 0, "STARTING WEAPONS",
 	"New match: random map weapons. Two replace the M1911.",
-	{ "NONE", "1 RANDOM WEAPON", "2 RANDOM WEAPONS" }, { 0, 1, 2 } )
+	{ "NONE", "1 RANDOM WEAPON", "2 RANDOM WEAPONS", "1 PACKED WEAPON", "2 PACKED WEAPONS" }, { 0, 1, 2, 3, 4 } )
 addLobbyDvarOption( "zmcp_start_perks", 0, "STARTING PERK",
 	"New match: one random perk from this map.",
 	{ "NONE", "1 RANDOM PERK" }, { 0, 1 } )

@@ -468,8 +468,8 @@ zmcp_starting_loadout()
     weapons = getdvarint( "zmcp_start_weapons" );
     if ( weapons < 0 )
         weapons = 0;
-    if ( weapons > 2 )
-        weapons = 2;
+    if ( weapons > 4 )
+        weapons = 4;
 
     perks = getdvarint( "zmcp_start_perks" );
     if ( perks < 0 )
@@ -479,6 +479,14 @@ zmcp_starting_loadout()
 
     if ( weapons < 1 && perks < 1 )
         return;
+
+    // Values 3 and 4 give one or two Pack-a-Punched weapons.
+    packed = 0;
+    if ( weapons > 2 )
+    {
+        packed = 1;
+        weapons -= 2;
+    }
 
     // The map has registered its weapons and perk machines by this point.
     flag_wait( "initial_blackscreen_passed" );
@@ -497,10 +505,10 @@ zmcp_starting_loadout()
 
     players = get_players();
     for ( i = 0; i < players.size; i++ )
-        players[i] thread zmcp_give_starting_loadout( pool, weapons, perks );
+        players[i] thread zmcp_give_starting_loadout( pool, weapons, perks, packed );
 }
 
-zmcp_give_starting_loadout( pool, weapons, perks )
+zmcp_give_starting_loadout( pool, weapons, perks, packed )
 {
     self endon( "disconnect" );
     level endon( "end_game" );
@@ -524,8 +532,20 @@ zmcp_give_starting_loadout( pool, weapons, perks )
 
     for ( i = 0; i < picks.size; i++ )
     {
-        self maps\mp\zombies\_zm_weapons::weapon_give( picks[i], 0, 0, 1 );
-        given += picks[i] + " ";
+        pick = picks[i];
+        upgraded = 0;
+        if ( packed && maps\mp\zombies\_zm_weapons::can_upgrade_weapon( pick ) )
+        {
+            upgrade = maps\mp\zombies\_zm_weapons::get_upgrade_weapon( pick );
+            if ( isdefined( upgrade ) && upgrade != pick && !self hasweapon( upgrade ) )
+            {
+                pick = upgrade;
+                upgraded = 1;
+            }
+        }
+
+        self maps\mp\zombies\_zm_weapons::weapon_give( pick, upgraded, 0, 1 );
+        given += pick + " ";
         wait 0.2;
     }
 
