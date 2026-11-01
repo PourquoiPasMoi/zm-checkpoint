@@ -154,3 +154,5 @@ The owner installs future releases through the updater. Publish requested
 updates to GitHub without running `tools/Install.ps1` or copying the new build
 into the local Plutonium game, unless the owner explicitly asks for a local
 install. Do not treat a release request as local-install permission.
+
+**Standing owner instruction (2026-11-01):** after finishing and validating a version, publish it (push, GitHub prerelease with ZIP, record the publication) without asking for confirmation, unless the owner says not to publish for that task. This still does not permit a local install.

@@ -6,6 +6,10 @@ semantics.
 
 ## 0.4.28-alpha — 2026-11-01
 
+### 2026-11-01 — Standing instruction: always publish
+
+- Request: owner asked that finished versions always be published without asking, unless told not to. Recorded in `AGENTS.md` (Publishing updates). Local installation still requires an explicit request. Files affected: `AGENTS.md`, `CHANGELOG.md`. No code change.
+
 ### 2026-11-01 — Starting weapons and random starting perks (Claude Code)
 
 - Request: add Custom Games options to start with 1 or 2 weapons (any weapon found on the map or in the box) and with random perks.
