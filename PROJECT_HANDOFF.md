@@ -12,7 +12,7 @@ failure, installation, or test so the project retains its lessons.
 
 - Project: **ZM Checkpoint** for Call of Duty: Black Ops II Zombies on Plutonium T6.
 - Workspace: `C:\Users\User\Documents\Projects\Bo2 Zombie Plutonium`
-- Current source/package: **0.4.22-alpha** (unreleased, adds the UNLIMITED PERKS option, section 31); latest published and locally installed: **0.4.21-alpha**. Older note follows: locally installed metadata was **0.4.20-alpha**. GitHub publication status is recorded in section 30. No project installer was run for 0.4.21.
+- Current source/package: **0.4.22-alpha** (published to GitHub, adds the UNLIMITED PERKS option, section 31); latest published: **0.4.22-alpha**; locally installed: **0.4.21-alpha**. Older note follows: locally installed metadata was **0.4.20-alpha**. GitHub publication status is recorded in section 30. No project installer was run for 0.4.21.
 - Current date of this handoff: **2026-10-30**
 - The project is a Git repository with public origin `https://github.com/PourquoiPasMoi/zm-checkpoint`.
 - The standalone mod and companion packages are installed locally.
@@ -1300,9 +1300,10 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
 
 ## 31. 0.4.22-alpha UNLIMITED PERKS option — 2026-11-01
 
-- **Source change, not installed or published.** New Custom Games row UNLIMITED PERKS (dvar `zmcp_all_perks`, 0/1) sits under CHEATS. Mechanism: the stock lobby loops over `CoD.PrivateGameLobby.Dvars`; `privateonlinegamelobby.lua` appends one entry (idempotent) and creates the dvar at 0 before the lobby is built. GSC `zmcp_unlimited_perks` raises `level.perk_purchase_limit` to 99 at init and after `initial_blackscreen_passed` (stock `_zm_perks` init sets 4). Origins' `get_player_perk_purchase_limit` falls back to the level value. Applies to all six maps through the shared source; the setting is not stored in checkpoints.
+- **Source change, published, not installed locally.** New Custom Games row UNLIMITED PERKS (dvar `zmcp_all_perks`, 0/1) sits under CHEATS. Mechanism: the stock lobby loops over `CoD.PrivateGameLobby.Dvars`; `privateonlinegamelobby.lua` appends one entry (idempotent) and creates the dvar at 0 before the lobby is built. GSC `zmcp_unlimited_perks` raises `level.perk_purchase_limit` to 99 at init and after `initial_blackscreen_passed` (stock `_zm_perks` init sets 4). Origins' `get_player_perk_purchase_limit` falls back to the level value. Applies to all six maps through the shared source; the setting is not stored in checkpoints.
 - **Validated statically:** Lua parse, Build.ps1, six T6 GSC parses, existing three Lua suites plus new `tools/Test-LobbyOption.lua`. **In-game result: not yet tested**; layout, label width and per-map behavior are expected only. Evidence base: reconstructed stock scripts in `.cache/bo2-recompilable-gscs` and stock lobby Lua in `.cache/client-raw-assets`.
-- **Next:** ship via the usual build, push and release flow when requested, then test on each map: buy more than four perks, check perk HUD placement, check the lobby row layout.
+- **Published:** source commit `8a857d4` preceded [0.4.22-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.22-alpha) (117,725-byte ZIP, SHA-256 `E1C8537FC073415898F9F79142AD3868849CEE691B67D10B619F3C9D0F07B045`, matches GitHub). Installed game stays on 0.4.21-alpha; updater reports `UPDATE_AVAILABLE|0.4.21-alpha|0.4.22-alpha`; all eight save hashes unchanged. Owner installs via the updater, then unloads/reloads the mod; no Plutonium restart.
+- **Next:** test on each map: buy more than four perks, check perk HUD placement, check the lobby row layout.
 
 ## 30. 0.4.21-alpha updater exit confirmation — 2026-10-30
 
