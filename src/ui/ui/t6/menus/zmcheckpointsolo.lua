@@ -84,8 +84,27 @@ local weaponMaterials = {
 	tar21 = "menu_mp_weapons_tar21_big", type95 = "menu_mp_weapons_type95_big",
 	xm8 = "menu_mp_weapons_xm8_big", ray_gun = "menu_zm_weapons_raygun_big",
 	raygun = "menu_zm_weapons_raygun_big", jetgun = "menu_zm_weapons_jetgun_big",
-	zombie_shield = "menu_zm_weapons_shield_big"
+	zombie_shield = "menu_zm_weapons_shield_big",
+	-- The game's own weapon names differ from the front-end material names.
+	fnfal = "menu_mp_weapons_fal_big", mp5k = "menu_mp_weapons_mp5_big",
+	beretta93r = "menu_mp_weapons_baretta_big", dsr50 = "menu_mp_weapons_dsr1_big",
+	barretm82 = "menu_mp_weapons_m82a_big", usrpg = "menu_mp_weapons_rpg_big",
+	m32 = "menu_mp_weapons_m32gl_big", qcw05 = "menu_mp_weapons_qcw_big",
+	fivesevendw = "menu_mp_weapons_five_seven_big", m16_gl = "menu_mp_weapons_m16_big",
+	ak74u_extclip = "menu_mp_weapons_ak74u_big", beretta93r_extclip = "menu_mp_weapons_baretta_big"
 }
+
+-- Base name of a saved weapon: drops attachments, upgrade suffixes and "_zm".
+local function weaponBase( name )
+	local base = string.gsub( name, "%+.*$", "" )
+	base = string.gsub( base, "_zm.*$", "" )
+	base = string.gsub( base, "_upgraded.*$", "" )
+	return base
+end
+
+local function weaponMaterial( name )
+	return weaponMaterials[weaponBase( name )]
+end
 
 local function addText( parent, value, left, right, top, bottom, orange )
 	local label = LUI.UIText.new()
@@ -153,9 +172,7 @@ local function addPreview( menu, list )
 		for i, name in ipairs( meta.weapons ) do
 			local top = 132 + (i - 1) * 43
 			local label = weaponName( name )
-			local base = string.gsub( name, "_zm.*$", "" )
-			base = string.gsub( base, "_upgraded.*$", "" )
-			local material = weaponMaterials[base]
+			local material = weaponMaterial( name )
 			if material then addImage( content, material, 18, top - 2, 76, 38 ) end
 			addText( content, label, material and 107 or 18, 445, top + 5, top + 31 )
 		end
@@ -542,4 +559,4 @@ LUI.createMenu.ZMCheckpointSoloOptions = function ( controller )
 end
 
 -- Shared with the CO-OP RESUME page.
-C.Ui = { PageBase = pageBase, AddText = addText, WeaponName = weaponName, PerkStyle = perkStyle }
+C.Ui = { PageBase = pageBase, AddText = addText, WeaponName = weaponName, PerkStyle = perkStyle, WeaponMaterial = weaponMaterial }
