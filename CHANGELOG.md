@@ -13,6 +13,7 @@ semantics.
 - Files affected: `src/ui/ui/t6/menus/zmcheckpointsolo.lua`, new `tools/Test-WeaponIcons.lua`, `mod.json`, `README.md`, `CHANGELOG.md`, `PROJECT_HANDOFF.md`.
 - Validation: **Validated statically:** Build.ps1 passed; six T6 GSC parses; luaparse; all nine Lua suites pass (new `Test-WeaponIcons.lua` checks the real game weapon names, upgraded and attachment forms, and that no-icon weapons return nil). The pictures themselves are **expected, not verified in-game**: the materials were already confirmed loadable in 0.4.20 (the SAIGA12 icon renders).
 - In-game result: Not yet tested.
+- Published: [GitHub release 0.4.32-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.32-alpha) (source commit `e38cbc422659c2fdf9f63889cfd339abfff9cb61`; 156,633-byte ZIP, 20 entries, no saves/caches, SHA-256 `F3D1DADE2362BF43BAEE84BA8FFD06A1286DCBE361080AA459F016655FAEE834`, matches GitHub). The installed updater returned `UPDATE_AVAILABLE|0.4.31-alpha|0.4.32-alpha`, so the owner is on 0.4.31. No local install was run.
 - Remaining risk/next step: after updating and reloading the mod, SOLO RESUME slot 4 should show a FAL picture. If the owner wants pictures for the remaining weapons, extract them from other fastfiles (needs the right source zone) as a follow-up.
 
 ## 0.4.31-alpha — 2026-11-01
