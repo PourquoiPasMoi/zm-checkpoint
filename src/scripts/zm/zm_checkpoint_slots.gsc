@@ -284,3 +284,134 @@ zmcp_custom_levelvars_override()
     // Same rule as the stock init_levelvars for a higher starting round.
     level.player_starting_points = level.round_number * 500;
 }
+
+// STARTING LOADOUT (lobby dvars zmcp_start_weapon1/2 and zmcp_start_perks). Only
+// a fresh match uses it; a resumed checkpoint restores its own state. Every
+// weapon is re-validated against this map's own weapon list.
+zmcp_loadout_weapon( dvar )
+{
+    value = getdvar( dvar );
+    if ( value == "" || value == "none" )
+        return "";
+
+    if ( !zmcp_coop_token( value ) || value.size < 5 || getsubstr( value, value.size - 3 ) != "_zm" || issubstr( value, "upgraded" ) )
+    {
+        println( "ZMCP: ignored invalid starting weapon " + dvar );
+        return "";
+    }
+
+    if ( !is_weapon_included( value ) )
+    {
+        println( "ZMCP: starting weapon " + value + " is not on this map" );
+        return "";
+    }
+
+    return value;
+}
+
+zmcp_starting_loadout()
+{
+    level endon( "end_game" );
+
+    perks = getdvarint( "zmcp_start_perks" );
+    if ( perks < 0 )
+        perks = 0;
+    if ( perks > 4 )
+        perks = 4;
+
+    if ( getdvar( "zmcp_start_weapon1" ) == "none" && getdvar( "zmcp_start_weapon2" ) == "none" && perks < 1 )
+        return;
+
+    // The map has registered its weapons and perk machines by this point.
+    flag_wait( "initial_blackscreen_passed" );
+    wait 1;
+
+    first = zmcp_loadout_weapon( "zmcp_start_weapon1" );
+    second = zmcp_loadout_weapon( "zmcp_start_weapon2" );
+    if ( first == second )
+        second = "";
+    if ( first == "" )
+    {
+        first = second;
+        second = "";
+    }
+    if ( first == "" && perks < 1 )
+        return;
+
+    players = get_players();
+    for ( i = 0; i < players.size; i++ )
+        players[i] thread zmcp_give_starting_loadout( first, second, perks );
+}
+
+zmcp_give_starting_loadout( first, second, perks )
+{
+    self endon( "disconnect" );
+    level endon( "end_game" );
+
+    while ( self.sessionstate != "playing" || !isalive( self ) )
+        wait 0.1;
+
+    given = "";
+    // Two weapons fill both primary slots, so the starting pistol makes room.
+    if ( second != "" && isdefined( level.start_weapon ) && self hasweapon( level.start_weapon ) )
+        self takeweapon( level.start_weapon );
+
+    if ( first != "" )
+    {
+        self maps\mp\zombies\_zm_weapons::weapon_give( first, 0, 0, 1 );
+        given += first;
+        wait 0.2;
+    }
+
+    if ( second != "" )
+    {
+        self maps\mp\zombies\_zm_weapons::weapon_give( second, 0, 0, 1 );
+        given += " " + second;
+        wait 0.2;
+    }
+
+    count = 0;
+    for ( i = 0; i < perks; i++ )
+    {
+        perk = zmcp_random_start_perk();
+        if ( !isdefined( perk ) )
+            break;
+        self maps\mp\zombies\_zm_perks::give_perk( perk, 0 );
+        count++;
+        wait 0.2;
+    }
+
+    println( "ZMCP: starting loadout weapons=[" + given + "] perks=" + count );
+    if ( given != "" || count > 0 )
+        self iprintln( "^2Starting loadout applied" );
+}
+
+// Same pool as the stock random-perk reward: this map's perk machines.
+zmcp_random_start_perk()
+{
+    vending = getentarray( "zombie_vending", "targetname" );
+    pool = [];
+
+    for ( i = 0; i < vending.size; i++ )
+    {
+        perk = vending[i].script_noteworthy;
+        if ( !isdefined( perk ) || perk == "specialty_weapupgrade" )
+            continue;
+        if ( self hasperk( perk ) )
+            continue;
+        duplicate = 0;
+        for ( j = 0; j < pool.size; j++ )
+        {
+            if ( pool[j] == perk )
+                duplicate = 1;
+        }
+        if ( !duplicate )
+            pool[pool.size] = perk;
+    }
+
+    if ( pool.size < 1 )
+        return undefined;
+
+    pool = array_randomize( pool );
+    return pool[0];
+}

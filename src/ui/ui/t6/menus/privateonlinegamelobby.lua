@@ -10,7 +10,7 @@ CoD.PrivateOnlineGameLobby = {}
 -- Extra lobby option rows. The stock lobby builds one selector row per entry of
 -- CoD.PrivateGameLobby.Dvars, so appending here places the row directly under
 -- CHEATS with the same spacing, font, hint and focus behavior as the stock rows.
-local addLobbyDvarOption = function ( id, default, name, hint )
+local addLobbyDvarOption = function ( id, default, name, hint, labels, values )
 	for _, option in ipairs( CoD.PrivateGameLobby.Dvars ) do
 		if option.id == id then
 			return
@@ -20,8 +20,8 @@ local addLobbyDvarOption = function ( id, default, name, hint )
 		id = id,
 		name = name,
 		hintText = hint,
-		labels = { "MENU_DISABLED_CAPS", "MENU_ENABLED_CAPS" },
-		values = { 0, 1 }
+		labels = labels or { "MENU_DISABLED_CAPS", "MENU_ENABLED_CAPS" },
+		values = values or { 0, 1 }
 	}
 	CoD.PrivateGameLobby.DvarDefaults[id] = default
 	CoD.PrivateGameLobby.Dvars[#CoD.PrivateGameLobby.Dvars + 1] = option
@@ -29,6 +29,13 @@ end
 
 addLobbyDvarOption( "zmcp_all_perks", 0, "UNLIMITED PERKS",
 	"Allow every perk at once instead of the normal limit of four." )
+addLobbyDvarOption( "zmcp_start_weapon1", "none", "STARTING WEAPON 1",
+	"Begin a new match with this weapon. Only weapons from this map are listed.", { "NONE" }, { "none" } )
+addLobbyDvarOption( "zmcp_start_weapon2", "none", "STARTING WEAPON 2",
+	"A second starting weapon. With two, the M1911 is replaced.", { "NONE" }, { "none" } )
+addLobbyDvarOption( "zmcp_start_perks", 0, "STARTING PERKS",
+	"Begin a new match with random perks from this map's perk machines.",
+	{ "NONE", "1 RANDOM PERK", "2 RANDOM PERKS", "3 RANDOM PERKS", "4 RANDOM PERKS" }, { 0, 1, 2, 3, 4 } )
 
 -- CUSTOM STARTING ROUND. The stock STARTING ROUND row only offers a few fixed
 -- values. Its selector is replaced in place (found by its label when the stock
@@ -139,6 +146,10 @@ LUI.createMenu.PrivateOnlineGameLobby = function ( controller )
 	-- The selector reads its dvar when it is built; make sure it exists first.
 	if CoD.ZMCheckpointMenu.DvarString( "zmcp_all_perks" ) == "" then
 		Engine.SetDvar( "zmcp_all_perks", 0 )
+	end
+	-- Weapon rows list the weapons of the map being shown; stale choices reset.
+	if CoD.ZMCheckpointMenu.RefreshLoadoutOptions then
+		CoD.ZMCheckpointMenu.RefreshLoadoutOptions( CoD.ZMCheckpointMenu.CurrentMap( false ) )
 	end
 	local menu = CoD.PrivateGameLobby.New( "PrivateOnlineGameLobby", controller )
 	if CoD.isMultiplayer then

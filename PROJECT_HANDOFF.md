@@ -12,7 +12,7 @@ failure, installation, or test so the project retains its lessons.
 
 - Project: **ZM Checkpoint** for Call of Duty: Black Ops II Zombies on Plutonium T6.
 - Workspace: `C:\Users\User\Documents\Projects\Bo2 Zombie Plutonium`
-- Current source/package: **0.4.27-alpha** (custom starting round, section 38; previously 0.4.26-alpha (CO-OP RESUME redesign, section 37; previously 0.4.25-alpha (select, OPTIONS and START flow, section 34; 0.4.24 added per-save OPTIONS, section 33; 0.4.23 added solo save deletion, section 32); latest published: **0.4.27-alpha**; installed locally: **0.4.24-alpha**; locally installed: **0.4.21-alpha**. Older note follows: locally installed metadata was **0.4.20-alpha**. GitHub publication status is recorded in section 30. No project installer was run for 0.4.21.
+- Current source/package: **0.4.28-alpha** (starting loadout, section 39; unreleased; previously 0.4.27-alpha (custom starting round, section 38; previously 0.4.26-alpha (CO-OP RESUME redesign, section 37; previously 0.4.25-alpha (select, OPTIONS and START flow, section 34; 0.4.24 added per-save OPTIONS, section 33; 0.4.23 added solo save deletion, section 32); latest published: **0.4.27-alpha**; installed locally: **0.4.24-alpha**; locally installed: **0.4.21-alpha**. Older note follows: locally installed metadata was **0.4.20-alpha**. GitHub publication status is recorded in section 30. No project installer was run for 0.4.21.
 - Current date of this handoff: **2026-11-01** (latest session notes: section 35; planned next task: section 36; sections 31 to 36 sit newest-first above section 30)
 - The project is a Git repository with public origin `https://github.com/PourquoiPasMoi/zm-checkpoint`.
 - The standalone mod and companion packages are installed locally.
@@ -1299,6 +1299,12 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   0.4.15-alpha. All four task-start checkpoint hashes listed above still
   match after publication. Unload/reload the mod after using the updater;
   Plutonium itself does not need restarting.
+
+## 39. 0.4.28-alpha starting loadout — 2026-11-01
+
+- **Implemented (statically validated, not tested in-game, not yet released):** lobby rows STARTING WEAPON 1/2 and STARTING PERKS (dvars `zmcp_start_weapon1/2`, `zmcp_start_perks`), per-map weapon lists in `zmcheckpointloadout.lua`, GSC `zmcp_starting_loadout` (fresh matches only). Full details in the 0.4.28 CHANGELOG entry. Source is committed and pushed to `main`; **create the GitHub release only when the owner asks** (section 35 recipe). Installed local game is not touched.
+- **Design notes:** weapon lists derive from `include_weapon` in `.cache/bo2-recompilable-gscs/ZM/Maps/<map>/maps/mp/<map>.gsc`; add a weapon by appending its key (without `_zm`) to `C.LoadoutMaps` and `names`. Origins' list may be incomplete because some registrations sit in other files.
+- **Open verification:** string-valued lobby selector rows, map change with the lobby open, first-spawn grants per map, label widths.
 
 ## 38. 0.4.27-alpha CUSTOM STARTING ROUND — 2026-11-01
 
