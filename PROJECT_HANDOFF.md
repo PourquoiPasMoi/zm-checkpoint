@@ -1302,7 +1302,7 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
 
 ## 48. 0.4.37-alpha solo save backup — 2026-11-01
 
-- **Verified in-game (owner):** 0.4.36 packed starting weapons work. **Validated statically (not tested in-game):** each solo Save copies the slot's previous complete checkpoint to `<slot file>_backup.sav` before overwriting (`zmcp_copy_save`), restores it automatically if the new write fails validation, and SOLO RESUME DELETE blanks the backup. Backups are never loaded by the game; manual recovery is copying the backup over the slot file. Co-op sessions and the one-use Resume lifecycle are unchanged. Next ideas: typed starting points, zombie tuning, autosave (riskiest).
+- **Verified in-game (owner):** 0.4.36 packed starting weapons work. **Validated statically (not tested in-game):** each solo Save copies the slot's previous complete checkpoint to `<slot file>_backup.sav` before overwriting (`zmcp_copy_save`), restores it automatically if the new write fails validation, and SOLO RESUME DELETE blanks the backup. Backups are never loaded by the game; manual recovery is copying the backup over the slot file. Co-op sessions and the one-use Resume lifecycle are unchanged. Published: [GitHub release 0.4.37-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.37-alpha) (source commit `1c3c9a41a19a918b7424d1fabb3642f13cdd80b9`; 165,993-byte ZIP, 20 entries, no saves/caches, SHA-256 `A608975ECF944738469604041E9E171D7DEFE44DD39C1C753077CE8B0769E233`, matches GitHub). No local install was run. Next ideas: typed starting points, zombie tuning, autosave (riskiest).
 
 ## 47. 0.4.36-alpha Pack-a-Punched starting weapons — 2026-11-01
 
