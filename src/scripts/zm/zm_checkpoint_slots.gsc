@@ -365,6 +365,49 @@ zmcp_custom_levelvars_override()
         level.player_starting_points = level.zmcp_custom_points;
 }
 
+// ZOMBIE HEALTH CAP (lobby dvar zmcp_health_cap, 0 = off, 1-255 = round). The
+// stock ai_calculate_health sets level.zombie_health from the round number. With
+// a cap, any round above it is treated as the cap round for health only, so
+// zombies stop getting tougher while rounds and zombie counts keep growing. It
+// applies to new matches and resumed checkpoints alike (health is recalculated
+// at the start of every round).
+zmcp_apply_health_cap()
+{
+    cap = getdvarint( "zmcp_health_cap" );
+    if ( cap < 1 || cap > 255 )
+        return;
+
+    level.zmcp_health_cap = cap;
+    replacefunc( getfunction( "maps/mp/zombies/_zm", "ai_calculate_health" ), ::zmcp_ai_calculate_health, -1 );
+    println( "ZMCP: zombie health capped at round " + cap );
+}
+
+// Same formula as the stock function, evaluated for at most the cap round.
+zmcp_ai_calculate_health( round_number )
+{
+    if ( isdefined( level.zmcp_health_cap ) && round_number > level.zmcp_health_cap )
+        round_number = level.zmcp_health_cap;
+
+    level.zombie_health = level.zombie_vars["zombie_health_start"];
+
+    for ( i = 2; i <= round_number; i++ )
+    {
+        if ( i >= 10 )
+        {
+            old_health = level.zombie_health;
+            level.zombie_health += int( level.zombie_health * level.zombie_vars["zombie_health_increase_multiplier"] );
+
+            if ( level.zombie_health < old_health )
+            {
+                level.zombie_health = old_health;
+                return;
+            }
+        }
+        else
+            level.zombie_health = int( level.zombie_health + level.zombie_vars["zombie_health_increase"] );
+    }
+}
+
 // OPENING (lobby dvar zmcp_start_world: 1 = power on, 2 = doors and debris open,
 // 3 = both). Fresh matches only, applied right after the opening black screen.
 zmcp_starting_world()

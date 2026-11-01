@@ -48,16 +48,18 @@ local page = { handlers = {} }
 function page:registerEventHandler( e, fn ) self.handlers[e] = fn end
 function page:goBack() self.wentBack = true end
 CoD.ZMCheckpointMenu.Ui = { PageBase = function ( name, title ) page.name, page.title = name, title; return page, {}, pageList end }
-dvars.zmcp_start_weapons, dvars.zmcp_start_points = "9", "99999999"
+dvars.zmcp_start_weapons, dvars.zmcp_start_points, dvars.zmcp_health_cap = "9", "99999999", "999"
 local built = LUI.createMenu.ZMCheckpointMoreOptions( 0 )
 assert( built == page and page.name == "ZMCheckpointMoreOptions" and page.title == "MORE OPTIONS" )
-assert( #rows == 6, "five options and DONE, got " .. #rows )
-local want = { "zmcp_all_perks", "zmcp_start_weapons", "zmcp_start_perks", "zmcp_start_points", "zmcp_start_world" }
+assert( #rows == 7, "six options and DONE, got " .. #rows )
+local want = { "zmcp_all_perks", "zmcp_start_weapons", "zmcp_start_perks", "zmcp_start_points", "zmcp_start_world", "zmcp_health_cap" }
 for i, dvar in ipairs( want ) do assert( rows[i].dvar == dvar, "row " .. i .. " is " .. tostring( rows[i].dvar ) ) end
 assert( #rows[2].choices == 5 and rows[2].choices[5][2] == 4 and #rows[4].choices == 9 and #rows[5].choices == 4 )
 assert( tostring( dvars.zmcp_start_weapons ) == "4" and tostring( dvars.zmcp_start_points ) == "1000000", "stored values are clamped before the rows are built" )
 assert( dvars.zmcp_all_perks == 0, "unlimited perks dvar seeded" )
-assert( rows[6].label == "DONE" and rows[6].action == "zmcp_more_done" )
+assert( tostring( dvars.zmcp_health_cap ) == "255", "health cap clamps to 255" )
+assert( rows[7].label == "DONE" and rows[7].action == "zmcp_more_done" )
+assert( #rows[6].choices == 7 and rows[6].choices[1][2] == 0 and rows[6].choices[5][2] == 50 )
 page.handlers.zmcp_more_done( page, { controller = 0 } )
 assert( page.wentBack )
-print( "PASS: MORE OPTIONS button opens a page with the five mod options, DONE returns, stock list untouched" )
+print( "PASS: MORE OPTIONS button opens a page with the six mod options, DONE returns, stock list untouched" )

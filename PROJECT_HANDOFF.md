@@ -1300,6 +1300,10 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   match after publication. Unload/reload the mod after using the updater;
   Plutonium itself does not need restarting.
 
+## 51. 0.4.40-alpha zombie health cap — 2026-11-01
+
+- **Validated statically (not tested in-game):** ZOMBIE HEALTH CAP on the MORE OPTIONS page (`zmcp_health_cap`, OFF or round 1-255, typed row via `C.AttachCustomHealthCap`). GSC detours `ai_calculate_health` with the same formula limited to the cap round; installed from `main()` for every load, so resumed saves are covered. Page hints are now long plain-language explanations. Next idea: zombie speed cap (zombies already top out at sprint, so it can only slow them).
+
 ## 50. 0.4.39-alpha MORE OPTIONS page — 2026-11-01
 
 - **Verified in-game (owner screenshots): works.** The mod's lobby options moved from five stock-list rows to a MORE OPTIONS popup page (`LUI.createMenu.ZMCheckpointMoreOptions`, options in `CoD.ZMCheckpointMenu.MoreOptions`), opened by one MORE OPTIONS button appended to the lobby button list. Same dvars, GSC untouched. The stock Dvars list is no longer modified, which also removes the old lobby-crowding and hint-overlap concerns. New options (zombie health cap next) are added with `addMoreOption`. Tests: `tools/Test-MoreOptions.lua`. Published: [GitHub release 0.4.39-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.39-alpha) (source commit `0b15450de3534bfc2161ccfabb60bf9b1ff60f5c`; 166,941-byte ZIP, 20 entries, no saves/caches, SHA-256 `6B957CA82AE86790A0499FBA808B29343E4669A11D524B98D4530587321B85CE`, matches GitHub). No local install was run.

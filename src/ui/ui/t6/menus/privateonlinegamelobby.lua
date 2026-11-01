@@ -30,20 +30,23 @@ local addMoreOption = function ( id, default, name, hint, labels, values )
 end
 
 addMoreOption( "zmcp_all_perks", 0, "UNLIMITED PERKS",
-	"Allow every perk at once (normally four)." )
+	"Normally you can carry four perks. Turn this on to hold every perk on the map at the same time. Also works on resumed saves." )
 addMoreOption( "zmcp_start_weapons", 0, "STARTING WEAPONS",
-	"New match: random map weapons. Two replace the M1911.",
+	"Start a new match with random weapons from this map (wall guns and Mystery Box). PACKED ones come Pack-a-Punched. Two weapons replace your M1911 pistol.",
 	{ "NONE", "1 RANDOM WEAPON", "2 RANDOM WEAPONS", "1 PACKED WEAPON", "2 PACKED WEAPONS" }, { 0, 1, 2, 3, 4 } )
 addMoreOption( "zmcp_start_perks", 0, "STARTING PERK",
-	"New match: one random perk from this map.",
+	"Start a new match already holding one random perk from the perk machines on this map.",
 	{ "NONE", "1 RANDOM PERK" }, { 0, 1 } )
 addMoreOption( "zmcp_start_points", 0, "STARTING POINTS",
-	"New match: start with this many points. Click to type.",
+	"How many points you start a new match with. DEFAULT is the normal amount. Click the row to type any amount up to 1,000,000.",
 	{ "DEFAULT", "5,000", "10,000", "25,000", "50,000", "100,000", "250,000", "500,000", "1,000,000" },
 	{ 0, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000 } )
 addMoreOption( "zmcp_start_world", 0, "OPENING",
-	"New match: power on and/or all doors and debris open.",
+	"Opens the map for you at the start of a new match. POWER ON turns the power on; DOORS OPEN opens every door and clears all debris for free. Pick POWER + DOORS for both.",
 	{ "NORMAL", "POWER ON", "DOORS OPEN", "POWER + DOORS" }, { 0, 1, 2, 3 } )
+addMoreOption( "zmcp_health_cap", 0, "ZOMBIE HEALTH CAP",
+	"Zombies get tougher every round. A cap stops that after the round you pick (try 50): they never need more bullets than at that round, while rounds and zombie numbers keep growing. OFF = normal. Click to type 1-255. Also works on resumed saves.",
+	{ "OFF", "ROUND 20", "ROUND 30", "ROUND 40", "ROUND 50", "ROUND 75", "ROUND 100" }, { 0, 20, 30, 40, 50, 75, 100 } )
 
 -- CUSTOM STARTING ROUND. The stock STARTING ROUND row only offers a few fixed
 -- values. Its selector is replaced in place (found by its label when the stock
@@ -219,6 +222,88 @@ C.AttachCustomStartPoints = function ( selector )
 	show( selector )
 end
 
+-- ZOMBIE HEALTH CAP. Same idea as STARTING POINTS: the selector is replaced in
+-- place by a number (0 = OFF, 1-255 = the round zombie health stops growing at)
+-- in the archived dvar zmcp_health_cap. Left/right and the wheel step by 5.
+C.HealthCapStep = 5
+
+C.ClampHealthCap = function ( value )
+	value = tonumber( value )
+	if value == nil or value ~= value then return nil end
+	value = math.floor( value )
+	if value < 0 then return 0 end
+	if value > C.HealthCapMax then return C.HealthCapMax end
+	return value
+end
+
+C.HealthCapValue = function ()
+	return C.ClampHealthCap( C.DvarString( "zmcp_health_cap" ) ) or 0
+end
+
+C.FormatHealthCap = function ( value )
+	if value < 1 then return "OFF" end
+	return "ROUND " .. tostring( value )
+end
+
+C.SetHealthCap = function ( value )
+	value = C.ClampHealthCap( value )
+	if value == nil then return nil end
+	Engine.SetDvar( "zmcp_health_cap", value )
+	Engine.Exec( 0, "seta zmcp_health_cap " .. value .. "\n" )
+	return value
+end
+
+C.AttachCustomHealthCap = function ( selector )
+	if selector.zmcpCustomHealth then return end
+	selector.zmcpCustomHealth = true
+	local show = function ( self )
+		if self.choiceText then self.choiceText:setText( C.FormatHealthCap( C.HealthCapValue() ) ) end
+	end
+	local step = function ( self, amount )
+		C.SetHealthCap( C.HealthCapValue() + amount )
+		show( self )
+	end
+	selector.updateChoice = show
+	selector.refreshChoice = show
+	selector.setChoice = function ( self ) show( self ) end
+	selector.cycle = function ( self, forward, userRequested )
+		if userRequested then step( self, forward and C.HealthCapStep or -C.HealthCapStep ) end
+	end
+	local stockButton = selector.handleGamepadButton
+	selector.handleGamepadButton = function ( self, event )
+		if event.qualifier == "mwheel" and event.down == true and self:isInFocus() then
+			if event.button == "up" then
+				step( self, C.HealthCapStep )
+				return true
+			elseif event.button == "down" then
+				step( self, -C.HealthCapStep )
+				return true
+			end
+		end
+		return stockButton( self, event )
+	end
+	selector:registerEventHandler( "button_action", function ( self, event )
+		local keyboardType = CoD.KEYBOARD_TYPE_TEXT_MESSAGE
+		if keyboardType == nil then
+			step( self, C.HealthCapStep )
+			return true
+		end
+		Engine.Exec( event.controller or 0, "ui_keyboard_new " .. keyboardType ..
+			" \"ZOMBIE HEALTH CAP ROUND (0 = OFF, MAX " .. C.HealthCapMax .. ")\" \"" ..
+			C.HealthCapValue() .. "\" 3" )
+		return true
+	end )
+	selector:registerEventHandler( "ui_keyboard_input", function ( self, event )
+		if event.type ~= CoD.KEYBOARD_TYPE_TEXT_MESSAGE or type( event.input ) ~= "string" then return end
+		local digits = string.match( event.input, "^%s*(%d+)%s*$" )
+		if digits and #digits <= 4 then
+			C.SetHealthCap( tonumber( digits ) )
+			show( self )
+		end
+	end )
+	show( selector )
+end
+
 local isStartRoundLabel = function ( name )
 	if type( name ) ~= "string" then return false end
 	if name == "ZMUI_STARTING_ROUND_CAPS" then return true end
@@ -230,6 +315,12 @@ if CoD.LeftRightSelector and CoD.LeftRightSelector.new and not CoD.LeftRightSele
 	CoD.LeftRightSelector.zmcpStartRoundHook = true
 	local stockNew = CoD.LeftRightSelector.new
 	CoD.LeftRightSelector.new = function ( name, ... )
+		if name == "ZOMBIE HEALTH CAP" then
+			local selector = stockNew( name, ... )
+			local ok = pcall( C.AttachCustomHealthCap, selector )
+			if not ok then selector.zmcpCustomHealth = nil end
+			return selector
+		end
 		if name == "STARTING POINTS" then
 			local selector = stockNew( name, ... )
 			local ok = pcall( C.AttachCustomStartPoints, selector )

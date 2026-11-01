@@ -33,7 +33,7 @@ chunk() -- loading twice must not duplicate the row
 
 local list = CoD.ZMCheckpointMenu.MoreOptions
 assert( #CoD.PrivateGameLobby.Dvars == 3, "the stock option list is left alone" )
-assert( #list == 5, "expected five mod options, got " .. #list )
+assert( #list == 6, "expected six mod options, got " .. #list )
 assert( list[1].id == "zmcp_all_perks" and list[2].id == "zmcp_start_weapons" and list[3].id == "zmcp_start_perks" )
 assert( list[4].id == "zmcp_start_points" and list[5].id == "zmcp_start_world" )
 assert( list[1].values[1] == 0 and list[1].values[2] == 1 and #list[1].labels == 2 and list[1].default == 0 )

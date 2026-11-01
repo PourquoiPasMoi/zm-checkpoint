@@ -20,7 +20,7 @@ local list = { { id = "sv_cheats" } }
 for _, option in ipairs( CoD.ZMCheckpointMenu.MoreOptions ) do list[#list + 1] = option end
 local ids = {}
 for _, option in ipairs( list ) do ids[#ids + 1] = option.id end
-assert( table.concat( ids, "," ) == "sv_cheats,zmcp_all_perks,zmcp_start_weapons,zmcp_start_perks,zmcp_start_points,zmcp_start_world", table.concat( ids, "," ) )
+assert( table.concat( ids, "," ) == "sv_cheats,zmcp_all_perks,zmcp_start_weapons,zmcp_start_perks,zmcp_start_points,zmcp_start_world,zmcp_health_cap", table.concat( ids, "," ) )
 
 -- Starting points: fixed amounts, DEFAULT first. Opening: power/doors bit values.
 local points, world = list[5], list[6]

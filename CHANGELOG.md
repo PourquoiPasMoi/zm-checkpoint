@@ -4,6 +4,18 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.40-alpha — 2026-11-01
+
+### 2026-11-01 — Zombie health cap and plain-language option explanations (Claude Code)
+
+- Request: owner (0.4.39 MORE OPTIONS verified) asked for the zombie health tuning: keep zombies as killable as at a chosen round while the round number and zombie count keep growing, with a long explanation a new player can understand.
+- Change or investigation: new **ZOMBIE HEALTH CAP** row on the MORE OPTIONS page (dvar `zmcp_health_cap`; OFF or a round 1-255; typed like STARTING POINTS: click to type, left/right and wheel step by 5; fallback list OFF, 20, 30, 40, 50, 75, 100). GSC: `zmcp_apply_health_cap` (called from `main()` for new matches and resumed checkpoints alike) detours the stock `maps/mp/zombies/_zm::ai_calculate_health` with `zmcp_ai_calculate_health`, the stock formula evaluated for at most the cap round (stock source read from `.cache`: 150 start, +100 per round to round 9, then +10% per round). Health is recalculated at the start of every round, so the cap takes effect on the next round and on resumed saves. Rounds, zombie counts and max-alive are untouched. Special enemies (dogs, bosses) that use their own health are not changed. All six option hints on the page were rewritten as long plain-language explanations (the page has room under the list; the lobby's two-line limit no longer applies), the new one reading: "Zombies get tougher every round. A cap stops that after the round you pick (try 50): they never need more bullets than at that round, while rounds and zombie numbers keep growing. OFF = normal. Click to type 1-255. Also works on resumed saves."
+- Files affected: `src/scripts/zm/zm_checkpoint_slots.gsc`, `src/scripts/zm/zm_nuked/zm_checkpoint.gsc`, `src/ui/ui/t6/menus/privateonlinegamelobby.lua`, `zmcheckpointloadout.lua`, `tools/Test-StartRound.lua`, `Test-MoreOptions.lua`, `Test-Loadout.lua`, `Test-LobbyOption.lua`, `mod.json`, `README.md`, `CHANGELOG.md`, `PROJECT_HANDOFF.md`.
+- Validation: **Validated statically:** Build.ps1 passed; six T6 GSC parses (new functions in all six); eleven Lua checks pass (typed health cap row, page with six rows, clamps). Whether the long hints wrap cleanly on the page, and that the cap really limits health in a match, are **expected, not verified in-game**.
+- Published: see the publication record below if present.
+- In-game result: Not yet tested.
+- Remaining risk/next step: owner to set a low cap (for example 10 or 15) on a map, play past it and compare how many shots a zombie takes before and after the cap round; check the hint text fits above ESC Back. Zombie speed cap is the next idea.
+
 ## 0.4.39-alpha — 2026-11-01
 
 ### 2026-11-01 — MORE OPTIONS page (Claude Code)
