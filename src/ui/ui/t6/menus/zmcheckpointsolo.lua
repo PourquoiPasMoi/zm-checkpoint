@@ -264,9 +264,13 @@ local function addGridButton( grid, slot, title, hint )
 	return button
 end
 
+-- Buttons are removed one by one. The stock removeAllButtons would re-add the
+-- list's hint element to each list it clears, and the columns share one hint
+-- element, so it would end up inside the wrong lists and break the layout.
 local function clearGrid( grid )
-	grid.left:removeAllButtons()
-	grid.right:removeAllButtons()
+	for slot, button in pairs( grid.buttons ) do
+		slotColumn( grid, slot ):removeElement( button )
+	end
 	grid.buttons = {}
 end
 
@@ -437,6 +441,7 @@ LUI.createMenu.ZMCheckpointSoloResume = function ( controller )
 			setDeleteVisible( false )
 		end )
 	end
+	local actionButtons = {}
 	local function build()
 		local anySaved = false
 		local firstSaved
@@ -467,6 +472,7 @@ LUI.createMenu.ZMCheckpointSoloResume = function ( controller )
 		end
 		local options = actions:addButton( "OPTIONS", "Change the saved settings of the selected checkpoint." )
 		local start = actions:addButton( "START", "Start the selected checkpoint." )
+		actionButtons = { options, start }
 		options:setActionEventName( "zmcp_slot_options" )
 		start:setActionEventName( "zmcp_slot_start" )
 		hideDeleteOnFocus( options )
@@ -501,7 +507,8 @@ LUI.createMenu.ZMCheckpointSoloResume = function ( controller )
 	build()
 	local function rebuild()
 		clearGrid( grid )
-		actions:removeAllButtons()
+		for _, button in ipairs( actionButtons ) do actions:removeElement( button ) end
+		actionButtons = {}
 		focusedSlot = nil
 		build()
 	end
