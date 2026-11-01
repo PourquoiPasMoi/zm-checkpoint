@@ -14,8 +14,13 @@ $pendingInstallId=''
 $markerCarry=''
 $lastCheckMarkerId=''
 $lastInstallMarkerId=''
+$timingLog=Join-Path ([IO.Path]::GetTempPath()) 'zmcp_update_timing.log'
+function Write-Timing([string]$Label){ try{ Add-Content -LiteralPath $timingLog -Value ('{0:yyyy-MM-dd HH:mm:ss.fff} watcher {1}' -f (Get-Date),$Label) }catch{} }
+Write-Timing 'watcher started'
+$logInfo=[IO.FileInfo]::new($log)
 while($true){
- Start-Sleep -Milliseconds 500
+ # 100 ms keeps the request-to-start delay short; the check below is one cheap length read.
+ Start-Sleep -Milliseconds 100
  if(($null -eq $worker -or $worker.HasExited) -and ($pendingInstall -or $pendingCheck)){
   $install=$pendingInstall
   $requestId=if($install){$pendingInstallId}else{$pendingCheckId}
@@ -31,10 +36,10 @@ while($true){
    & $statusScript -State error -ErrorMessage $_.Exception.Message -RequestId $requestId
   }
  }
- if(-not(Test-Path $log)){continue}
- $file=Get-Item $log
- if($file.Length -lt $position){$position=0; $markerCarry=''}
- if($file.Length -eq $position){continue}
+ $logInfo.Refresh()
+ if(-not $logInfo.Exists){continue}
+ if($logInfo.Length -lt $position){$position=0; $markerCarry=''}
+ if($logInfo.Length -eq $position){continue}
  $stream=[IO.File]::Open($log,[IO.FileMode]::Open,[IO.FileAccess]::Read,[IO.FileShare]::ReadWrite)
  try{
   $stream.Seek($position,[IO.SeekOrigin]::Begin)|Out-Null
@@ -52,6 +57,7 @@ while($true){
   $foundId=$checkMatches[$checkMatches.Count-1].Groups[1].Value
   if($foundId -ne $lastCheckMarkerId){
    $lastCheckMarkerId=$foundId
+   Write-Timing "check marker seen req=$foundId"
    $pendingCheckId=$foundId
    $pendingCheck=$true
    if(-not $pendingInstall){ & $statusScript -State checking -RequestId $pendingCheckId }
@@ -62,6 +68,7 @@ while($true){
   $foundId=$installMatches[$installMatches.Count-1].Groups[1].Value
   if($foundId -ne $lastInstallMarkerId){
    $lastInstallMarkerId=$foundId
+   Write-Timing "install marker seen req=$foundId"
    $pendingInstallId=$foundId
    $pendingInstall=$true
    $pendingCheck=$false
