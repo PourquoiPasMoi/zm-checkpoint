@@ -39,6 +39,12 @@ local pageList = {}
 function pageList:addDvarLeftRightSelector( controller, name, dvar, hint )
 	local row = { name = name, dvar = dvar, choices = {} }
 	function row:addChoice( _, label, value ) self.choices[#self.choices + 1] = { label, value } end
+	row.handlers, row.choiceText = {}, { setText = function ( _, t ) row.text = t end }
+	function row:registerEventHandler( e, fn ) self.handlers[e] = fn end
+	function row:isInFocus() return true end
+	function row:handleGamepadButton() end
+	function row:cycle() self.stockCycled = true end
+	function row:updateChoice() self.text = "STOCK" end
 	rows[#rows + 1] = row
 	return row
 end
@@ -60,6 +66,18 @@ assert( dvars.zmcp_all_perks == 0, "unlimited perks dvar seeded" )
 assert( tostring( dvars.zmcp_health_cap ) == "255", "health cap clamps to 255" )
 assert( rows[7].label == "DONE" and rows[7].action == "zmcp_more_done" )
 assert( #rows[6].choices == 7 and rows[6].choices[1][2] == 0 and rows[6].choices[5][2] == 50 )
+-- Typed rows: clicking opens the keyboard (it must not step through the fallback list).
+CoD.KEYBOARD_TYPE_TEXT_MESSAGE = 7
+local execs = {}
+Engine.Exec = function ( _, text ) execs[#execs + 1] = text end
+for _, index in ipairs( { 4, 6 } ) do
+	local row = rows[index]
+	assert( row.zmcpCustomPoints or row.zmcpCustomHealth, "row " .. index .. " is a typed row" )
+	assert( row.handlers.button_action( row, { controller = 0, mouse = true } ) )
+	assert( execs[#execs]:find( "ui_keyboard_new 7 ", 1, true ) and not row.stockCycled )
+end
+assert( rows[6].text == "OFF" or rows[6].text == "ROUND 255" )
+assert( not rows[1].zmcpCustomPoints and not rows[5].zmcpCustomHealth, "other rows stay stock" )
 page.handlers.zmcp_more_done( page, { controller = 0 } )
 assert( page.wentBack )
 print( "PASS: MORE OPTIONS button opens a page with the six mod options, DONE returns, stock list untouched" )

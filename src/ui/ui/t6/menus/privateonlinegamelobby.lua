@@ -335,6 +335,11 @@ if CoD.LeftRightSelector and CoD.LeftRightSelector.new and not CoD.LeftRightSele
 	end
 end
 
+local typedRows = {
+	zmcp_start_points = C.AttachCustomStartPoints,
+	zmcp_health_cap = C.AttachCustomHealthCap
+}
+
 LUI.createMenu.ZMCheckpointMoreOptions = function ( controller )
 	-- Selectors read their dvar when built, so make sure each one holds a valid value.
 	if C.DvarString( "zmcp_all_perks" ) == "" then Engine.SetDvar( "zmcp_all_perks", 0 ) end
@@ -346,6 +351,13 @@ LUI.createMenu.ZMCheckpointMoreOptions = function ( controller )
 			Engine.Localize( option.hintText ), 220 )
 		for index, label in ipairs( option.labels ) do
 			row:addChoice( controller, Engine.Localize( label ), option.values[index] )
+		end
+		-- Typed rows are attached to the row directly instead of relying on the
+		-- constructor hook matching the row's label (clicking a typed row must open
+		-- the keyboard, not step through the fixed fallback list).
+		local attach = typedRows[option.id]
+		if attach and not row.zmcpCustomPoints and not row.zmcpCustomHealth then
+			pcall( attach, row )
 		end
 	end
 	local done = list:addButton( "DONE", "Return to the lobby." )
