@@ -4,6 +4,17 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.29-alpha — 2026-11-01
+
+### 2026-11-01 — Faster updater and timing diagnostics (Claude Code)
+
+- Request: the owner reports the in-game updater takes very long to check, download and install, even though the package is small, and wondered if the new release-notes panel caused it.
+- Change or investigation: **Measured on this PC (Validated statically/by script, outside the game):** a full check in a fresh worker is about 1.1 s; the watcher-to-result path for a check marker is about 2.4 s; a bare `powershell.exe` start is 0.28 s; the GitHub release query (10 releases, 64 KB JSON) 0.6 s; `Invoke-WebRequest` of the 102 KB package took 0.99 s with PowerShell's progress bar and 0.18 s without; `Expand-Archive` 0.75 s versus 0.065 s with `ZipFile.ExtractToDirectory`; hash 0.08 s. The release-notes panel is not the cause of the PC-side time. **Changes:** `Update-ZMCheckpoint.ps1` sets `$ProgressPreference = 'SilentlyContinue'`, requests 3 releases instead of 10, caches the release for 5 minutes so the install right after a check (`-UseCachedRelease`, passed by the window script) skips a second GitHub call, extracts with .NET `ZipFile`, and appends timestamped steps to `%TEMP%\zmcp_update_timing.log`; `Watch-ZMCheckpointUpdates.ps1` polls every 100 ms instead of 500 ms with a cheap `FileInfo` length check and logs when it sees each marker; `Update-ZMCheckpoint-Status.ps1` writes only the used release-note lines instead of 64 (the game executes and logs every line on each poll); `zmcheckpointupdater.lua` polls every 1 s (was 1.5 s), shows the seconds waited for the companion, and keeps the 45 s still-working message threshold. A scratch-root test installed the real 0.4.28 package in 0.85 s (check 0.73 s) with a preserved dummy `.sav`. **Suspected remaining cause (not confirmed):** the game appears to buffer `console_zm.log`; the log was seen ending mid-line while the game was running and idle for minutes, so a request marker may reach the watcher late. That cannot be measured without the game; the new timing log and the on-screen seconds counter are meant to show it.
+- Files affected: `tools/Update-ZMCheckpoint.ps1`, `tools/Update-ZMCheckpoint-Window.ps1`, `tools/Update-ZMCheckpoint-Status.ps1`, `tools/Watch-ZMCheckpointUpdates.ps1`, `src/ui/ui/t6/menus/zmcheckpointupdater.lua`, `mod.json`, `README.md`, `CHANGELOG.md`, `PROJECT_HANDOFF.md`.
+- Validation: four PowerShell scripts parse; Build.ps1 passed; six T6 GSC parses; luaparse; all eight Lua suites pass; scratch-root check and install run with timings. No game, no save and no local install touched.
+- In-game result: Not yet tested. The new scripts run only after the owner has installed 0.4.29 (the updater uses its installed copy), so the first update to 0.4.29 is still on the old path.
+- Remaining risk/next step: after updating to 0.4.29, the next update check should be much faster on the PC side. If the page still waits long, send the seconds shown on the page and `%TEMP%\zmcp_update_timing.log`; a gap between clicking and `check marker seen` means game-side log buffering, and a different request channel (for example a file written by a console command) would be the next step.
+
 ## 0.4.28-alpha — 2026-11-01
 
 ### 2026-11-01 — Standing instruction: always publish

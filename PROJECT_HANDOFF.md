@@ -12,7 +12,7 @@ failure, installation, or test so the project retains its lessons.
 
 - Project: **ZM Checkpoint** for Call of Duty: Black Ops II Zombies on Plutonium T6.
 - Workspace: `C:\Users\User\Documents\Projects\Bo2 Zombie Plutonium`
-- Current source/package: **0.4.28-alpha** (starting loadout, section 39; previously 0.4.27-alpha (custom starting round, section 38; previously 0.4.26-alpha (CO-OP RESUME redesign, section 37; previously 0.4.25-alpha (select, OPTIONS and START flow, section 34; 0.4.24 added per-save OPTIONS, section 33; 0.4.23 added solo save deletion, section 32); latest published: **0.4.28-alpha**; installed locally: **0.4.24-alpha**; locally installed: **0.4.21-alpha**. Older note follows: locally installed metadata was **0.4.20-alpha**. GitHub publication status is recorded in section 30. No project installer was run for 0.4.21.
+- Current source/package: **0.4.29-alpha** (faster updater, section 40; previously 0.4.28-alpha (starting loadout, section 39; previously 0.4.27-alpha (custom starting round, section 38; previously 0.4.26-alpha (CO-OP RESUME redesign, section 37; previously 0.4.25-alpha (select, OPTIONS and START flow, section 34; 0.4.24 added per-save OPTIONS, section 33; 0.4.23 added solo save deletion, section 32); latest published: **0.4.28-alpha**; installed locally: **0.4.24-alpha**; locally installed: **0.4.21-alpha**. Older note follows: locally installed metadata was **0.4.20-alpha**. GitHub publication status is recorded in section 30. No project installer was run for 0.4.21.
 - Current date of this handoff: **2026-11-01** (latest session notes: section 35; planned next task: section 36; sections 31 to 36 sit newest-first above section 30)
 - The project is a Git repository with public origin `https://github.com/PourquoiPasMoi/zm-checkpoint`.
 - The standalone mod and companion packages are installed locally.
@@ -1299,6 +1299,13 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   0.4.15-alpha. All four task-start checkpoint hashes listed above still
   match after publication. Unload/reload the mod after using the updater;
   Plutonium itself does not need restarting.
+
+## 40. 0.4.29-alpha faster updater — 2026-11-01
+
+- **Findings (measured outside the game):** the PC-side pipeline is fast (check about 1.1 s, watcher-to-result about 2.4 s; install of the real package 0.85 s after the fixes). The progress bar (0.8 s), `Expand-Archive` (0.7 s) and a second GitHub query were the measurable waste and are removed. See the 0.4.29 CHANGELOG entry for all numbers.
+- **Unconfirmed hypothesis:** the game's `console_zm.log` is buffered (seen ending mid-line while idle), so the request marker may arrive late; the updater uses that log as the game-to-PC channel. Evidence to collect: the seconds counter on the updater page and `%TEMP%\zmcp_update_timing.log` (watcher lines `check marker seen`, update-script lines). If confirmed, switch the request channel to a file written synchronously by a console command (unverified which command works on Plutonium T6: `writeconfig` and `condump` are candidates).
+- **Tooling lesson:** the updater scripts run from the *installed* mod folder, so speed fixes take effect only after the update that contains them is installed. Backslashes in Bash-tool heredoc strings are halved; edit PowerShell paths with the Edit tool.
+- **Open verification:** everything in this entry; in-game timing of the next update.
 
 ## 39. 0.4.28-alpha starting loadout — 2026-11-01
 

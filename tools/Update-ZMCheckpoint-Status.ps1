@@ -62,9 +62,9 @@ if ($errorText.Length -gt 60) { $errorText = $errorText.Substring(0,57) + '...' 
 $content="set zmcp_update_state $State`r`nset zmcp_update_version $Version`r`nset zmcp_update_request_id $RequestId`r`n"
 $content += "set zmcp_update_error `"$errorText`"`r`n"
 $content += "set zmcp_update_note_count $($lines.Count)`r`n"
-for ($i = 0; $i -lt 64; $i++) {
- $value = if ($i -lt $lines.Count) { $lines[$i] } else { '' }
- $content += "set zmcp_update_note$($i+1) `"$value`"`r`n"
+# Only the used lines are written: the game executes and logs every line on each poll.
+for ($i = 0; $i -lt $lines.Count; $i++) {
+ $content += "set zmcp_update_note$($i+1) `"$($lines[$i])`"`r`n"
 }
 foreach ($folder in @($main, (Join-Path $PlutoniumRoot 'mods\zm_checkpoint'))) {
  New-Item -ItemType Directory -Path $folder -Force | Out-Null

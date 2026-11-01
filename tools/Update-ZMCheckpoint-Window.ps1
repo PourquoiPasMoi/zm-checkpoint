@@ -1,5 +1,9 @@
 param([switch]$InstallLatest, [string]$RequestId = '')
 $ErrorActionPreference='Stop'
+$ProgressPreference='SilentlyContinue'
+$timingLog=Join-Path ([IO.Path]::GetTempPath()) 'zmcp_update_timing.log'
+function Write-Timing([string]$Label){ try{ Add-Content -LiteralPath $timingLog -Value ('{0:yyyy-MM-dd HH:mm:ss.fff} req={1} window-script {2}' -f (Get-Date),$RequestId,$Label) }catch{} }
+Write-Timing $(if($InstallLatest){'install worker started'}else{'check worker started'})
 $statusScript=Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Path) 'Update-ZMCheckpoint-Status.ps1'
 # An older bridge process may remain running after the mod updates. It starts
 # this newer worker without -RequestId; recover the ID from the console marker.
@@ -20,7 +24,7 @@ try {
  $script=Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Path) 'Update-ZMCheckpoint.ps1'
  if ($InstallLatest) {
   & $statusScript -State installing -RequestId $RequestId
-  $done=@(& $script -IncludeNotes -StatusScript $statusScript -RequestId $RequestId)
+  $done=@(& $script -IncludeNotes -StatusScript $statusScript -RequestId $RequestId -UseCachedRelease)
   $notesRow=$done | Where-Object { $_ -like 'NOTES64|*' } | Select-Object -First 1
   $notes=''
   if ($notesRow) { $notes=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($notesRow.Substring(8))) }
@@ -29,6 +33,7 @@ try {
   elseif ($entry[0] -eq 'UP_TO_DATE') { $version=$entry[1] }
   else { throw "Unexpected install result: $($done -join ' ')" }
   & $statusScript -State installed -Version $version -Notes $notes -RequestId $RequestId
+  Write-Timing 'install finished'
   return
  }
  $rows=@(& $script -CheckOnly -IncludeNotes)
@@ -39,10 +44,12 @@ try {
  if ($result[0] -eq 'UP_TO_DATE') {
   $state = if ($InstallLatest) { 'installed' } else { 'up_to_date' }
   & $statusScript -State $state -Version $result[1] -Notes $notes -RequestId $RequestId
+  Write-Timing 'check finished: up to date'
   return
  }
  if ($result[0] -ne 'UPDATE_AVAILABLE') { throw "Unexpected update result: $($rows -join ' ')" }
  & $statusScript -State update_available -Version $result[2] -Notes $notes -RequestId $RequestId
+ Write-Timing 'check finished: update available'
 } catch {
  & $statusScript -State error -ErrorMessage $_.Exception.Message -RequestId $RequestId
 } finally {

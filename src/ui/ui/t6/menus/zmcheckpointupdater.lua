@@ -292,14 +292,14 @@ LUI.createMenu.ZMCheckpointUpdaterInfo = function ( controller )
 		local responseId = UIExpression.DvarString( nil, "zmcp_update_request_id" ) or ""
 		if responseId ~= menu.zmcpRequestId then
 			menu.zmcpWaitTicks = menu.zmcpWaitTicks + 1
-			if menu.zmcpWaitTicks >= 30 then
+			if menu.zmcpWaitTicks >= 45 then
 				-- A queued GitHub request can outlive 45 seconds. Keep its ID and
 				-- action active; a late reply is still the authoritative result.
 				status:setText( menu.zmcpInstallRequested and "Still installing update..." or "Still checking for updates..." )
 				body:setText( menu.zmcpInstallRequested and "The download is still running; please wait." or "The connection is slow. Press R to start a new check." )
 			else
 				status:setText( menu.zmcpInstallRequested and "Starting update..." or "Checking for updates..." )
-				body:setText( "Waiting for the update companion..." )
+				body:setText( "Waiting for the update companion... " .. menu.zmcpWaitTicks .. "s" )
 			end
 			return
 		end
@@ -386,7 +386,7 @@ LUI.createMenu.ZMCheckpointUpdaterInfo = function ( controller )
 			body:setText( detail ~= "" and detail or "Check your connection and try again." )
 		end
 	end )
-	menu:addElement( LUI.UITimer.new( 1500, "zmcp_update_refresh", false ) )
+	menu:addElement( LUI.UITimer.new( 1000, "zmcp_update_refresh", false ) )
 	return menu
 end
 

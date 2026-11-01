@@ -1,8 +1,8 @@
-# ZM Checkpoint
+﻿# ZM Checkpoint
 
 Experimental save and resume checkpoints for Call of Duty: Black Ops II Zombies on Plutonium T6.
 
-The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.28-alpha). Download `zm_checkpoint-0.4.28-alpha.zip` and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
+The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.29-alpha). Download `zm_checkpoint-0.4.29-alpha.zip` and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
 
 The source, build scripts, test guidance, and project history are in this repository. The user-facing setup and feature details live in [README.md](README.md); contributors should read [AGENTS.md](AGENTS.md) and [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md) first.
 
@@ -108,6 +108,12 @@ Guests will see no team checkpoint on their own PC; the original host must
 open CO-OP RESUME. Lobby account IDs may appear in decimal while saved IDs
 appear in hexadecimal; the menu compares both without rounding the 64-bit ID.
 This comparison still needs a two-PC in-game test.
+Version 0.4.29-alpha speeds up the in-game updater: no download progress bar,
+a smaller release query, an install that reuses the check's release data, much
+faster unpacking, and a 100 ms companion poll. The speedup applies from the
+update after this one (the updater scripts come from the installed version). The
+page now shows seconds spent waiting for the companion, and
+`%TEMP%\zmcp_update_timing.log` records each step with timestamps.
 Version 0.4.28-alpha adds starting loadout rows under UNLIMITED PERKS in
 Custom Games: **STARTING WEAPON 1** and **STARTING WEAPON 2** (any normal wall-buy
 or Mystery Box weapon of the selected map; with two, the M1911 is replaced) and
