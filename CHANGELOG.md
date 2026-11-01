@@ -13,8 +13,7 @@ semantics.
 - Files affected: `src/ui/ui/t6/menus/privateonlinegamelobby.lua`, `tools/Test-MoreOptions.lua` (new), `tools/Test-Loadout.lua`, `tools/Test-LobbyOption.lua`, `mod.json`, `README.md`, `CHANGELOG.md`, `PROJECT_HANDOFF.md`.
 - Validation: **Validated statically:** Build.ps1 passed; six T6 GSC parses; ten Lua suites pass (new `Test-MoreOptions.lua`: button added once, page rows/choices/dvars, clamping, DONE). The page layout, the button position and the typed points row inside the page are **expected, not verified in-game**.
 - Published: [GitHub release 0.4.39-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.39-alpha) (source commit `0b15450de3534bfc2161ccfabb60bf9b1ff60f5c`; 166,941-byte ZIP, 20 entries, no saves/caches, SHA-256 `6B957CA82AE86790A0499FBA808B29343E4669A11D524B98D4530587321B85CE`, matches GitHub). No local install was run.
-- In-game result: Not yet tested.
-- Remaining risk/next step: owner to open the lobby, click MORE OPTIONS, change rows, go back, start a match and check they still apply. If the button sits somewhere awkward, adjust its position. Zombie health cap is the next feature and will go on this page.
+- In-game result: **Verified in-game (owner screenshots, 2026-11-01): "everything work perfectly".** The MORE OPTIONS button appears under CHEATS, the page lists the five options plus DONE, and values (unlimited perks, 2 random weapons, 1 random perk, 250,000 points, doors open) show. Original next step: owner to open the lobby, click MORE OPTIONS, change rows, go back, start a match and check they still apply. If the button sits somewhere awkward, adjust its position. Zombie health cap is the next feature and will go on this page.
 
 ## 0.4.38-alpha — 2026-11-01
 
