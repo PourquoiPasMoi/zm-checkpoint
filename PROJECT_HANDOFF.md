@@ -1304,7 +1304,7 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
 
 - **Implemented (statically validated, not tested in-game):** see the 0.4.27 CHANGELOG entry. The stock STARTING ROUND selector is replaced in place by wrapping `CoD.LeftRightSelector.new` (matched by label), driven by archived dvar `zmcp_start_round` (1-255), applied in GSC by `zmcp_apply_custom_start_round` through an `init_levelvars` detour for Survival when nothing is being resumed. The stock gametype setting is untouched.
 - **Reusable stock patterns found:** `ui_keyboard_new <type> "title" "default" <maxlen>` with a `ui_keyboard_input` event on the focused element (`serverbrowserfilterspopup.lua`); `mwheel` button events (`event.qualifier == "mwheel"`, `event.button` up/down, `event.down`) as in `serverlist.lua`.
-- **Installed state:** local game stays on 0.4.25-alpha (updater-driven); 0.4.26 and 0.4.27 are published only.
+- **Installed state:** local game stays on 0.4.25-alpha (updater-driven); 0.4.26 is published; **0.4.27 source is pushed to `main` (commit `562a065`) but its GitHub release/ZIP has not been created yet** because the owner has not asked for it this turn (release creation was declined by the permission layer). Create it with the section 35 recipe when asked; the README link already points at the future 0.4.27-alpha release.
 - **Open verification:** hook match and label fit, wheel, keyboard entry, high-round stability, plus everything in section 37 and earlier.
 
 ## 37. 0.4.26-alpha CO-OP RESUME redesign — 2026-11-01
