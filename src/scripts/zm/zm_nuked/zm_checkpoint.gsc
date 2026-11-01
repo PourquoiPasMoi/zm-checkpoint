@@ -71,6 +71,7 @@ init()
     level thread zmcp_collect_persistent_flags();
     level thread zmcp_command_loop();
     level thread zmcp_player_connect_loop();
+    level thread zmcp_unlimited_perks();
 
     if ( isdefined( level.zmcp_settings_rejected ) )
         level thread zmcp_solo_reject_settings();
@@ -82,6 +83,24 @@ init()
         level thread zmcp_restore_when_ready();
         level thread zmcp_consume_on_game_end();
     }
+}
+
+// Lobby option "UNLIMITED PERKS" (dvar zmcp_all_perks). Every stock map buys
+// perks through level.perk_purchase_limit (Origins' per-player getter falls back
+// to it), so raising that one value lifts the four-perk cap on all six maps.
+zmcp_unlimited_perks()
+{
+    level endon( "end_game" );
+
+    if ( !getdvarint( "zmcp_all_perks" ) )
+        return;
+
+    level.perk_purchase_limit = 99;
+    flag_wait( "initial_blackscreen_passed" );
+
+    // _zm_perks initializes the limit to 4; reapply in case that ran after us.
+    level.perk_purchase_limit = 99;
+    iprintln( "^2ZM Checkpoint: unlimited perks enabled" );
 }
 
 zmcp_player_connect_loop()

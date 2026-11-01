@@ -7,7 +7,34 @@ CoD.ZMCheckpointMenu.HookLobby()
 
 CoD.PrivateOnlineGameLobby = {}
 
+-- Extra lobby option rows. The stock lobby builds one selector row per entry of
+-- CoD.PrivateGameLobby.Dvars, so appending here places the row directly under
+-- CHEATS with the same spacing, font, hint and focus behavior as the stock rows.
+local addLobbyDvarOption = function ( id, default, name, hint )
+	for _, option in ipairs( CoD.PrivateGameLobby.Dvars ) do
+		if option.id == id then
+			return
+		end
+	end
+	local option = {
+		id = id,
+		name = name,
+		hintText = hint,
+		labels = { "MENU_DISABLED_CAPS", "MENU_ENABLED_CAPS" },
+		values = { 0, 1 }
+	}
+	CoD.PrivateGameLobby.DvarDefaults[id] = default
+	CoD.PrivateGameLobby.Dvars[#CoD.PrivateGameLobby.Dvars + 1] = option
+end
+
+addLobbyDvarOption( "zmcp_all_perks", 0, "UNLIMITED PERKS",
+	"Allow every perk at once instead of the normal limit of four." )
+
 LUI.createMenu.PrivateOnlineGameLobby = function ( controller )
+	-- The selector reads its dvar when it is built; make sure it exists first.
+	if CoD.ZMCheckpointMenu.DvarString( "zmcp_all_perks" ) == "" then
+		Engine.SetDvar( "zmcp_all_perks", 0 )
+	end
 	local menu = CoD.PrivateGameLobby.New( "PrivateOnlineGameLobby", controller )
 	if CoD.isMultiplayer then
 		menu:setPreviousMenu( "MainLobby" )
