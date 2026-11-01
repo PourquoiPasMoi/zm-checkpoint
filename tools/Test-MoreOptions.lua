@@ -54,17 +54,19 @@ local page = { handlers = {} }
 function page:registerEventHandler( e, fn ) self.handlers[e] = fn end
 function page:goBack() self.wentBack = true end
 CoD.ZMCheckpointMenu.Ui = { PageBase = function ( name, title ) page.name, page.title = name, title; return page, {}, pageList end }
-dvars.zmcp_start_weapons, dvars.zmcp_start_points, dvars.zmcp_health_cap = "9", "99999999", "999"
+dvars.zmcp_start_weapons, dvars.zmcp_start_points, dvars.zmcp_health_cap, dvars.zmcp_autosave = "9", "99999999", "999", "7"
 local built = LUI.createMenu.ZMCheckpointMoreOptions( 0 )
 assert( built == page and page.name == "ZMCheckpointMoreOptions" and page.title == "MORE OPTIONS" )
-assert( #rows == 7, "six options and DONE, got " .. #rows )
-local want = { "zmcp_all_perks", "zmcp_start_weapons", "zmcp_start_perks", "zmcp_start_points", "zmcp_start_world", "zmcp_health_cap" }
+assert( #rows == 8, "seven options and DONE, got " .. #rows )
+local want = { "zmcp_all_perks", "zmcp_start_weapons", "zmcp_start_perks", "zmcp_start_points", "zmcp_start_world", "zmcp_health_cap", "zmcp_autosave" }
 for i, dvar in ipairs( want ) do assert( rows[i].dvar == dvar, "row " .. i .. " is " .. tostring( rows[i].dvar ) ) end
 assert( #rows[2].choices == 5 and rows[2].choices[5][2] == 4 and #rows[4].choices == 9 and #rows[5].choices == 4 )
 assert( tostring( dvars.zmcp_start_weapons ) == "4" and tostring( dvars.zmcp_start_points ) == "1000000", "stored values are clamped before the rows are built" )
 assert( dvars.zmcp_all_perks == 0, "unlimited perks dvar seeded" )
 assert( tostring( dvars.zmcp_health_cap ) == "255", "health cap clamps to 255" )
-assert( rows[7].label == "DONE" and rows[7].action == "zmcp_more_done" )
+assert( tostring( dvars.zmcp_autosave ) == "4", "autosave slot clamps to 4" )
+assert( rows[8].label == "DONE" and rows[8].action == "zmcp_more_done" )
+assert( #rows[7].choices == 5 and rows[7].choices[5][2] == 4 and rows[7].choices[1][2] == 0 )
 assert( #rows[6].choices == 7 and rows[6].choices[1][2] == 0 and rows[6].choices[5][2] == 50 )
 -- Typed rows: clicking opens the keyboard (it must not step through the fallback list).
 CoD.KEYBOARD_TYPE_TEXT_MESSAGE = 7
@@ -80,4 +82,4 @@ assert( rows[6].text == "OFF" or rows[6].text == "ROUND 255" )
 assert( not rows[1].zmcpCustomPoints and not rows[5].zmcpCustomHealth, "other rows stay stock" )
 page.handlers.zmcp_more_done( page, { controller = 0 } )
 assert( page.wentBack )
-print( "PASS: MORE OPTIONS button opens a page with the six mod options, DONE returns, stock list untouched" )
+print( "PASS: MORE OPTIONS button opens a page with the seven mod options, DONE returns, stock list untouched" )

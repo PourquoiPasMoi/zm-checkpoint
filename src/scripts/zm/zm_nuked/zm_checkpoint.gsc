@@ -79,6 +79,7 @@ init()
     level thread zmcp_command_loop();
     level thread zmcp_player_connect_loop();
     level thread zmcp_unlimited_perks();
+    level thread zmcp_autosave_loop();
 
     if ( !level.zmcp_coop_loading && !level.zmcp_loading )
     {
@@ -291,12 +292,19 @@ zmcp_announce_after_spawn()
     }
 }
 
-zmcp_save_checkpoint( player, exit_after_save )
+// auto = 1 is the AUTOSAVE path: solo only, silent, writes the slot chosen by the
+// lobby dvar zmcp_autosave, never exits and never touches the player's controls.
+zmcp_save_checkpoint( player, exit_after_save, auto )
 {
+    auto = isdefined( auto ) && auto;
+
     if ( level.zmcp_busy )
         return;
 
     players = get_players();
+
+    if ( auto && ( players.size != 1 || level.zmcp_coop_session || level.zmcp_coop_loading ) )
+        return;
 
     if ( players.size > 1 || level.zmcp_coop_session || level.zmcp_coop_loading )
     {
@@ -317,24 +325,63 @@ zmcp_save_checkpoint( player, exit_after_save )
 
     if ( !isalive( player ) || player.sessionstate != "playing" )
     {
-        player iprintlnbold( "^1Cannot save while down or spectating" );
+        if ( !auto )
+            player iprintlnbold( "^1Cannot save while down or spectating" );
+
         return;
     }
 
+    if ( auto && isdefined( player.laststand ) && player.laststand )
+        return;
+
     level.zmcp_busy = 1;
     slot = zmcp_solo_slot( getdvarint( "zmcp_solo_slot" ) );
+    if ( auto )
+        slot = zmcp_solo_slot( getdvarint( "zmcp_autosave" ) );
+
     path = zmcp_solo_path( slot );
-    player freezecontrols( 1 );
-    player enableinvulnerability();
-    player iprintlnbold( "^3Saving checkpoint..." );
-    backed_up = zmcp_copy_save( path, zmcp_solo_backup_path( slot ) );
+
+    if ( !auto )
+    {
+        player freezecontrols( 1 );
+        player enableinvulnerability();
+        player iprintlnbold( "^3Saving checkpoint..." );
+    }
+
+    // backed_up is true only when a restore point from THIS call exists, so a
+    // failed write never restores an older, unrelated copy.
+    restore_path = zmcp_solo_backup_path( slot );
+    backed_up = 0;
+
+    if ( auto )
+    {
+        // Every autosave keeps the save it replaces as a restore point; the
+        // slot's backup keeps what was there before this match's first autosave.
+        restore_path = zmcp_solo_prev_path( slot );
+        backed_up = zmcp_copy_save( path, restore_path );
+
+        if ( !isdefined( level.zmcp_autosave_backup_done ) )
+        {
+            zmcp_copy_save( path, zmcp_solo_backup_path( slot ) );
+            level.zmcp_autosave_backup_done = 1;
+        }
+    }
+    else
+        backed_up = zmcp_copy_save( path, restore_path );
+
     file = fs_fopen( path, "write" );
 
     if ( !isdefined( file ) )
     {
-        player freezecontrols( 0 );
-        player disableinvulnerability();
-        player iprintlnbold( "^1Checkpoint file could not be opened (FS_WRITE)" );
+        if ( !auto )
+        {
+            player freezecontrols( 0 );
+            player disableinvulnerability();
+            player iprintlnbold( "^1Checkpoint file could not be opened (FS_WRITE)" );
+        }
+        else
+            player iprintln( "^1Autosave could not open its file" );
+
         println( "ZMCP: fs_fopen(write) failed for " + path + "; scr_allowFileIo=" + getdvar( "scr_allowFileIo" ) );
         level.zmcp_busy = 0;
         return;
@@ -361,13 +408,23 @@ zmcp_save_checkpoint( player, exit_after_save )
     fs_writeline( file, "END" );
     fs_fclose( file );
     saved_checkpoint = zmcp_read_checkpoint( path );
-    player freezecontrols( 0 );
+
+    if ( !auto )
+        player freezecontrols( 0 );
 
     if ( isdefined( saved_checkpoint ) && saved_checkpoint.round == level.round_number )
     {
         // A fresh save has its own settings; drop any override of the old save.
         zmcp_solo_clear_overrides( slot );
         zmcp_solo_publish( slot, saved_checkpoint );
+
+        if ( auto )
+        {
+            player iprintln( "^2Autosaved - round " + level.round_number + " (slot " + slot + ")" );
+            level.zmcp_busy = 0;
+            return;
+        }
+
         player iprintlnbold( "^2Slot " + slot + " saved - round " + level.round_number );
         player iprintln( "^7Resume will appear when this map is selected." );
 
@@ -381,13 +438,18 @@ zmcp_save_checkpoint( player, exit_after_save )
     }
     else
     {
-        player iprintlnbold( "^1Checkpoint write failed" );
+        if ( auto )
+            player iprintln( "^1Autosave failed" );
+        else
+            player iprintlnbold( "^1Checkpoint write failed" );
 
-        if ( backed_up && zmcp_copy_save( zmcp_solo_backup_path( slot ), path ) )
+        if ( backed_up && zmcp_copy_save( restore_path, path ) )
             player iprintln( "^3Your previous save in this slot was restored." );
     }
 
-    player disableinvulnerability();
+    if ( !auto )
+        player disableinvulnerability();
+
     level.zmcp_busy = 0;
 }
 

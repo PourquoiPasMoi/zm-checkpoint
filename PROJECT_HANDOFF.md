@@ -1300,6 +1300,10 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   match after publication. Unload/reload the mod after using the updater;
   Plutonium itself does not need restarting.
 
+## 54. 0.4.43-alpha autosave — 2026-11-01
+
+- **Validated statically (not tested in-game):** AUTOSAVE on MORE OPTIONS (`zmcp_autosave`: OFF or solo slot 1-4). `zmcp_autosave_loop` (slots.gsc, started from `init`) saves at the next round's start via `zmcp_save_checkpoint( player, 0, 1 )`; the `auto` path is silent, solo only, skips downed/last-stand/busy, keeps `<slot>_prev.sav` (per-write restore point) and, once per match, `<slot>_backup.sav`. Default OFF; never writes unless the owner picks a slot. Known limits: solo only; the chosen slot is replaced every round; no co-op autosave; unverified on all maps. Next ideas: zombie speed cap; autosave for co-op only after the solo version is verified.
+
 ## 53. 0.4.42-alpha keyboard titles — 2026-11-01
 
 - **Verified in-game (owner screenshots, 0.4.41):** typed rows on MORE OPTIONS open the keyboard and work; the keyboard title overflowed its box. **Validated statically (not tested in-game):** titles shortened to about 25 characters or fewer ("STARTING ROUND (1-255)", "POINTS (0 = DEFAULT)", "HEALTH CAP ROUND (0=OFF)"). Rule: keyboard titles must stay near 25 characters. Published: [GitHub release 0.4.42-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.42-alpha) (source commit `2b041a476d51929d85d8e78ce61aed3c5137b519`; 170,620-byte ZIP, 20 entries, no saves/caches, SHA-256 `C98E84726EB9AFCE39C943B38AB727BE1CC3D145B6A8E7F04F715D9F4E2E4B37`, matches GitHub). No local install was run.
