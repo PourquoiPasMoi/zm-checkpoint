@@ -13,6 +13,7 @@ semantics.
 - Files affected: `src/ui/ui/t6/menus/zmcheckpointsolo.lua`, `tools/Test-SoloDelete.lua`, `mod.json`, `README.md`, `CHANGELOG.md`, `PROJECT_HANDOFF.md`. No GSC, save-format or save-file change.
 - Validation: modified Lua parsed; Build.ps1 passed; six T6 GSC parses passed; all five Lua suites pass, including updated mocked cases for greyed-out rows, select-then-rebuild with focus returning, START launching the selected slot, OPTIONS targeting it, and ignoring OPTIONS/START with no selection. Nothing installed; no `scriptdata` written.
 - In-game result: Not yet tested. Focus restoring to the selected row uses `selectElementIndex` and is expected, not verified.
+- Published: source commit `c7c7603b2a18ce64dc353f25df7d69b7cd88fe21` was pushed before [GitHub release 0.4.25-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.25-alpha); the 126,375-byte ZIP (20 entries, no saves/caches) has SHA-256 `B29C84D315672E5DE32C593051BE7EA476364B1B3F813D7C4EFE86E46DCC4A07`, matching GitHub. The installed 0.4.24 updater returned `UPDATE_AVAILABLE|0.4.24-alpha|0.4.25-alpha`; all eight checkpoint hashes were identical before and after packaging. No local install was run.
 - Remaining risk/next step: confirm the click selects without resuming, the SELECTED marker fits, OPTIONS/START enable, START launches the match, and DEL/Back still behave. Mouse click versus Enter should both be tried.
 
 ## 0.4.24-alpha — 2026-11-01
