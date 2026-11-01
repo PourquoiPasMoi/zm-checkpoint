@@ -13,7 +13,7 @@ failure, installation, or test so the project retains its lessons.
 - Project: **ZM Checkpoint** for Call of Duty: Black Ops II Zombies on Plutonium T6.
 - Workspace: `C:\Users\User\Documents\Projects\Bo2 Zombie Plutonium`
 - Current source/package: **0.4.25-alpha** (select, OPTIONS and START flow, section 34; 0.4.24 added per-save OPTIONS, section 33; 0.4.23 added solo save deletion, section 32); latest published: **0.4.25-alpha**; installed locally: **0.4.24-alpha**; locally installed: **0.4.21-alpha**. Older note follows: locally installed metadata was **0.4.20-alpha**. GitHub publication status is recorded in section 30. No project installer was run for 0.4.21.
-- Current date of this handoff: **2026-10-30**
+- Current date of this handoff: **2026-11-01** (latest session notes: section 35; sections 31 to 35 sit newest-first above section 30)
 - The project is a Git repository with public origin `https://github.com/PourquoiPasMoi/zm-checkpoint`.
 - The standalone mod and companion packages are installed locally.
 - 0.4.2 moves the per-player remaining-enemy HUD to the upper-left safe area
@@ -811,6 +811,8 @@ existing companions. A shareable standalone ZIP is at
 
 ## 19. Ready-to-paste prompt for a new chat
 
+> **Current start prompt (2026-11-01):** "Continue work on ZM Checkpoint. First read AGENTS.md, PROJECT_HANDOFF.md (especially sections 30 to 35, which are the newest), and CHANGELOG.md completely, then inspect the relevant source and my installed mod before changing anything. Follow the project's build, validation, documentation and release rules. Publish updates to GitHub, but do not install them into my local game unless I explicitly ask. The latest published version is 0.4.25-alpha." The older prompt below is historical.
+
 ```text
 Continue the ZM Checkpoint project in:
 C:\Users\User\Documents\Projects\Bo2 Zombie Plutonium
@@ -1297,6 +1299,14 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   0.4.15-alpha. All four task-start checkpoint hashes listed above still
   match after publication. Unload/reload the mod after using the updater;
   Plutonium itself does not need restarting.
+
+## 35. Claude Code session notes and tooling lessons — 2026-11-01
+
+- **Multi-agent use:** the owner alternates between ChatGPT and Claude Code on this repo. Both follow `AGENTS.md`; the docs are the only shared memory, so write the entry before ending a task. `git log` showed no foreign commits during this session. Releases 0.4.22 to 0.4.25 came from Claude Code (sections 31 to 34).
+- **REA:** installed globally (6.7.0, linked to a local clone) and registered with Claude Code; no analysis engine configured. See the CHANGELOG session entry. Its tools appear only after restarting the Claude Code session.
+- **Release recipe that worked:** bump `mod.json`; `tools\Build.ps1`; parse all six `dist\zm_checkpoint\scripts\zm\<map>\zm_checkpoint.gsc` with `.tools\gsc-tool-1.6.2\gsc-tool.exe -m parse -g t6 -s pc -y`; run the five Lua suites with `.tools\lua-validator\node_modules\.bin\fengari tools\<name>.lua` (`Test-CoopLobby`, `Test-SoloResume`, `Test-UpdaterRequestId`, `Test-LobbyOption`, `Test-SoloDelete`); write docs; commit and push; **rebuild after the final README edit** (Build copies README into the package), then zip `dist\zm_checkpoint\*` to `dist\zm_checkpoint-<ver>.zip`; check 20 entries and no saves; `gh release create <ver> <zip> --repo PourquoiPasMoi/zm-checkpoint --target <full commit> --prerelease --notes-file .cache\release-notes-<ver>.md`; confirm GitHub's digest; run the installed `Update-ZMCheckpoint.ps1 -CheckOnly`; hash all `.sav` files before and after; second docs commit recording the publication.
+- **Lessons:** (1) In this environment's Bash tool, backslash escapes inside `python - <<'EOF'` strings are halved, so a Lua `"\n"` became a real newline and broke the file; write such lines (and any text with backslashes) with the Edit tool and re-parse. (2) Windows PowerShell 5.1 `Set-Content -Encoding utf8` adds a BOM; strip it from `mod.json`. (3) Mock widgets that auto-create fields on read make `if menu.flag` always true; give mock state explicit defaults. (4) A disabled/greyed T6 list button may not be focusable, so `selectElementIndex` counts only enabled rows. (5) Stock lobby option rows are data-driven through `CoD.PrivateGameLobby.Dvars`; append an entry rather than building widgets. (6) The lobby has no file access; front-end changes to saves must be dvar overrides or tombstones that GSC applies on the next map load. (7) `ButtonPrompt.new`'s 9th argument is the PC key name matched against `key_shortcut` events (`"DEL"` worked in-game).
+- **Open verification list:** 0.4.25 select/OPTIONS/START; 0.4.24 OPTIONS page selectors, apply, Resume effects and override clearing on save-over; 0.4.23 popup visuals, restart persistence and file erase on next map load; 0.4.22 per-map unlimited perks beyond the owner's one confirmed run; all earlier items in sections 13 and 20 to 30.
 
 ## 34. 0.4.25-alpha select, OPTIONS, START — 2026-11-01
 

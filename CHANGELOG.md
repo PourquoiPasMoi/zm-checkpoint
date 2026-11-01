@@ -4,6 +4,15 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+### 2026-11-01 — Claude Code session log: setup, tooling and workflow
+
+- Request: join the project alongside ChatGPT, read all project memory, install REA, then build the features recorded in 0.4.22 to 0.4.25, and keep everything logged for continuation in any new chat.
+- Change or investigation: read AGENTS.md, PROJECT_HANDOFF.md, CHANGELOG.md and README.md in full. **REA (`morluto/rea`):** `rea-agents` 6.7.0 was already installed globally from a local clone at `Documents\Projects\noise cancelation\rea` (6.8.0 exists, not updated). At the owner's request, `rea setup --client claude_code --yes` registered its MCP server with Claude Code (edits `~/.claude.json`, backup `~/.claude.json.rea.backup`, refreshed the REA skill). `rea doctor` still reports no analysis engine (Hopper, Ghidra, IDA, Jadx, Kuna), so native analysis of `t6zm.exe` remains unavailable. Nothing in the project tree changed for this. Feature work this session is in the 0.4.22, 0.4.23, 0.4.24 and 0.4.25 entries; each release was built, pushed to `main`, published as a GitHub prerelease with its ZIP, and never installed locally, per the owner's standing rule.
+- Files affected: this entry and `PROJECT_HANDOFF.md` section 35 only.
+- Validation: documentation only. The eight checkpoint file hashes were checked before and after every package; the TranZit slot changed once during the owner's own gameplay (recorded in 0.4.23).
+- In-game result: see each version entry. Verified in-game by the owner this session: 0.4.22 UNLIMITED PERKS, 0.4.23 DEL prompt and delete, 0.4.24 OPTIONS row visible.
+- Remaining risk/next step: test 0.4.25 (select, OPTIONS, START) and the 0.4.24 OPTIONS page effects. See section 35 of the handoff for tooling lessons.
+
 ## 0.4.25-alpha — 2026-11-01
 
 ### 2026-11-01 — Select a save first, then OPTIONS or START
