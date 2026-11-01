@@ -122,6 +122,12 @@ C.Resume = function ( menu, event, slot )
 			return false, "Could not apply saved settings. Check lobby options."
 		end
 	end
+	-- A per-save UNLIMITED PERKS choice from SOLO RESUME > OPTIONS overrides the
+	-- lobby row for this launch; saves without a choice leave the lobby row alone.
+	if meta.unlimited ~= nil then
+		Engine.SetDvar( "zmcp_all_perks", meta.unlimited )
+		Engine.Exec( controller, "seta zmcp_all_perks " .. meta.unlimited .. "\n" )
+	end
 	Engine.Exec( controller, "set zmcp_coop_autoload 0\n" )
 	-- Resume through the stock private-lobby launch path. A raw `map` command
 	-- skips the Zombies session bootstrap, leaving the player in a loaded map

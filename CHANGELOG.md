@@ -4,6 +4,17 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.24-alpha — 2026-11-01
+
+### 2026-11-01 — Per-save OPTIONS on SOLO RESUME
+
+- Request: add an OPTIONS entry on SOLO RESUME to change each save's stored settings (e.g. turn cheats off, add the new unlimited-perks setting) without breaking save data.
+- Change or investigation: **Verified in-game (owner screenshot, 2026-11-01):** 0.4.23 SOLO RESUME shows the bottom-right `DEL Delete` prompt next to `ESC Back` while a saved slot is highlighted, and the owner reports deletion worked. Not itemized: the confirmation popup visuals, restart persistence and the file-erase-on-next-map-load step. The Resume list now ends with an OPTIONS row (disabled when no slot is saved) that opens `ZMCheckpointSoloOptions` for the most recently highlighted saved slot: DIFFICULTY, MAGIC, HEADSHOTS ONLY, TARGET ASSIST, CHEATS and UNLIMITED PERKS selectors (stock dvar selectors on temporary `zmcp_edit_*` dvars) with APPLY CHANGES and CANCEL. The save file is never rewritten: APPLY stores archived override dvars `zmcp_ovr_<map>_slotN_*` (plus `_set`, and a separate `_perks` choice) and updates the published meta dvars the lobby reads. `zmcp_apply_solo_overrides` (shared GSC) applies a complete, valid override to the in-memory checkpoint whenever it is read, so the match-settings check and published values agree; any invalid value ignores the whole override. Overrides are dropped when the slot is saved over, consumed, cleared or deleted (`zmcp_solo_clear_overrides`; deletion also clears them in Lua). Resume applies a per-save UNLIMITED PERKS choice by setting `zmcp_all_perks` before `xpartygo`; saves without a choice leave the lobby row alone. Older saves without a SETTINGS record can change only UNLIMITED PERKS. The saved-settings panel shows an UNLIMITED PERKS line when a choice exists. DEL is hidden while OPTIONS is focused.
+- Files affected: `src/ui/ui/t6/menus/zmcheckpointsolo.lua`, `zmcheckpointmenu.lua`, `src/scripts/zm/zm_checkpoint_slots.gsc`, `src/scripts/zm/zm_nuked/zm_checkpoint.gsc`, `tools/Test-SoloDelete.lua`, `mod.json`, `README.md`, `CHANGELOG.md`, `PROJECT_HANDOFF.md`.
+- Validation: modified Lua parsed; Build.ps1 passed; all six generated T6 GSC files parsed and contain the override code. All five Lua suites pass, including new mocked cases: OPTIONS row and event, selector seeding from the slot, apply storing only overrides and published values, save metadata untouched, Resume applying overridden cheats and perks, older-save perks-only page, refusal of invalid values and empty slots, and override removal on delete. GSC override handling is parsed only, not executed. Nothing installed; no `scriptdata` written by this work.
+- In-game result: Not yet tested. Selector appearance and row fit are expected only.
+- Remaining risk/next step: confirm the page layout, that APPLY changes the preview and the resumed match (cheats/difficulty/magic/headshots/assist), that UNLIMITED PERKS carries into the match, and that a new Save & Exit over the slot clears its override. If the settings check rejects Resume, `console_zm.log` will say so and the checkpoint is retained.
+
 ## 0.4.23-alpha — 2026-11-01
 
 ### 2026-11-01 — Delete saves from SOLO RESUME

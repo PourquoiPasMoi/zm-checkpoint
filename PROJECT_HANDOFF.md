@@ -12,7 +12,7 @@ failure, installation, or test so the project retains its lessons.
 
 - Project: **ZM Checkpoint** for Call of Duty: Black Ops II Zombies on Plutonium T6.
 - Workspace: `C:\Users\User\Documents\Projects\Bo2 Zombie Plutonium`
-- Current source/package: **0.4.23-alpha** (adds solo save deletion, section 32); latest published: **0.4.23-alpha**; installed locally: **0.4.22-alpha**; locally installed: **0.4.21-alpha**. Older note follows: locally installed metadata was **0.4.20-alpha**. GitHub publication status is recorded in section 30. No project installer was run for 0.4.21.
+- Current source/package: **0.4.24-alpha** (adds per-save OPTIONS, section 33; 0.4.23 added solo save deletion, section 32); latest published: **0.4.23-alpha**; installed locally: **0.4.22-alpha**; locally installed: **0.4.21-alpha**. Older note follows: locally installed metadata was **0.4.20-alpha**. GitHub publication status is recorded in section 30. No project installer was run for 0.4.21.
 - Current date of this handoff: **2026-10-30**
 - The project is a Git repository with public origin `https://github.com/PourquoiPasMoi/zm-checkpoint`.
 - The standalone mod and companion packages are installed locally.
@@ -1297,6 +1297,13 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   0.4.15-alpha. All four task-start checkpoint hashes listed above still
   match after publication. Unload/reload the mod after using the updater;
   Plutonium itself does not need restarting.
+
+## 33. 0.4.24-alpha per-save OPTIONS — 2026-11-01
+
+- **0.4.23 result:** owner screenshot shows the `DEL Delete` prompt bottom right beside `ESC Back`, and reports it worked (**verified in-game**: prompt and delete; popup look, restart persistence and later file erase not itemized).
+- **Design:** save files are never edited. SOLO RESUME's new OPTIONS row (below the four slots) opens `ZMCheckpointSoloOptions` for the last highlighted saved slot. APPLY writes `zmcp_ovr_<map>_slotN_{difficulty,magic,headshots,assist,cheats}` + `_set=1` and `_perks` (0/1, `-1`/empty = none) with `seta` and `Engine.SetDvar`, and also updates `zmcp_solo_<map>_slotN_<key>` published values. GSC `zmcp_apply_solo_overrides(slot, checkpoint)` mutates only the in-memory `checkpoint.settings`, called from `zmcp_solo_publish` and for the selected slot in `main()`; `zmcp_solo_clear_overrides` runs on save-over, `publish(undefined)` (consume/clear/delete) and Lua delete. Resume sets `zmcp_all_perks` from `_perks` when present. Legacy saves without SETTINGS expose perks only. Co-op saves are unchanged.
+- **Validated statically:** Lua parse, Build.ps1, six T6 GSC parses, five Lua suites (`tools/Test-SoloDelete.lua` extended). **In-game result: not yet tested.**
+- **Next:** open OPTIONS on a saved slot, change cheats/difficulty/perks, APPLY, verify the preview and the resumed match, then save over the slot and confirm the override is gone. Check page fit with six selectors plus two buttons.
 
 ## 32. 0.4.23-alpha delete a solo save — 2026-11-01
 

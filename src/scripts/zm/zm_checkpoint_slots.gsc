@@ -62,6 +62,64 @@ zmcp_apply_solo_deletes()
     }
 }
 
+zmcp_solo_override_prefix( slot )
+{
+    return "zmcp_ovr_" + level.zmcp_map + "_slot" + slot + "_";
+}
+
+// SOLO RESUME > OPTIONS stores per-slot setting changes in archived dvars instead
+// of editing the save file, so the checkpoint itself is never rewritten. They are
+// applied to the in-memory checkpoint every time it is read, and dropped when the
+// slot is saved over, consumed, cleared or deleted.
+zmcp_solo_clear_overrides( slot )
+{
+    prefix = zmcp_solo_override_prefix( slot );
+    // cmdexec runs later; setdvar makes the change visible to the very next read.
+    setdvar( prefix + "set", "0" );
+    setdvar( prefix + "perks", "-1" );
+    cmdexec( "seta " + prefix + "set 0" );
+    cmdexec( "seta " + prefix + "perks -1" );
+}
+
+zmcp_solo_override_flag( name )
+{
+    value = getdvar( name );
+    if ( value == "0" )
+        return 0;
+    if ( value == "1" )
+        return 1;
+    return -1;
+}
+
+zmcp_apply_solo_overrides( slot, checkpoint )
+{
+    if ( !isdefined( checkpoint ) || !isdefined( checkpoint.settings ) )
+        return;
+
+    prefix = zmcp_solo_override_prefix( slot );
+    if ( getdvar( prefix + "set" ) != "1" )
+        return;
+
+    difficulty = zmcp_solo_override_flag( prefix + "difficulty" );
+    magic = zmcp_solo_override_flag( prefix + "magic" );
+    headshots = zmcp_solo_override_flag( prefix + "headshots" );
+    assist = zmcp_solo_override_flag( prefix + "assist" );
+    cheats = zmcp_solo_override_flag( prefix + "cheats" );
+
+    // Ignore a damaged override as a whole and keep the saved values.
+    if ( difficulty < 0 || magic < 0 || headshots < 0 || assist < 0 || cheats < 0 )
+    {
+        println( "ZMCP SOLO: ignored invalid settings override for slot " + slot );
+        return;
+    }
+
+    checkpoint.settings.difficulty = difficulty;
+    checkpoint.settings.magic = magic;
+    checkpoint.settings.headshots = headshots;
+    checkpoint.settings.assist = assist;
+    checkpoint.settings.cheats = cheats;
+}
+
 zmcp_solo_publish( slot, checkpoint )
 {
     has = zmcp_solo_has_dvar( slot );
@@ -69,12 +127,14 @@ zmcp_solo_publish( slot, checkpoint )
     prefix = zmcp_solo_meta_prefix( slot );
     if ( !isdefined( checkpoint ) )
     {
+        zmcp_solo_clear_overrides( slot );
         cmdexec( "seta " + prefix + "preview 0" );
         cmdexec( "seta " + has + " 0" );
         cmdexec( "seta " + round_dvar + " 0" );
         cmdexec( "seta " + prefix + "settings 0" );
         return;
     }
+    zmcp_apply_solo_overrides( slot, checkpoint );
     cmdexec( "seta " + has + " 1" );
     cmdexec( "seta " + round_dvar + " " + checkpoint.round );
     // Publish compact lobby metadata from the validated checkpoint, without
