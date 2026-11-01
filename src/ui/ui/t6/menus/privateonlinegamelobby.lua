@@ -49,7 +49,7 @@ addMoreOption( "zmcp_health_cap", 0, "ZOMBIE HEALTH CAP",
 	{ "OFF", "ROUND 20", "ROUND 30", "ROUND 40", "ROUND 50", "ROUND 75", "ROUND 100" }, { 0, 20, 30, 40, 50, 75, 100 } )
 addMoreOption( "zmcp_autosave", 0, "AUTOSAVE",
 	"Saves your game by itself the moment each round ends, into the slot you pick, so you can quit any time and Resume from SOLO RESUME. It replaces that slot's save (the old one is kept once as a backup). Solo only.",
-	{ "OFF", "SLOT 1", "SLOT 2", "SLOT 3", "SLOT 4" }, { 0, 1, 2, 3, 4 } )
+	{ "OFF", "SLOT 1", "SLOT 2", "SLOT 3", "SLOT 4", "SLOT 5", "SLOT 6", "SLOT 7", "SLOT 8" }, { 0, 1, 2, 3, 4, 5, 6, 7, 8 } )
 
 -- CUSTOM STARTING ROUND. The stock STARTING ROUND row only offers a few fixed
 -- values. Its selector is replaced in place (found by its label when the stock
@@ -239,8 +239,8 @@ C.ClampHealthCap = function ( value )
 	return value
 end
 
-C.HealthCapValue = function ()
-	return C.ClampHealthCap( C.DvarString( "zmcp_health_cap" ) ) or 0
+C.HealthCapValue = function ( dvar )
+	return C.ClampHealthCap( C.DvarString( dvar or "zmcp_health_cap" ) ) or 0
 end
 
 C.FormatHealthCap = function ( value )
@@ -248,22 +248,26 @@ C.FormatHealthCap = function ( value )
 	return "ROUND " .. tostring( value )
 end
 
-C.SetHealthCap = function ( value )
+C.SetHealthCap = function ( value, dvar )
 	value = C.ClampHealthCap( value )
 	if value == nil then return nil end
-	Engine.SetDvar( "zmcp_health_cap", value )
-	Engine.Exec( 0, "seta zmcp_health_cap " .. value .. "\n" )
+	dvar = dvar or "zmcp_health_cap"
+	Engine.SetDvar( dvar, value )
+	if dvar == "zmcp_health_cap" then Engine.Exec( 0, "seta zmcp_health_cap " .. value .. "\n" ) end
 	return value
 end
 
 C.AttachCustomHealthCap = function ( selector )
 	if selector.zmcpCustomHealth then return end
 	selector.zmcpCustomHealth = true
+	-- The MORE OPTIONS row edits the lobby dvar; the SOLO RESUME OPTIONS page
+	-- passes a selector bound to its own editing copy.
+	local dvar = selector.m_dvarName or "zmcp_health_cap"
 	local show = function ( self )
-		if self.choiceText then self.choiceText:setText( C.FormatHealthCap( C.HealthCapValue() ) ) end
+		if self.choiceText then self.choiceText:setText( C.FormatHealthCap( C.HealthCapValue( dvar ) ) ) end
 	end
 	local step = function ( self, amount )
-		C.SetHealthCap( C.HealthCapValue() + amount )
+		C.SetHealthCap( C.HealthCapValue( dvar ) + amount, dvar )
 		show( self )
 	end
 	selector.updateChoice = show
@@ -293,14 +297,14 @@ C.AttachCustomHealthCap = function ( selector )
 		end
 		Engine.Exec( event.controller or 0, "ui_keyboard_new " .. keyboardType ..
 			" \"HEALTH CAP ROUND (0=OFF)\" \"" ..
-			C.HealthCapValue() .. "\" 3" )
+			C.HealthCapValue( dvar ) .. "\" 3" )
 		return true
 	end )
 	selector:registerEventHandler( "ui_keyboard_input", function ( self, event )
 		if event.type ~= CoD.KEYBOARD_TYPE_TEXT_MESSAGE or type( event.input ) ~= "string" then return end
 		local digits = string.match( event.input, "^%s*(%d+)%s*$" )
 		if digits and #digits <= 4 then
-			C.SetHealthCap( tonumber( digits ) )
+			C.SetHealthCap( tonumber( digits ), dvar )
 			show( self )
 		end
 	end )

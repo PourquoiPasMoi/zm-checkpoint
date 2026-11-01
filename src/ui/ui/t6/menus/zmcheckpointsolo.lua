@@ -13,6 +13,12 @@ C.SoloSlotMeta = function ( map, slot )
 	local preview = read( "preview" ) == "1"
 	local perksChoice = tonumber( C.DvarString( "zmcp_ovr_" .. map .. "_slot" .. slot .. "_perks" ) )
 	if perksChoice ~= 0 and perksChoice ~= 1 then perksChoice = nil end
+	-- Per-save choices made on the OPTIONS page (nil when the save has none).
+	local override = function ( key, maximum )
+		local value = tonumber( C.DvarString( "zmcp_ovr_" .. map .. "_slot" .. slot .. "_" .. key ) )
+		if value == nil or value ~= math.floor( value ) or value < 0 or value > maximum then return nil end
+		return value
+	end
 	local collect = function ( kind, count, maximum )
 		local values = {}
 		if not preview then return values end
@@ -36,6 +42,8 @@ C.SoloSlotMeta = function ( map, slot )
 		location = read( "location" ),
 		preview = preview,
 		unlimited = perksChoice,
+		healthcap = override( "healthcap", 255 ),
+		autosave = override( "autosave", C.SoloSlotCount ),
 		score = tonumber( read( "score" ) ) or 0,
 		weapons = collect( "weapon", "weapons", 4 ),
 		perks = collect( "perk", "perks", 12 )
@@ -192,7 +200,7 @@ local function addPreview( menu, list )
 	return show
 end
 
-local function pageBase( name, title, message, listBottom )
+local function pageBase( name, title, message, listBottom, noList )
 	local menu = CoD.Menu.New( name )
 	menu:addLargePopupBackground()
 	menu:addTitle( title )
@@ -204,11 +212,88 @@ local function pageBase( name, title, message, listBottom )
 	status:setAlignment( LUI.Alignment.Left )
 	status:setText( message )
 	menu:addElement( status )
+	if noList then return menu, status end
 	local list = CoD.ButtonList.new( { leftAnchor = true, rightAnchor = false,
 		left = 0, right = 600, topAnchor = true, bottomAnchor = false,
 		top = 170, bottom = listBottom or 410 } )
 	menu:addElement( list )
 	return menu, status, list
+end
+
+-- The solo slots are shown as a grid of two columns: odd slots on the left, even
+-- slots on the right (SLOT 1 SLOT 2 / SLOT 3 SLOT 4 / ...). Each column is its
+-- own ButtonList; left and right move between the columns through the buttons'
+-- navigation links, and both columns share a single hint line.
+local GRID_TOP, GRID_COLUMN_WIDTH, GRID_RIGHT_LEFT = 170, 295, 305
+
+local function gridPitch()
+	return CoD.CoD9Button.Height + ( CoD.ButtonList.ButtonSpacing or 2 )
+end
+
+local function gridRows()
+	return math.ceil( C.SoloSlotCount / 2 )
+end
+
+-- The first row below the grid, where the page's own buttons start.
+local function gridBottom()
+	return GRID_TOP + gridRows() * gridPitch()
+end
+
+local function newSlotGrid( menu, hintElement )
+	local bottom = gridBottom()
+	local function column( left, hint )
+		local list = CoD.ButtonList.new( { leftAnchor = true, rightAnchor = false,
+			left = left, right = left + GRID_COLUMN_WIDTH, topAnchor = true, bottomAnchor = false,
+			top = GRID_TOP, bottom = bottom }, nil, nil, hint )
+		menu:addElement( list )
+		return list
+	end
+	local grid = { buttons = {} }
+	grid.left = column( 0, hintElement )
+	grid.right = column( GRID_RIGHT_LEFT, hintElement or grid.left.hintText )
+	return grid
+end
+
+local function slotColumn( grid, slot )
+	return slot % 2 == 1 and grid.left or grid.right
+end
+
+local function addGridButton( grid, slot, title, hint )
+	local button = slotColumn( grid, slot ):addButton( title, hint )
+	grid.buttons[slot] = button
+	return button
+end
+
+local function clearGrid( grid )
+	grid.left:removeAllButtons()
+	grid.right:removeAllButtons()
+	grid.buttons = {}
+end
+
+-- Left/right between a slot and its row partner (1 <-> 2, 3 <-> 4, ...). A
+-- disabled (empty) partner is not focusable, so the move is simply ignored.
+local function linkGrid( grid )
+	for slot = 1, C.SoloSlotCount do
+		local button = grid.buttons[slot]
+		local partner = grid.buttons[slot % 2 == 1 and slot + 1 or slot - 1]
+		if button and partner and button.navigation then
+			button.navigation[slot % 2 == 1 and "right" or "left"] = partner
+		end
+	end
+end
+
+-- Focus one slot: its column takes focus and selects the slot among that
+-- column's focusable (saved) buttons.
+local function focusGridSlot( grid, slot, isFocusable )
+	local list = slotColumn( grid, slot )
+	local index = 0
+	for candidate = slot % 2 == 1 and 1 or 2, slot, 2 do
+		if isFocusable( candidate ) then index = index + 1 end
+	end
+	list:processEvent( { name = "gain_focus" } )
+	if index > 0 and list.selectElementIndex then
+		pcall( function () list:selectElementIndex( index ) end )
+	end
 end
 
 local function attachSlotDetails( menu, list, onFocus )
@@ -218,6 +303,16 @@ local function attachSlotDetails( menu, list, onFocus )
 	settings:setTopBottom( true, false, 430, 560 )
 	menu:addElement( settings )
 	local content
+	local function runChoices( meta )
+		local parts = {}
+		if meta.healthcap ~= nil then
+			parts[#parts + 1] = "ZOMBIE HEALTH CAP " .. ( meta.healthcap == 0 and "OFF" or ( "ROUND " .. meta.healthcap ) )
+		end
+		if meta.autosave ~= nil then
+			parts[#parts + 1] = "AUTOSAVE " .. ( meta.autosave == 0 and "OFF" or ( "SLOT " .. meta.autosave ) )
+		end
+		return table.concat( parts, "    " )
+	end
 	local function show( slot, meta )
 		showPreview( slot, meta )
 		if content then content:close() end
@@ -233,6 +328,7 @@ local function attachSlotDetails( menu, list, onFocus )
 			if meta.unlimited ~= nil then
 				addText( content, "UNLIMITED PERKS " .. enabled( meta.unlimited ), 0, 555, 66, 92 )
 			end
+			if runChoices( meta ) ~= "" then addText( content, runChoices( meta ), 0, 555, 98, 124 ) end
 			return
 		end
 		if meta.unlimited ~= nil then
@@ -241,6 +337,7 @@ local function attachSlotDetails( menu, list, onFocus )
 		addText( content, "DIFFICULTY " .. (meta.difficulty == 0 and "EASY" or "ORIGINAL") ..
 			"    MAGIC " .. enabled( meta.magic ) .. "    HEADSHOTS " .. enabled( meta.headshots ), 0, 555, 34, 60 )
 		addText( content, "ASSIST " .. enabled( meta.assist ) .. "    CHEATS " .. enabled( meta.cheats ), 0, 555, 66, 92 )
+		if runChoices( meta ) ~= "" then addText( content, runChoices( meta ), 0, 555, 130, 156 ) end
 	end
 	return function ( button, slot, meta )
 		local watcher = LUI.UIElement.new()
@@ -253,16 +350,17 @@ local function attachSlotDetails( menu, list, onFocus )
 end
 
 LUI.createMenu.ZMCheckpointSoloSave = function ( controller )
-	local menu, status, list = pageBase( "ZMCheckpointSoloSave", "SAVE SOLO CHECKPOINT",
-		"Choose a slot. Select an occupied slot twice to replace it." )
+	local menu, status = pageBase( "ZMCheckpointSoloSave", "SAVE SOLO CHECKPOINT",
+		"Choose a slot. Select an occupied slot twice to replace it.", nil, true )
+	local grid = newSlotGrid( menu )
 	local map = C.CurrentMap( true )
 	local pending = 0
-	local watch = attachSlotDetails( menu, list )
-	for slot = 1, 4 do
+	local watch = attachSlotDetails( menu, grid.left )
+	for slot = 1, C.SoloSlotCount do
 		local chosenSlot = slot
 		local meta = C.SoloSlotMeta( map, chosenSlot )
 		local title = "SLOT " .. chosenSlot .. (meta.has and (" - ROUND " .. meta.round) or " - EMPTY")
-		local button = list:addButton( title, slotHint( meta ) )
+		local button = addGridButton( grid, chosenSlot, title, slotHint( meta ) )
 		watch( button, chosenSlot, meta )
 		button:setActionEventName( "zmcp_save_slot_" .. chosenSlot )
 		menu:registerEventHandler( "zmcp_save_slot_" .. chosenSlot, function ()
@@ -274,7 +372,8 @@ LUI.createMenu.ZMCheckpointSoloSave = function ( controller )
 			C.CommitSaveAndExit( menu, controller, chosenSlot )
 		end )
 	end
-	list:processEvent( { name = "gain_focus" } )
+	linkGrid( grid )
+	focusGridSlot( grid, 1, function () return true end )
 	return menu
 end
 
@@ -282,7 +381,7 @@ end
 -- slot immediately through its archived dvars and leaves a tombstone dvar. The
 -- next load of that map overwrites the old file (see zmcp_apply_solo_deletes).
 C.DeleteSoloSlot = function ( controller, map, slot )
-	if C.SupportedMaps[map] == nil or slot < 1 or slot > 4 then return false end
+	if C.SupportedMaps[map] == nil or slot < 1 or slot > C.SoloSlotCount then return false end
 	local suffix = slot == 1 and "" or ("_slot" .. slot)
 	local prefix = "zmcp_solo_" .. map .. "_slot" .. slot .. "_"
 	local values = {
@@ -292,7 +391,9 @@ C.DeleteSoloSlot = function ( controller, map, slot )
 		[ prefix .. "preview" ] = 0,
 		[ prefix .. "settings" ] = 0,
 		[ "zmcp_ovr_" .. map .. "_slot" .. slot .. "_set" ] = 0,
-		[ "zmcp_ovr_" .. map .. "_slot" .. slot .. "_perks" ] = -1
+		[ "zmcp_ovr_" .. map .. "_slot" .. slot .. "_perks" ] = -1,
+		[ "zmcp_ovr_" .. map .. "_slot" .. slot .. "_healthcap" ] = -1,
+		[ "zmcp_ovr_" .. map .. "_slot" .. slot .. "_autosave" ] = -1
 	}
 	for name, value in pairs( values ) do
 		-- seta keeps the value across restarts; SetDvar applies it to this frame.
@@ -303,8 +404,14 @@ C.DeleteSoloSlot = function ( controller, map, slot )
 end
 
 LUI.createMenu.ZMCheckpointSoloResume = function ( controller )
-	local menu, status, list = pageBase( "ZMCheckpointSoloResume", "SOLO RESUME",
-		"Select a checkpoint, then use OPTIONS or START." )
+	local menu, status = pageBase( "ZMCheckpointSoloResume", "SOLO RESUME",
+		"Select a checkpoint, then use OPTIONS or START.", nil, true )
+	-- OPTIONS and START sit below the slot grid and own the shared hint line.
+	local actions = CoD.ButtonList.new( { leftAnchor = true, rightAnchor = false,
+		left = 0, right = 600, topAnchor = true, bottomAnchor = false,
+		top = gridBottom(), bottom = gridBottom() + 3 * gridPitch() } )
+	menu:addElement( actions )
+	local grid = newSlotGrid( menu, actions.hintText )
 	local map = C.CurrentMap( false )
 	local focusedSlot
 	local selectedSlot -- chosen with Enter/click; OPTIONS and START act on this slot
@@ -317,7 +424,7 @@ LUI.createMenu.ZMCheckpointSoloResume = function ( controller )
 		menu.rightButtonPromptBar:removeAllChildren()
 		if visible then menu:addRightButtonPrompt( deletePrompt ) end
 	end
-	local watch, showDetails = attachSlotDetails( menu, list, function ( slot, meta )
+	local watch, showDetails = attachSlotDetails( menu, actions, function ( slot, meta )
 		focusedSlot = meta.has and slot or nil
 		setDeleteVisible( meta.has )
 	end )
@@ -332,19 +439,20 @@ LUI.createMenu.ZMCheckpointSoloResume = function ( controller )
 	end
 	local function build()
 		local anySaved = false
-		local focusIndex, savedCount = nil, 0
+		local firstSaved
+		local saved = {}
 		if selectedSlot and not C.SoloSlotMeta( map, selectedSlot ).has then selectedSlot = nil end
-		for slot = 1, 4 do
+		for slot = 1, C.SoloSlotCount do
 			local chosenSlot = slot
 			local meta = C.SoloSlotMeta( map, chosenSlot )
 			local title = "SLOT " .. chosenSlot .. (meta.has and (" - ROUND " .. meta.round) or " - EMPTY")
-			if selectedSlot == chosenSlot then title = title .. " - SELECTED" end
-			local button = list:addButton( title, slotHint( meta ) )
+			if selectedSlot == chosenSlot then title = "> " .. title end
+			local button = addGridButton( grid, chosenSlot, title, slotHint( meta ) )
 			watch( button, chosenSlot, meta )
 			if meta.has then
 				anySaved = true
-				savedCount = savedCount + 1
-				if selectedSlot == chosenSlot then focusIndex = savedCount end
+				saved[chosenSlot] = true
+				firstSaved = firstSaved or chosenSlot
 				button:setActionEventName( "zmcp_select_slot_" .. chosenSlot )
 				menu:registerEventHandler( "zmcp_select_slot_" .. chosenSlot, function ( owner )
 					if selectedSlot == chosenSlot then return end
@@ -357,8 +465,8 @@ LUI.createMenu.ZMCheckpointSoloResume = function ( controller )
 				button:disable()
 			end
 		end
-		local options = list:addButton( "OPTIONS", "Change the saved settings of the selected checkpoint." )
-		local start = list:addButton( "START", "Start the selected checkpoint." )
+		local options = actions:addButton( "OPTIONS", "Change the saved settings of the selected checkpoint." )
+		local start = actions:addButton( "START", "Start the selected checkpoint." )
 		options:setActionEventName( "zmcp_slot_options" )
 		start:setActionEventName( "zmcp_slot_start" )
 		hideDeleteOnFocus( options )
@@ -367,11 +475,23 @@ LUI.createMenu.ZMCheckpointSoloResume = function ( controller )
 			options:disable()
 			start:disable()
 		end
-		if anySaved then
-			list:processEvent( { name = "gain_focus" } )
-			if focusIndex and list.selectElementIndex then
-				pcall( function () list:selectElementIndex( focusIndex ) end )
+		linkGrid( grid )
+		-- Down from the last saved slot of each column reaches OPTIONS, and up
+		-- from OPTIONS returns to the lowest saved slot.
+		local lowestSaved
+		for slot = 1, C.SoloSlotCount do
+			if saved[slot] then lowestSaved = slot end
+		end
+		for column = 1, 2 do
+			local last
+			for slot = column, C.SoloSlotCount, 2 do
+				if saved[slot] then last = slot end
 			end
+			if last and grid.buttons[last].navigation then grid.buttons[last].navigation.down = options end
+		end
+		if lowestSaved and options.navigation then options.navigation.up = grid.buttons[lowestSaved] end
+		if anySaved then
+			focusGridSlot( grid, selectedSlot or firstSaved, function ( slot ) return saved[slot] end )
 		else
 			focusedSlot = nil
 			setDeleteVisible( false )
@@ -380,7 +500,8 @@ LUI.createMenu.ZMCheckpointSoloResume = function ( controller )
 	end
 	build()
 	local function rebuild()
-		list:removeAllButtons()
+		clearGrid( grid )
+		actions:removeAllButtons()
 		focusedSlot = nil
 		build()
 	end
@@ -481,7 +602,7 @@ end
 C.SoloOptionKeys = { "difficulty", "magic", "headshots", "assist", "cheats" }
 
 C.ApplySoloOptions = function ( controller, map, slot, values )
-	if C.SupportedMaps[map] == nil or slot < 1 or slot > 4 then return false end
+	if C.SupportedMaps[map] == nil or slot < 1 or slot > C.SoloSlotCount then return false end
 	local meta = C.SoloSlotMeta( map, slot )
 	if not meta.has then return false end
 	local out = {}
@@ -498,6 +619,18 @@ C.ApplySoloOptions = function ( controller, map, slot, values )
 	end
 	if values.perks ~= 0 and values.perks ~= 1 then return false end
 	out[ "zmcp_ovr_" .. map .. "_slot" .. slot .. "_perks" ] = values.perks
+	-- Run settings added later than the first options page are optional.
+	local function integer( value, maximum )
+		return type( value ) == "number" and value == math.floor( value ) and value >= 0 and value <= maximum
+	end
+	if values.healthcap ~= nil then
+		if not integer( values.healthcap, 255 ) then return false end
+		out[ "zmcp_ovr_" .. map .. "_slot" .. slot .. "_healthcap" ] = values.healthcap
+	end
+	if values.autosave ~= nil then
+		if not integer( values.autosave, C.SoloSlotCount ) then return false end
+		out[ "zmcp_ovr_" .. map .. "_slot" .. slot .. "_autosave" ] = values.autosave
+	end
 	for name, value in pairs( out ) do
 		Engine.Exec( controller, "seta " .. name .. " " .. value .. "\n" )
 		Engine.SetDvar( name, value )
@@ -537,6 +670,31 @@ LUI.createMenu.ZMCheckpointSoloOptions = function ( controller )
 		status:setText( "Older save: only unlimited perks can be changed." )
 	end
 	toggle( "perks", "UNLIMITED PERKS", "Allow every perk at once when this save is resumed.", meta.unlimited or 0 )
+	-- Run settings from MORE OPTIONS that make sense during a run. Settings that
+	-- only shape a new match (starting weapons, perk, points, opening) are not here.
+	-- They start from the lobby's current value, so applying without touching them
+	-- keeps what the lobby has.
+	local function clamp( value, maximum )
+		value = tonumber( value ) or 0
+		if value < 0 then return 0 end
+		if value > maximum then return maximum end
+		return math.floor( value )
+	end
+	Engine.SetDvar( "zmcp_edit_healthcap", meta.healthcap or clamp( C.DvarString( "zmcp_health_cap" ), 255 ) )
+	local healthcap = list:addDvarLeftRightSelector( controller, Engine.Localize( "ZOMBIE HEALTH CAP" ),
+		"zmcp_edit_healthcap", Engine.Localize( "Zombies stop getting tougher after this round (OFF = normal). Click to type 1-255." ), 220 )
+	for _, choice in ipairs( { { "OFF", 0 }, { "ROUND 20", 20 }, { "ROUND 30", 30 }, { "ROUND 40", 40 },
+		{ "ROUND 50", 50 }, { "ROUND 75", 75 }, { "ROUND 100", 100 } } ) do
+		healthcap:addChoice( controller, Engine.Localize( choice[1] ), choice[2] )
+	end
+	if C.AttachCustomHealthCap then pcall( C.AttachCustomHealthCap, healthcap ) end
+	Engine.SetDvar( "zmcp_edit_autosave", meta.autosave or clamp( C.DvarString( "zmcp_autosave" ), C.SoloSlotCount ) )
+	local autosave = list:addDvarLeftRightSelector( controller, Engine.Localize( "AUTOSAVE" ),
+		"zmcp_edit_autosave", Engine.Localize( "Save automatically when each round ends, into this slot (OFF = never)." ), 220 )
+	autosave:addChoice( controller, Engine.Localize( "OFF" ), 0 )
+	for number = 1, C.SoloSlotCount do
+		autosave:addChoice( controller, Engine.Localize( "SLOT " .. number ), number )
+	end
 	local apply = list:addButton( "APPLY CHANGES", "Store these settings for this checkpoint." )
 	local cancel = list:addButton( "CANCEL", "Leave this checkpoint's settings as they are." )
 	apply:setActionEventName( "zmcp_options_apply" )
@@ -544,7 +702,7 @@ LUI.createMenu.ZMCheckpointSoloOptions = function ( controller )
 	menu:registerEventHandler( "zmcp_options_cancel", function ( owner, event ) owner:goBack( event.controller or controller ) end )
 	menu:registerEventHandler( "zmcp_options_apply", function ( owner, event )
 		local read = function ( key ) return tonumber( C.DvarString( "zmcp_edit_" .. key ) ) end
-		local values = { perks = read( "perks" ) }
+		local values = { perks = read( "perks" ), healthcap = read( "healthcap" ), autosave = read( "autosave" ) }
 		for _, key in ipairs( C.SoloOptionKeys ) do values[key] = read( key ) end
 		if not C.ApplySoloOptions( controller, map, slot, values ) then
 			status:setText( "Those settings could not be stored." )
