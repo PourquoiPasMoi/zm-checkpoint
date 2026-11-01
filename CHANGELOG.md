@@ -13,7 +13,7 @@ semantics.
 - Files affected: `src/ui/ui/t6/menus/privateonlinegamelobby.lua`, `zmcheckpointloadout.lua`, `tools/Test-StartRound.lua`, `tools/Test-Loadout.lua`, `mod.json`, `README.md`, `CHANGELOG.md`, `PROJECT_HANDOFF.md`.
 - Validation: **Validated statically:** Build.ps1 passed; six T6 GSC parses; nine Lua suites pass (new cases: step, wheel, keyboard command, typed values, clamps, formatting). The same mechanism for the starting round is **verified in-game**; its reuse for points is **expected, not verified**.
 - Published: [GitHub release 0.4.38-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.38-alpha) (source commit `3e836dbc669aa7bdb73ff5c295ce68f23ead5315`; 166,430-byte ZIP, 20 entries, no saves/caches, SHA-256 `F00C98975DFB9F026B590A39471554E81351AD1DA3F246EA4CE833A67C3464DE`, matches GitHub). No local install was run.
-- In-game result: Not yet tested (0.4.37 backup also untested). **Expected, unverified:** the stock lobby passes the literal name `STARTING POINTS` to the selector constructor (if not, the row silently stays on the fixed list).
+- In-game result: **Verified in-game (owner, 2026-11-01): typed STARTING POINTS "is working"**, so the lobby does pass the literal row name to the selector (0.4.37 backup still untested). Original expectation: the stock lobby passes the literal name `STARTING POINTS` to the selector constructor (if not, the row silently stays on the fixed list).
 - Remaining risk/next step: owner to click STARTING POINTS, type an amount, start a match and compare the score.
 
 ## 0.4.37-alpha — 2026-11-01
