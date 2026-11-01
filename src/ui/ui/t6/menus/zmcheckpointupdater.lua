@@ -9,6 +9,18 @@ local nextRequestId = function ( controller )
 	-- watcher accepts digit-only IDs, so format both parts as fixed decimals.
 	return string.format( "%09.0f%06.0f", math.random( 100000000, 999999999 ), C.UpdateRequestCounter )
 end
+-- The game writes console_zm.log in 4 KB blocks, so a ~50 byte request marker
+-- can sit unseen in its buffer for a minute while the menu is idle. Printing
+-- well over 4 KB of harmless unknown-command lines right after the marker makes
+-- the game write the block, and the marker with it, immediately.
+C.FlushConsoleLog = function ( controller )
+	local line = "zmcp_log_flush_padding_zmcp_log_flush_padding_zmcp_log_flush_pad"
+	for batch = 1, 6 do
+		local lines = {}
+		for i = 1, 20 do lines[i] = line end
+		Engine.Exec( controller, table.concat( lines, "\n" ) .. "\n" )
+	end
+end
 local requestUpdateCheck = function ( controller )
 	local requestId = nextRequestId( controller )
 	C.PendingUpdateRequestId = requestId
@@ -16,6 +28,7 @@ local requestUpdateCheck = function ( controller )
 	Engine.SetDvar( "zmcp_update_version", "" )
 	-- T6 logs an unknown command; echo itself is unsupported here.
 	Engine.Exec( controller, "zmcp_update_request_20261028_" .. requestId .. "\n" )
+	C.FlushConsoleLog( controller )
 	return requestId
 end
 
@@ -284,6 +297,7 @@ LUI.createMenu.ZMCheckpointUpdaterInfo = function ( controller )
 		status:setText( "Installing update..." )
 		body:setText( "Downloading and installing..." )
 		Engine.Exec( controller, "zmcp_update_install_20261028_" .. menu.zmcpRequestId .. "\n" )
+		C.FlushConsoleLog( controller )
 	end )
 	menu:registerEventHandler( "zmcp_update_later", function () menu:goBack() end )
 	menu:registerEventHandler( "zmcp_update_back", function () menu:goBack() end )
