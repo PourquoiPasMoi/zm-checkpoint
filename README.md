@@ -2,7 +2,7 @@
 
 Experimental save and resume checkpoints for Call of Duty: Black Ops II Zombies on Plutonium T6.
 
-The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.30-alpha). Download `zm_checkpoint-0.4.30-alpha.zip` and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
+The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.31-alpha). Download `zm_checkpoint-0.4.31-alpha.zip` and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
 
 The source, build scripts, test guidance, and project history are in this repository. The user-facing setup and feature details live in [README.md](README.md); contributors should read [AGENTS.md](AGENTS.md) and [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md) first.
 
@@ -114,6 +114,11 @@ faster unpacking, and a 100 ms companion poll. The speedup applies from the
 update after this one (the updater scripts come from the installed version). The
 page now shows seconds spent waiting for the companion, and
 `%TEMP%\zmcp_update_timing.log` records each step with timestamps.
+Version 0.4.31-alpha fixes the long wait for the update companion. The game writes its
+console log in 4 KB blocks, so a small update request could sit unseen for about a minute;
+the updater page now prints enough harmless console lines after each request to write it out at
+once. The speedup applies from the update after this one, because the page code comes from the
+installed version.
 Version 0.4.30-alpha simplifies the starting loadout rows under UNLIMITED PERKS in
 Custom Games: **STARTING WEAPONS** (NONE, 1 or 2 random weapons from the selected map's
 normal wall-buy and Mystery Box guns; with two, the M1911 is replaced) and **STARTING

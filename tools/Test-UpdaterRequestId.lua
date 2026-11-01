@@ -10,11 +10,24 @@ dofile( "src/ui/ui/t6/menus/zmcheckpointupdater.lua" )
 local menu = { openPopup = function () end }
 
 local function request()
+	commands = {}
 	CoD.ZMCheckpointMenu.OpenUpdater( menu, { controller = 0 } )
-	local marker = commands[#commands]
-	local id = marker:match( "^zmcp_update_request_20261028_(%d+)\n$" )
+	local at
+	for i, command in ipairs( commands ) do
+		if command:find( "^zmcp_update_request_" ) then at = i end
+	end
+	assert( at, "marker not sent" )
+	local id = commands[at]:match( "^zmcp_update_request_20261028_(%d+)\n$" )
 	assert( id and #id == 15, "request marker must contain exactly 15 digits" )
 	assert( id == CoD.ZMCheckpointMenu.PendingUpdateRequestId )
+	-- Padding after the marker must exceed the game's 4 KB log block, and must
+	-- never contain another marker.
+	local padding = 0
+	for i = at + 1, #commands do
+		assert( not commands[i]:find( "zmcp_update_", 1, true ), "padding must not look like a marker" )
+		padding = padding + #commands[i]
+	end
+	assert( padding >= 4096 * 1.5, "log flush padding too small: " .. padding )
 	return id
 end
 

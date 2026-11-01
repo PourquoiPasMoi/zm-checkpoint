@@ -12,7 +12,7 @@ failure, installation, or test so the project retains its lessons.
 
 - Project: **ZM Checkpoint** for Call of Duty: Black Ops II Zombies on Plutonium T6.
 - Workspace: `C:\Users\User\Documents\Projects\Bo2 Zombie Plutonium`
-- Current source/package: **0.4.30-alpha** (random loadout, section 41; previously 0.4.29-alpha (faster updater, section 40; previously 0.4.28-alpha (starting loadout, section 39; previously 0.4.27-alpha (custom starting round, section 38; previously 0.4.26-alpha (CO-OP RESUME redesign, section 37; previously 0.4.25-alpha (select, OPTIONS and START flow, section 34; 0.4.24 added per-save OPTIONS, section 33; 0.4.23 added solo save deletion, section 32); latest published: **0.4.30-alpha**; installed locally: **0.4.24-alpha**; locally installed: **0.4.21-alpha**. Older note follows: locally installed metadata was **0.4.20-alpha**. GitHub publication status is recorded in section 30. No project installer was run for 0.4.21.
+- Current source/package: **0.4.31-alpha** (updater log-flush fix, section 42; previously 0.4.30-alpha (random loadout, section 41; previously 0.4.29-alpha (faster updater, section 40; previously 0.4.28-alpha (starting loadout, section 39; previously 0.4.27-alpha (custom starting round, section 38; previously 0.4.26-alpha (CO-OP RESUME redesign, section 37; previously 0.4.25-alpha (select, OPTIONS and START flow, section 34; 0.4.24 added per-save OPTIONS, section 33; 0.4.23 added solo save deletion, section 32); latest published: **0.4.30-alpha**; installed locally: **0.4.24-alpha**; locally installed: **0.4.21-alpha**. Older note follows: locally installed metadata was **0.4.20-alpha**. GitHub publication status is recorded in section 30. No project installer was run for 0.4.21.
 - Current date of this handoff: **2026-11-01** (latest session notes: section 35; planned next task: section 36; sections 31 to 36 sit newest-first above section 30)
 - The project is a Git repository with public origin `https://github.com/PourquoiPasMoi/zm-checkpoint`.
 - The standalone mod and companion packages are installed locally.
@@ -1299,6 +1299,12 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   0.4.15-alpha. All four task-start checkpoint hashes listed above still
   match after publication. Unload/reload the mod after using the updater;
   Plutonium itself does not need restarting.
+
+## 42. 0.4.31-alpha updater log-flush fix — 2026-11-01
+
+- **Root cause of the 40 s wait (verified):** the game buffers `console_zm.log` in about 4 KB blocks; the request marker (the only game-to-PC channel) is a small line, so it was written late. Evidence: the owner's 0.4.29 timing log (workers took 0.7 s and 2.6 s; markers seen 57 s apart) and direct sampling of the log growing in 4.1 KB steps. This also explains why the earlier section 40 guess about PC-side work was incomplete: the PC side was already fast.
+- **Fix:** `C.FlushConsoleLog` pads the console with about 7.8 KB of harmless unknown commands after each marker. Unverified in-game; if the padding is not echoed to the log, an alternative is a command that writes a file synchronously (candidates unverified: `writeconfig`, `condump`).
+- **Do not undo:** reducing console output (for example fewer status lines) makes the buffer flush *slower*, so the padding is intentional.
 
 ## 41. 0.4.30-alpha random loadout — 2026-11-01
 

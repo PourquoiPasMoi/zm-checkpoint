@@ -4,6 +4,17 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.31-alpha — 2026-11-01
+
+### 2026-11-01 — Fix the 40-second wait for the update companion (Claude Code)
+
+- Request: after pressing install the owner waited 42 to 43 s ("Waiting for the update companion... 30s" on screen) before the download started and asked whether that is normal.
+- Change or investigation: **Verified from the new timing log (`%TEMP%\zmcp_update_timing.log`, owner's 0.4.29 session):** the install worker took about 2.6 s from `install marker seen` (14:16:10.164) to `install finished` (14:16:12.787), and the check worker about 0.7 s, so all the waiting is the request marker reaching the watcher (check marker seen 14:15:13, install marker seen 14:16:10, nothing in between). **Verified by sampling `console_zm.log` while the game ran:** the game writes it in blocks of about 4.1 KB (four consecutive growths of 4,191, 4,179, 4,149 and 4,186 bytes, then one large dump) and nothing in between, so a roughly 50-byte marker waits in the game's buffer until about 4 KB of other console output arrives. **Fix:** `zmcheckpointupdater.lua` adds `C.FlushConsoleLog`, which sends six commands of 20 identical long unknown-command lines (about 7.8 KB of command text) right after the check marker and right after the install marker, so the block containing the marker is written immediately. The padding contains no `zmcp_update_` text, so it can never be mistaken for a marker. `tools/Test-UpdaterRequestId.lua` now finds the marker among the commands and asserts at least 6 KB of padding follows it.
+- Files affected: `src/ui/ui/t6/menus/zmcheckpointupdater.lua`, `tools/Test-UpdaterRequestId.lua`, `mod.json`, `README.md`, `CHANGELOG.md`, `PROJECT_HANDOFF.md`.
+- Validation: **Validated statically:** Build.ps1 passed; six T6 GSC parses; luaparse; all eight Lua suites pass. The padding's effect on the real log is **expected, not verified in-game**: it assumes each unknown command prints at least its own text to the log (the request marker itself is detected that way).
+- In-game result: Not yet tested. The page code comes from the installed IWD, so the first update to 0.4.31 still uses the old 0.4.30 page and may wait as before; the next update after it should show the difference.
+- Remaining risk/next step: after installing 0.4.31 and unloading/reloading the mod, open the updater again. The marker lines in `zmcp_update_timing.log` should follow the click within about a second. If the wait persists, check the log growth again (the padding should cause an immediate growth of 4 KB or more).
+
 ## 0.4.30-alpha — 2026-11-01
 
 ### 2026-11-01 — Random starting weapons and a single random perk (Claude Code)
