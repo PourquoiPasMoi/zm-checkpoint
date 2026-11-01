@@ -1300,6 +1300,11 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   match after publication. Unload/reload the mod after using the updater;
   Plutonium itself does not need restarting.
 
+## 45. 0.4.34-alpha debris fix — 2026-11-01
+
+- **Verified in-game (owner screenshot, 0.4.33):** the STARTING POINTS and OPENING rows show and fit; POWER + DOORS opened the doors but not the debris. **Cause:** forced debris triggers still charge the cost (stock `debris_think` and Nuketown's `custom_debris_function`). **Fix:** `zmcp_open_all_doors` holds the `zombie_unlock_all` dvar at 1 during the opening (restored after, or on `end_game`), runs three passes and waits after power. See the 0.4.34 CHANGELOG entry. **Lesson:** a `force` notify only skips the use-button check and the door cost; debris needs the unlock-all dvar.
+- Fix not yet verified in-game. Do not remove the dvar hold or the repeat passes.
+
 ## 44. 0.4.33-alpha starting points and opening — 2026-11-01
 
 - Lobby rows **STARTING POINTS** (`zmcp_start_points`, fixed list DEFAULT to 1,000,000) and **OPENING** (`zmcp_start_world`: 1 power, 2 doors/debris, 3 both). Points are applied in `zmcp_custom_levelvars_override` (after the custom round rule, so they win); opening runs in `zmcp_starting_world` after `initial_blackscreen_passed` + 1 s using the stock force-notify on `zombie_door` and `zombie_debris` (airlock triggers are not included). Fresh matches only. Details in the 0.4.33 CHANGELOG entry.

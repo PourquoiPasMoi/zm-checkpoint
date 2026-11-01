@@ -4,6 +4,17 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.34-alpha — 2026-11-01
+
+### 2026-11-01 — Fix debris not clearing with OPENING (Claude Code)
+
+- Request: owner's 0.4.33 test on Nuketown (screenshot, POWER + DOORS, 500 points): doors opened but debris stayed ("Hold F to clear Debris (Cost: 1250)"); make sure it is removed on all maps.
+- Change or investigation: **Root cause (from the stock source in `.cache`):** the stock door handler returns early for a forced trigger, but `debris_think` (and Nuketown's own `custom_debris_function` in `zm_nuked.gsc`) still tests `who.score >= cost` after a forced trigger and denies the purchase when the player cannot afford it (500 points against 1250). All six maps use the shared `_zm_blockers.gsc` debris handler; only Nuketown adds a custom one, and both honour the same free-purchase dvar that the stock `open_sesame` debug command sets (`zombie_unlock_all`). **Fix:** `zmcp_open_all_doors` now raises `zombie_unlock_all` to 1 while it sends the triggers and restores the previous value afterwards (also on `end_game`, via `zmcp_unlock_all_restore`), makes three passes one second apart so triggers that were not listening yet are caught, skips entities deleted meanwhile, and POWER + DOORS waits one second after setting the power so power-gated doors and Nuketown's electric debris are listening before they are triggered. Static review of the other maps found no extra blockers: Transit's local/electric doors carry `power_door_ignore_flag_wait` (already notified), Buried and Die Rise notify `electric_door` from their own power scripts, Origins and Mob of the Dead use the shared handlers. **Known limitation:** DOORS OPEN without POWER leaves doors that are power-gated by the map shut (use POWER + DOORS); `zombie_airlock_buy` triggers have no handler in this game version and are not used.
+- Files affected: `src/scripts/zm/zm_checkpoint_slots.gsc`, `mod.json`, `CHANGELOG.md`, `PROJECT_HANDOFF.md`.
+- Validation: **Validated statically:** Build.ps1 passed; six T6 GSC parses; nine Lua suites pass. The 0.4.33 lobby screenshot **verified in-game** that the new rows STARTING POINTS and OPENING appear and fit (owner: "crowded but okay") and that doors open with POWER + DOORS. Debris removal after this fix is **expected, not verified in-game**.
+- In-game result: 0.4.33: doors opened, debris did not (the bug above). 0.4.34: not yet tested.
+- Remaining risk/next step: owner to test POWER + DOORS at default points on Nuketown and one more map (Transit or Origins); report any door or debris that stays.
+
 ## 0.4.33-alpha — 2026-11-01
 
 ### 2026-11-01 — Starting points and opening (power/doors) rows (Claude Code)
