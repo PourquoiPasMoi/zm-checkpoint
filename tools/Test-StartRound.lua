@@ -108,4 +108,24 @@ typedPoints( "99999999" ); assert( pts.text == "1,000,000" and dvars.zmcp_start_
 typedPoints( "0" ); assert( pts.text == "DEFAULT" and dvars.zmcp_start_points == 0 )
 typedPoints( "12abc" ); typedPoints( "-5" ); typedPoints( "" ); assert( pts.text == "DEFAULT" )
 assert( C.FormatStartPoints( 250 ) == "250" and C.FormatStartPoints( 1000 ) == "1,000" )
-print( "PASS: custom starting round row relabelled, stepped, wheel, typed input and 1-255 clamps; typed STARTING POINTS row" )
+
+-- ZOMBIE HEALTH CAP: typed or stepped round, 0 means OFF.
+C.HealthCapMax = 255
+local cap = CoD.LeftRightSelector.new( "ZOMBIE HEALTH CAP", "stock" )
+assert( cap.zmcpCustomHealth and cap.name == "ZOMBIE HEALTH CAP" and cap.text == "OFF" )
+cap:updateChoice(); cap:cycle()
+assert( cap.text == "OFF", "choice building must not move the value" )
+cap:cycle( true, true ); cap:cycle( true, true )
+assert( cap.text == "ROUND 10" and dvars.zmcp_health_cap == 10 )
+cap:cycle( nil, true ); cap:cycle( nil, true ); cap:cycle( nil, true )
+assert( cap.text == "OFF" and dvars.zmcp_health_cap == 0, "never below OFF" )
+cap:handleGamepadButton( { qualifier = "mwheel", down = true, button = "up" } )
+assert( cap.text == "ROUND 5" )
+cap.handlers.button_action( cap, { controller = 0 } )
+assert( execs[#execs]:find( "ui_keyboard_new 7 ", 1, true ) and execs[#execs]:find( "\"5\" 3", 1, true ) )
+local typedCap = function ( text ) cap.handlers.ui_keyboard_input( cap, { type = 7, input = text } ) end
+typedCap( "50" ); assert( cap.text == "ROUND 50" and dvars.zmcp_health_cap == 50 )
+typedCap( "999" ); assert( cap.text == "ROUND 255" and dvars.zmcp_health_cap == 255, "clamped to 255" )
+typedCap( "0" ); assert( cap.text == "OFF" and dvars.zmcp_health_cap == 0 )
+typedCap( "12abc" ); typedCap( "-5" ); typedCap( "" ); assert( cap.text == "OFF" )
+print( "PASS: custom starting round row relabelled, stepped, wheel, typed input and 1-255 clamps; typed STARTING POINTS and ZOMBIE HEALTH CAP rows" )

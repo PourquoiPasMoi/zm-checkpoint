@@ -67,6 +67,8 @@ main()
 
     if ( !level.zmcp_coop_loading && !level.zmcp_loading )
         zmcp_apply_custom_start_round();
+
+    zmcp_apply_health_cap();
 }
 
 init()
