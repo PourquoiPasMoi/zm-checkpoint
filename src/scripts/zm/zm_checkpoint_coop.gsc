@@ -49,17 +49,112 @@ zmcp_coop_settings()
     return "" + getgametypesetting( "zmDifficulty" ) + "/" + getgametypesetting( "magic" ) + "/" + getgametypesetting( "headshotsonly" );
 }
 
-zmcp_coop_base()
+zmcp_coop_slot_valid( slot )
 {
-    return "zm_checkpoint_coop_" + level.zmcp_map;
+    return slot >= 1 && slot <= 4;
+}
+
+// Session 1 keeps the original co-op filenames so existing saves stay valid.
+zmcp_coop_base( slot )
+{
+    base = "zm_checkpoint_coop_" + level.zmcp_map;
+    if ( slot > 1 )
+        base += "_s" + slot;
+    return base;
+}
+
+zmcp_coop_prefix( slot )
+{
+    return "zmcp_coop_" + level.zmcp_map + "_s" + slot + "_";
+}
+
+zmcp_coop_override_prefix( slot )
+{
+    return "zmcp_ovr_coop_" + level.zmcp_map + "_s" + slot + "_";
+}
+
+zmcp_coop_tombstone( slot )
+{
+    return "zmcp_del_coop_" + level.zmcp_map + "_s" + slot;
+}
+
+// The lobby cannot delete files. CO-OP RESUME's DEL sets an archived tombstone;
+// the next map load overwrites only that session's two generation files with
+// EMPTY. The consumption receipt is a counter, not a save, and is left alone.
+zmcp_apply_coop_deletes()
+{
+    for ( slot = 1; slot <= 4; slot++ )
+    {
+        tombstone = zmcp_coop_tombstone( slot );
+        if ( !getdvarint( tombstone ) )
+            continue;
+        done = 1;
+        names = array( "_a.sav", "_b.sav" );
+        for ( i = 0; i < names.size; i++ )
+        {
+            file = fs_fopen( zmcp_coop_base( slot ) + names[i], "write" );
+            if ( !isdefined( file ) )
+            {
+                done = 0;
+                continue;
+            }
+            fs_writeline( file, "EMPTY" );
+            fs_fclose( file );
+        }
+        if ( !done )
+        {
+            println( "ZMCP COOP: could not delete session " + slot + "; it stays hidden until the next map load." );
+            continue;
+        }
+        zmcp_coop_clear_overrides( slot );
+        cmdexec( "seta " + tombstone + " 0" );
+        println( "ZMCP COOP: deleted session " + slot + " as requested from CO-OP RESUME." );
+    }
+}
+
+zmcp_coop_clear_overrides( slot )
+{
+    prefix = zmcp_coop_override_prefix( slot );
+    setdvar( prefix + "set", "0" );
+    setdvar( prefix + "perks", "-1" );
+    cmdexec( "seta " + prefix + "set 0" );
+    cmdexec( "seta " + prefix + "perks -1" );
+}
+
+// A valid override changes only the in-memory checkpoint. Any bad value ignores
+// the whole override and keeps the saved settings. Cheats/assist are not part
+// of co-op saves, so the lobby applies those at launch.
+zmcp_coop_apply_overrides( slot, checkpoint )
+{
+    if ( !isdefined( checkpoint ) )
+        return;
+    prefix = zmcp_coop_override_prefix( slot );
+    if ( getdvar( prefix + "set" ) != "1" )
+        return;
+    difficulty = getdvar( prefix + "difficulty" );
+    magic = getdvar( prefix + "magic" );
+    headshots = getdvar( prefix + "headshots" );
+    if ( ( difficulty != "0" && difficulty != "1" && difficulty != "2" ) || ( magic != "0" && magic != "1" ) || ( headshots != "0" && headshots != "1" ) )
+    {
+        println( "ZMCP COOP: ignored invalid settings override for session " + slot );
+        return;
+    }
+    checkpoint.settings = difficulty + "/" + magic + "/" + headshots;
 }
 
 zmcp_coop_init()
 {
-    level.zmcp_coop = zmcp_coop_latest();
-    zmcp_coop_publish();
+    level.zmcp_coop_slot = 0;
+    zmcp_apply_coop_deletes();
+    for ( slot = 1; slot <= 4; slot++ )
+    {
+        checkpoint = zmcp_coop_latest( slot );
+        zmcp_coop_apply_overrides( slot, checkpoint );
+        zmcp_coop_publish( slot, checkpoint );
+    }
     if ( !getdvarint( "zmcp_coop_autoload" ) )
         return;
+    selected = getdvarint( "zmcp_coop_slot" );
     setdvar( "zmcp_coop_autoload", "0" );
     setdvar( "zmcp_autoload", "0" );
     // An invalid request must fail closed, not start a fresh playable match.
@@ -67,6 +162,12 @@ zmcp_coop_init()
     level.zmcp_loading = 1;
     level.zmcp_busy = 1;
     replacefunc( getfunction( "maps/mp/zombies/_zm", "round_think" ), ::zmcp_coop_round_gate, -1 );
+    if ( zmcp_coop_slot_valid( selected ) )
+    {
+        level.zmcp_coop_slot = selected;
+        level.zmcp_coop = zmcp_coop_latest( selected );
+        zmcp_coop_apply_overrides( selected, level.zmcp_coop );
+    }
     if ( isdefined( level.zmcp_coop ) && !zmcp_coop_used( level.zmcp_coop ) )
     {
         level.zmcp_pending = level.zmcp_coop;
@@ -90,44 +191,78 @@ zmcp_coop_round_gate( restart )
     [[ original ]]( restart );
 }
 
-zmcp_coop_latest()
+zmcp_coop_latest( slot )
 {
-    a = zmcp_coop_read( zmcp_coop_base() + "_a.sav" );
-    b = zmcp_coop_read( zmcp_coop_base() + "_b.sav" );
-    if ( !isdefined( a ) )
-        return b;
-    if ( !isdefined( b ) || a.generation > b.generation )
-        return a;
-    return b;
+    a = zmcp_coop_read( zmcp_coop_base( slot ) + "_a.sav" );
+    b = zmcp_coop_read( zmcp_coop_base( slot ) + "_b.sav" );
+    latest = b;
+    if ( isdefined( a ) && ( !isdefined( b ) || a.generation > b.generation ) )
+        latest = a;
+    if ( isdefined( latest ) )
+        latest.slot = slot;
+    return latest;
 }
 
-zmcp_coop_used( checkpoint )
+// Returns the consumed generation: 0 when there is no receipt, -1 when the
+// receipt is damaged (uncertain, so callers must fail closed).
+zmcp_coop_receipt( slot )
 {
-    path = zmcp_coop_base() + "_used.sav";
+    path = zmcp_coop_base( slot ) + "_used.sav";
     if ( !fs_testfile( path ) )
         return 0;
     file = fs_fopen( path, "read" );
     if ( !isdefined( file ) )
-        return 1;
+        return -1;
     line = fs_readline( file );
     ending = fs_readline( file );
     fs_fclose( file );
-    // A damaged receipt is uncertain: do not allow an already used generation.
     if ( !isdefined( line ) || !isdefined( ending ) || ending != "END" )
-        return 1;
+        return -1;
     fields = strtok( line, "," );
     if ( fields.size != 2 || fields[0] != "USED" )
-        return 1;
-    return int( fields[1] ) >= checkpoint.generation;
+        return -1;
+    return int( fields[1] );
 }
 
-zmcp_coop_publish()
+zmcp_coop_used( checkpoint )
 {
-    prefix = "zmcp_coop_" + level.zmcp_map + "_";
-    checkpoint = level.zmcp_coop;
-    cmdexec( "seta " + prefix + "has 0" );
-    if ( !isdefined( checkpoint ) || zmcp_coop_used( checkpoint ) )
-        return;
+    used = zmcp_coop_receipt( checkpoint.slot );
+    if ( used < 0 )
+        return 1;
+    return used >= checkpoint.generation;
+}
+
+zmcp_coop_name( name )
+{
+    out = "";
+    for ( i = 0; i < name.size && out.size < 16; i++ )
+        if ( issubstr( "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-", name[i] ) )
+            out += name[i];
+    return out;
+}
+
+// Console-safe display token: attachments after '+' are dropped, anything else
+// outside the token set becomes "unknown".
+zmcp_display_token( value )
+{
+    plus = 0;
+    for ( i = 0; i < value.size; i++ )
+    {
+        if ( value[i] == "+" )
+        {
+            plus = i;
+            break;
+        }
+    }
+    if ( plus > 0 )
+        value = getsubstr( value, 0, plus );
+    if ( !zmcp_coop_token( value ) )
+        return "unknown";
+    return value;
+}
+
+zmcp_coop_publish_summary( prefix, checkpoint )
+{
     ids = "";
     for ( i = 0; i < checkpoint.members.size; i++ )
     {
@@ -143,7 +278,72 @@ zmcp_coop_publish()
     cmdexec( "seta " + prefix + "location " + checkpoint.location );
     cmdexec( "seta " + prefix + "mod " + checkpoint.mod );
     cmdexec( "seta " + prefix + "settings " + checkpoint.settings );
+}
+
+zmcp_coop_publish( slot, checkpoint )
+{
+    prefix = zmcp_coop_prefix( slot );
+    legacy = "zmcp_coop_" + level.zmcp_map + "_";
+    cmdexec( "seta " + prefix + "has 0" );
+    if ( slot == 1 )
+        cmdexec( "seta " + legacy + "has 0" );
+    if ( !isdefined( checkpoint ) || zmcp_coop_used( checkpoint ) )
+    {
+        zmcp_coop_clear_overrides( slot );
+        return;
+    }
+    zmcp_coop_publish_summary( prefix, checkpoint );
+    // Older UI packages read the pre-0.4.26 names for the first session.
+    if ( slot == 1 )
+        zmcp_coop_publish_summary( legacy, checkpoint );
+    cmdexec( "seta " + prefix + "count " + checkpoint.members.size );
+    for ( i = 0; i < checkpoint.members.size; i++ )
+    {
+        member = checkpoint.members[i];
+        mp = prefix + "m" + i + "_";
+        weapons = "";
+        for ( w = 0; w < member.weapons.size && w < 4; w++ )
+        {
+            if ( w > 0 )
+                weapons += ",";
+            weapons += zmcp_display_token( member.weapons[w]["name"] );
+        }
+        perks = "";
+        for ( p = 0; p < member.perks.size && p < 12; p++ )
+        {
+            if ( p > 0 )
+                perks += ",";
+            perks += zmcp_display_token( member.perks[p] );
+        }
+        if ( weapons == "" )
+            weapons = "-";
+        if ( perks == "" )
+            perks = "-";
+        cmdexec( "seta " + mp + "pts " + member.score );
+        cmdexec( "seta " + mp + "w " + weapons );
+        cmdexec( "seta " + mp + "p " + perks );
+    }
     cmdexec( "seta " + prefix + "has 1" );
+    if ( slot == 1 )
+        cmdexec( "seta " + legacy + "has 1" );
+}
+
+// First slot with no usable files, then the first consumed one. A live session
+// is never chosen, so Save & Exit cannot overwrite it.
+zmcp_coop_free_slot()
+{
+    for ( pass = 0; pass < 2; pass++ )
+    {
+        for ( slot = 1; slot <= 4; slot++ )
+        {
+            checkpoint = zmcp_coop_latest( slot );
+            if ( pass == 0 && !isdefined( checkpoint ) )
+                return slot;
+            if ( pass == 1 && isdefined( checkpoint ) && zmcp_coop_used( checkpoint ) )
+                return slot;
+        }
+    }
+    return 0;
 }
 
 zmcp_coop_context( checkpoint )
@@ -241,14 +441,31 @@ zmcp_coop_save( host, exit_after_save )
         host iprintlnbold( "^1Unsupported map or mod identifier" );
         return;
     }
-    previous = zmcp_coop_latest();
-    generation = 1;
-    target = zmcp_coop_base() + "_a.sav";
+    // A resumed session saves back into itself; a fresh match takes a free slot.
+    slot = level.zmcp_coop_slot;
+    if ( !zmcp_coop_slot_valid( slot ) )
+        slot = zmcp_coop_free_slot();
+    if ( !zmcp_coop_slot_valid( slot ) )
+    {
+        host iprintlnbold( "^1All 4 co-op sessions hold saves - delete one in CO-OP RESUME" );
+        return;
+    }
+    receipt_generation = zmcp_coop_receipt( slot );
+    if ( receipt_generation < 0 )
+    {
+        host iprintlnbold( "^1Team save blocked: the session receipt is damaged" );
+        println( "ZMCP COOP: save blocked; damaged receipt for session " + slot );
+        return;
+    }
+    previous = zmcp_coop_latest( slot );
+    generation = receipt_generation + 1;
+    target = zmcp_coop_base( slot ) + "_a.sav";
     if ( isdefined( previous ) )
     {
-        generation = previous.generation + 1;
+        if ( previous.generation >= generation )
+            generation = previous.generation + 1;
         if ( previous.path == target )
-            target = zmcp_coop_base() + "_b.sav";
+            target = zmcp_coop_base( slot ) + "_b.sav";
     }
     if ( generation < 1 || generation > 2000000000 )
         return;
@@ -290,9 +507,19 @@ zmcp_coop_save( host, exit_after_save )
     success = isdefined( saved ) && saved.generation == generation && zmcp_coop_roster( saved, 1 );
     if ( success )
     {
+        saved.slot = slot;
         level.zmcp_coop = saved;
+        level.zmcp_coop_slot = slot;
         level.zmcp_coop_owner = saved.host;
-        zmcp_coop_publish();
+        // A new generation replaces any earlier per-session option overrides.
+        zmcp_coop_clear_overrides( slot );
+        for ( i = 0; i < players.size; i++ )
+        {
+            name = zmcp_coop_name( players[i].name );
+            if ( name != "" )
+                cmdexec( "seta zmcp_coop_name_" + zmcp_coop_id( players[i] ) + " " + name );
+        }
+        zmcp_coop_publish( slot, saved );
         iprintlnbold( "^2Team checkpoint saved - round " + saved.round );
     }
     else
@@ -377,7 +604,7 @@ zmcp_coop_restore()
         zmcp_coop_abort( "team changed before completion" );
         return;
     }
-    receipt = fs_fopen( zmcp_coop_base() + "_used.sav", "write" );
+    receipt = fs_fopen( zmcp_coop_base( checkpoint.slot ) + "_used.sav", "write" );
     if ( !isdefined( receipt ) )
     {
         zmcp_coop_abort( "could not commit consumption receipt" );
@@ -387,7 +614,7 @@ zmcp_coop_restore()
     fs_writeline( receipt, "END" );
     fs_fclose( receipt );
     // Validate exact receipt, not the fail-closed 'used' result for damaged I/O.
-    receipt = fs_fopen( zmcp_coop_base() + "_used.sav", "read" );
+    receipt = fs_fopen( zmcp_coop_base( checkpoint.slot ) + "_used.sav", "read" );
     if ( !isdefined( receipt ) )
     {
         zmcp_coop_abort( "could not verify consumption receipt" );
@@ -402,7 +629,7 @@ zmcp_coop_restore()
         return;
     }
     level.zmcp_coop_owner = checkpoint.host;
-    zmcp_coop_publish();
+    zmcp_coop_publish( checkpoint.slot, checkpoint );
     level.zmcp_coop_ready = 1;
     level.zmcp_busy = 0;
     for ( i = 0; i < players.size; i++ )

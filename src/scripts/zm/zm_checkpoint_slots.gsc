@@ -146,22 +146,15 @@ zmcp_solo_publish( slot, checkpoint )
     cmdexec( "seta " + prefix + "weapons " + count );
     for ( i = 0; i < count; i++ )
     {
-        name = checkpoint.weapons[i]["name"];
-        if ( zmcp_coop_token( name ) )
-            cmdexec( "seta " + prefix + "weapon" + i + " " + name );
-        else
-            cmdexec( "seta " + prefix + "weapon" + i + " unknown" );
+        // Attachments after '+' are dropped so the preview can name the weapon.
+        cmdexec( "seta " + prefix + "weapon" + i + " " + zmcp_display_token( checkpoint.weapons[i]["name"] ) );
     }
     count = checkpoint.perks.size;
     if ( count > 12 ) count = 12;
     cmdexec( "seta " + prefix + "perks " + count );
     for ( i = 0; i < count; i++ )
     {
-        name = checkpoint.perks[i];
-        if ( zmcp_coop_token( name ) )
-            cmdexec( "seta " + prefix + "perk" + i + " " + name );
-        else
-            cmdexec( "seta " + prefix + "perk" + i + " unknown" );
+        cmdexec( "seta " + prefix + "perk" + i + " " + zmcp_display_token( checkpoint.perks[i] ) );
     }
     cmdexec( "seta " + prefix + "preview 1" );
     if ( !isdefined( checkpoint.settings ) )

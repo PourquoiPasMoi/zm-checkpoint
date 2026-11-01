@@ -67,8 +67,12 @@ host/player IDs, party order, and observed before/after inventory for failures.
   this receipt. A damaged receipt deliberately locks Resume and needs manual
   investigation; the full snapshots remain available. This is not an OS-level
   atomic transaction or protection against deliberate editing of local files.
-- One active co-op checkpoint per physical map per loaded host mod. A successful
-  new save replaces the offered co-op run for that map. Solo format-3 slots are
+- Up to four co-op sessions per physical map per loaded host mod (0.4.26).
+  Session 1 keeps `zm_checkpoint_coop_<map>_a/_b/_used.sav`; sessions 2 to 4 use
+  `zm_checkpoint_coop_<map>_sN_a/_b/_used.sav`. A resumed session saves back into
+  itself; a fresh match takes the first free slot and never replaces a live one.
+  DEL uses tombstone `zmcp_del_coop_<map>_sN`, which overwrites only that
+  session's `_a`/`_b` with `EMPTY` on the next map load. Solo format-3 slots are
   untouched and retain their original one-player save/restore path.
 - 2–4 players, Classic/Survival, listen host only. Dedicated servers, split-screen
   identity, host migration, competitive modes, and custom round-controller
@@ -102,3 +106,16 @@ host/player IDs, party order, and observed before/after inventory for failures.
   differ, use RESTORE SAVED SETTINGS, verify the displayed difficulty, Magic,
   and Headshots Only choices, then try Resume with the same lobby. Never edit
   the host `.sav` to bypass a context mismatch.
+
+## 0.4.26 CO-OP RESUME page checks (two PCs, not yet run)
+
+1. Save & Exit as host (round 2+), return to the lobby: CO-OP RESUME lists the
+   session with players, points, weapons and perks. Guest PC lists nothing.
+2. With the guest disconnected the row is dimmed and START is locked; reconnect:
+   START unlocks. Wrong host, extra or replaced player: locked.
+3. OPTIONS: change Magic or difficulty, START: the match uses them and the save
+   file hash is unchanged. Unlimited perks, cheats and assist apply at START.
+4. Save & Exit twice in different matches: two sessions listed; a resumed one
+   saves back into its own slot.
+5. DEL with confirmation, then load the map: that session's `_a`/`_b` read
+   `EMPTY`; other sessions untouched.
