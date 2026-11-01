@@ -13,6 +13,7 @@ semantics.
 - Files affected: `tools/Update-ZMCheckpoint.ps1`, `tools/Update-ZMCheckpoint-Window.ps1`, `tools/Update-ZMCheckpoint-Status.ps1`, `tools/Watch-ZMCheckpointUpdates.ps1`, `src/ui/ui/t6/menus/zmcheckpointupdater.lua`, `mod.json`, `README.md`, `CHANGELOG.md`, `PROJECT_HANDOFF.md`.
 - Validation: four PowerShell scripts parse; Build.ps1 passed; six T6 GSC parses; luaparse; all eight Lua suites pass; scratch-root check and install run with timings. No game, no save and no local install touched.
 - In-game result: Not yet tested. The new scripts run only after the owner has installed 0.4.29 (the updater uses its installed copy), so the first update to 0.4.29 is still on the old path.
+- Published: [GitHub release 0.4.29-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.29-alpha) (source commit `568e51cec2bc92f03e67d11d9e035ce23bbef004`; 153,216-byte ZIP, 20 entries, no saves/caches, SHA-256 `B7B851D1783F41D6DB5E2F69C696761DD432800EEF92B902A9D251DE85231E20`, matches GitHub). The installed updater returned `UPDATE_AVAILABLE|0.4.28-alpha|0.4.29-alpha`. No local install was run.
 - Remaining risk/next step: after updating to 0.4.29, the next update check should be much faster on the PC side. If the page still waits long, send the seconds shown on the page and `%TEMP%\zmcp_update_timing.log`; a gap between clicking and `check marker seen` means game-side log buffering, and a different request channel (for example a file written by a console command) would be the next step.
 
 ## 0.4.28-alpha — 2026-11-01
