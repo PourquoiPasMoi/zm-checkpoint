@@ -35,6 +35,13 @@ addLobbyDvarOption( "zmcp_start_weapons", 0, "STARTING WEAPONS",
 addLobbyDvarOption( "zmcp_start_perks", 0, "STARTING PERK",
 	"Begin a new match with one random perk from this map's perk machines.",
 	{ "NONE", "1 RANDOM PERK" }, { 0, 1 } )
+addLobbyDvarOption( "zmcp_start_points", 0, "STARTING POINTS",
+	"Begin a new match with this many points instead of the normal amount for the starting round.",
+	{ "DEFAULT", "5,000", "10,000", "25,000", "50,000", "100,000", "250,000", "500,000", "1,000,000" },
+	{ 0, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000 } )
+addLobbyDvarOption( "zmcp_start_world", 0, "OPENING",
+	"Turn the power on and/or open every door and debris pile as soon as a new match begins.",
+	{ "NORMAL", "POWER ON", "DOORS OPEN", "POWER + DOORS" }, { 0, 1, 2, 3 } )
 
 -- CUSTOM STARTING ROUND. The stock STARTING ROUND row only offers a few fixed
 -- values. Its selector is replaced in place (found by its label when the stock

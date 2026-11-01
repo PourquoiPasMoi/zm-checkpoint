@@ -4,6 +4,17 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.33-alpha — 2026-11-01
+
+### 2026-11-01 — Starting points and opening (power/doors) rows (Claude Code)
+
+- Request: after the owner asked for feature ideas, go ahead with custom starting points and power/doors at start (items 1 and 3 of the suggested list).
+- Change or investigation: two new Custom Games rows after STARTING PERK. **STARTING POINTS** (dvar `zmcp_start_points`; DEFAULT, 5,000, 10,000, 25,000, 50,000, 100,000, 250,000, 500,000, 1,000,000) sets `level.player_starting_points` inside the existing `init_levelvars` detour (`zmcp_apply_custom_start_round`, now also installs the detour when only points are set; the round parse moved to `zmcp_custom_round_value`). Points win over the round-based 500 per round. **OPENING** (dvar `zmcp_start_world`; NORMAL, POWER ON, DOORS OPEN, POWER + DOORS = bit values 0 to 3) runs `zmcp_starting_world` one second after `initial_blackscreen_passed`: `flag_set( "power_on" )` and `zmcp_open_all_doors`, which notifies every `zombie_door` and `zombie_debris` trigger with the stock force flag (the same calls the stock `open_sesame` debug command makes, copied from the Core `_zm_devgui.gsc`/`_zm_blockers.gsc` sources in `.cache`). Both apply to fresh matches only (not resumed checkpoints). **Design choice:** points are a fixed list, not typed, because a typed hook on an appended row would depend on unknown stock behavior for out-of-list dvar values; typed entry is a possible follow-up. The two rows were merged into one OPENING row to keep the lobby list short. `zmcheckpointloadout.lua` clamps stored values (unknown points reset to DEFAULT).
+- Files affected: `src/scripts/zm/zm_checkpoint_slots.gsc`, `src/scripts/zm/zm_nuked/zm_checkpoint.gsc`, `src/ui/ui/t6/menus/privateonlinegamelobby.lua`, `zmcheckpointloadout.lua`, `tools/Test-Loadout.lua`, `tools/Test-LobbyOption.lua`, `mod.json`, `README.md`, `CHANGELOG.md`, `PROJECT_HANDOFF.md`.
+- Validation: **Validated statically:** Build.ps1 passed; six T6 GSC parses (new functions present in all six outputs); all nine Lua suites pass (loadout/lobby tests extended for the two rows and clamping). No save, game file or local install touched.
+- In-game result: Not yet tested. **Expected, unverified:** the lobby list now has 8 rows (vertical fit of the lobby unknown); power on by flag only (the Transit switch animation and lights may not play, as with the stock debug command); doors needing a map-specific flag may stay shut; opening many doors at once could briefly stress a map such as Origins or Buried.
+- Remaining risk/next step: owner to check the new rows' labels and fit, then start a match with each combination (round 50 + 100,000 points; POWER + DOORS on Nuketown and Transit). Report anything that stays closed so the notify list can be extended.
+
 ## 0.4.32-alpha — 2026-11-01
 
 ### 2026-11-01 — Fix missing weapon icons in SOLO RESUME (Claude Code)

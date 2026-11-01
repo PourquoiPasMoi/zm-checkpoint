@@ -1300,6 +1300,12 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   match after publication. Unload/reload the mod after using the updater;
   Plutonium itself does not need restarting.
 
+## 44. 0.4.33-alpha starting points and opening — 2026-11-01
+
+- Lobby rows **STARTING POINTS** (`zmcp_start_points`, fixed list DEFAULT to 1,000,000) and **OPENING** (`zmcp_start_world`: 1 power, 2 doors/debris, 3 both). Points are applied in `zmcp_custom_levelvars_override` (after the custom round rule, so they win); opening runs in `zmcp_starting_world` after `initial_blackscreen_passed` + 1 s using the stock force-notify on `zombie_door` and `zombie_debris` (airlock triggers are not included). Fresh matches only. Details in the 0.4.33 CHANGELOG entry.
+- **Validated statically only.** Open verification: lobby fit with 8 rows, point amounts on HUD, power/door behavior per map, and whether any door stays closed.
+- Ideas not yet done: typed starting points, Pack-a-Punched random weapon, zombie tuning, richer SOLO RESUME cards, slot notes, autosave, remaining weapon icons, save backup (see the owner's suggestion list in the 2026-11-01 session).
+
 ## 43. 0.4.32-alpha weapon icon aliases — 2026-11-01
 
 - Weapon icons in SOLO RESUME come from 31 stock `ui_zm.ff` front-end materials, looked up by base weapon name in `weaponMaterials` (`zmcheckpointsolo.lua`). Real game names differ from material names, so aliases were added (see the 0.4.32 CHANGELOG entry); `tools/Test-WeaponIcons.lua` guards them. Weapons without a stock material remain text only; more icons would need extraction from other fastfiles (only `ui_zm.ff` exists in the local `zonell`).
