@@ -1300,6 +1300,10 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   match after publication. Unload/reload the mod after using the updater;
   Plutonium itself does not need restarting.
 
+## 46. 0.4.35-alpha lobby hint overlap — 2026-11-01
+
+- **Verified in-game (owner screenshot, 0.4.34):** the focused row's hint under the last option wrapped to three lines and overlapped ESC Back. The stock hint area holds two lines of about 40 characters, so all five hints added by the mod are now 55 characters or less. Rule: keep any new lobby row hint to two lines. The lobby is now crowded (13 option rows); a further row needs a different layout. Fix not yet verified in-game. 0.4.34 release: [GitHub release 0.4.34-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.34-alpha) (source commit `75b245cd6c0568f1bf18bf9f821aaddb0c58b0b4`, 162,203-byte ZIP, SHA-256 `82C05CD64B9E1F7D62CD902F5791F5A97C38CDD22EA22A0BFC80ADED6B22A593`, matches GitHub).
+
 ## 45. 0.4.34-alpha debris fix — 2026-11-01
 
 - **Verified in-game (owner screenshot, 0.4.33):** the STARTING POINTS and OPENING rows show and fit; POWER + DOORS opened the doors but not the debris. **Cause:** forced debris triggers still charge the cost (stock `debris_think` and Nuketown's `custom_debris_function`). **Fix:** `zmcp_open_all_doors` holds the `zombie_unlock_all` dvar at 1 during the opening (restored after, or on `end_game`), runs three passes and waits after power. See the 0.4.34 CHANGELOG entry. **Lesson:** a `force` notify only skips the use-button check and the door cost; debris needs the unlock-all dvar.

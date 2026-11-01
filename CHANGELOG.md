@@ -4,6 +4,17 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.35-alpha — 2026-11-01
+
+### 2026-11-01 — Stop the lobby hint overlapping ESC Back (Claude Code)
+
+- Request: with the new rows the focused-row description under the last option wraps to three lines and overlaps the ESC Back prompt (owner screenshot, OPENING focused, 0.4.34).
+- Change or investigation: the stock lobby draws the focused row's hint just below the last row, about 40 characters per line, and the gap above the bottom prompts fits two lines. The 0.4.33 hints for STARTING WEAPONS, STARTING PERK, STARTING POINTS and OPENING were 70 to 90 characters (three lines). All five added hints are now at most about 55 characters so they wrap to two lines at most: "Allow every perk at once (normally four).", "New match: random map weapons. Two replace the M1911.", "New match: one random perk from this map.", "New match: start with this many points.", "New match: power on and/or all doors and debris open." This keeps the single-column layout and the stock row spacing; rearranging or removing rows was judged riskier without a way to test the stock layout, and the lobby fits (owner: crowded but okay).
+- Files affected: `src/ui/ui/t6/menus/privateonlinegamelobby.lua`, `mod.json`, `README.md`, `CHANGELOG.md`, `PROJECT_HANDOFF.md`.
+- Validation: **Validated statically:** Build.ps1 passed; nine Lua suites pass (no test asserts hint text). Fit is **expected, not verified in-game**.
+- In-game result: Not yet tested.
+- Remaining risk/next step: owner to focus each added row and check the text clears ESC Back. If it still collides, the next options are shortening further or moving the ESC prompt/hint area; adding more rows later will need a different layout.
+
 ## 0.4.34-alpha — 2026-11-01
 
 ### 2026-11-01 — Fix debris not clearing with OPENING (Claude Code)
@@ -12,6 +23,7 @@ semantics.
 - Change or investigation: **Root cause (from the stock source in `.cache`):** the stock door handler returns early for a forced trigger, but `debris_think` (and Nuketown's own `custom_debris_function` in `zm_nuked.gsc`) still tests `who.score >= cost` after a forced trigger and denies the purchase when the player cannot afford it (500 points against 1250). All six maps use the shared `_zm_blockers.gsc` debris handler; only Nuketown adds a custom one, and both honour the same free-purchase dvar that the stock `open_sesame` debug command sets (`zombie_unlock_all`). **Fix:** `zmcp_open_all_doors` now raises `zombie_unlock_all` to 1 while it sends the triggers and restores the previous value afterwards (also on `end_game`, via `zmcp_unlock_all_restore`), makes three passes one second apart so triggers that were not listening yet are caught, skips entities deleted meanwhile, and POWER + DOORS waits one second after setting the power so power-gated doors and Nuketown's electric debris are listening before they are triggered. Static review of the other maps found no extra blockers: Transit's local/electric doors carry `power_door_ignore_flag_wait` (already notified), Buried and Die Rise notify `electric_door` from their own power scripts, Origins and Mob of the Dead use the shared handlers. **Known limitation:** DOORS OPEN without POWER leaves doors that are power-gated by the map shut (use POWER + DOORS); `zombie_airlock_buy` triggers have no handler in this game version and are not used.
 - Files affected: `src/scripts/zm/zm_checkpoint_slots.gsc`, `mod.json`, `CHANGELOG.md`, `PROJECT_HANDOFF.md`.
 - Validation: **Validated statically:** Build.ps1 passed; six T6 GSC parses; nine Lua suites pass. The 0.4.33 lobby screenshot **verified in-game** that the new rows STARTING POINTS and OPENING appear and fit (owner: "crowded but okay") and that doors open with POWER + DOORS. Debris removal after this fix is **expected, not verified in-game**.
+- Published: [GitHub release 0.4.34-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.34-alpha) (source commit `75b245cd6c0568f1bf18bf9f821aaddb0c58b0b4`; 162,203-byte ZIP, 20 entries, no saves/caches, SHA-256 `82C05CD64B9E1F7D62CD902F5791F5A97C38CDD22EA22A0BFC80ADED6B22A593`, matches GitHub). No local install was run.
 - In-game result: 0.4.33: doors opened, debris did not (the bug above). 0.4.34: not yet tested.
 - Remaining risk/next step: owner to test POWER + DOORS at default points on Nuketown and one more map (Transit or Origins); report any door or debris that stays.
 
