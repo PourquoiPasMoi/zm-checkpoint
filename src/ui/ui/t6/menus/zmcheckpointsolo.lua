@@ -540,3 +540,6 @@ LUI.createMenu.ZMCheckpointSoloOptions = function ( controller )
 	list:processEvent( { name = "gain_focus" } )
 	return menu
 end
+
+-- Shared with the CO-OP RESUME page.
+C.Ui = { PageBase = pageBase, AddText = addText, WeaponName = weaponName, PerkStyle = perkStyle }

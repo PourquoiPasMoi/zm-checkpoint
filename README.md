@@ -2,7 +2,7 @@
 
 Experimental save and resume checkpoints for Call of Duty: Black Ops II Zombies on Plutonium T6.
 
-The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.21-alpha). Download `zm_checkpoint-0.4.21-alpha.zip` and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
+The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.26-alpha). Download `zm_checkpoint-0.4.26-alpha.zip` and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
 
 The source, build scripts, test guidance, and project history are in this repository. The user-facing setup and feature details live in [README.md](README.md); contributors should read [AGENTS.md](AGENTS.md) and [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md) first.
 
@@ -108,10 +108,19 @@ Guests will see no team checkpoint on their own PC; the original host must
 open CO-OP RESUME. Lobby account IDs may appear in decimal while saved IDs
 appear in hexadecimal; the menu compares both without rounding the 64-bit ID.
 This comparison still needs a two-PC in-game test.
-If the original host and exact team are shown but Resume remains locked by
-game settings, choose **RESTORE SAVED SETTINGS** on CO-OP RESUME. It applies
-the saved difficulty, Magic, and Headshots Only values before rechecking the
-lobby. A different mode, start location, or loaded mod is identified by name.
+Version 0.4.26-alpha redesigns CO-OP RESUME like SOLO RESUME. The host sees up
+to four co-op sessions per map, even when the other players are not connected
+(those rows are dimmed and START stays locked until the original host and the
+exact team are present). Highlight a session to see each player's points,
+weapons and perks plus the saved settings, select it, then use **START** or
+**OPTIONS** (difficulty, Magic, Headshots Only, target assist, cheats and
+unlimited perks, stored beside the save; the save file is never rewritten).
+**DEL** deletes a session after confirmation; the files are erased the next time
+that map loads. START applies the saved difficulty, Magic and Headshots Only
+itself, so RESTORE SAVED SETTINGS is gone. A different mode, start location or
+loaded mod is still identified by name. Existing co-op saves are session 1 and
+need no migration. Save & Exit in a resumed session saves back into it; a new
+match uses the first free session and never overwrites a live one.
 The expanded Custom Games menu places the map preview on the lower right so
 the selected option's description remains visible.
 The stock match-start countdown now appears above that preview, clear of the
