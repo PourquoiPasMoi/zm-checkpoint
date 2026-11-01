@@ -1300,6 +1300,10 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   match after publication. Unload/reload the mod after using the updater;
   Plutonium itself does not need restarting.
 
+## 52. 0.4.41-alpha typed rows fix — 2026-11-01
+
+- **Verified in-game (owner):** on 0.4.40 a click on ZOMBIE HEALTH CAP stepped through the fixed list instead of opening a keyboard, so the label hook does not attach on the MORE OPTIONS page. **Validated statically (not tested in-game):** the page now attaches the typed behaviour directly (`typedRows`). Rule: never rely on label matching for rows built on a popup page; attach to the returned row. If the typed value does not apply, check that `ui_keyboard_input` reaches the page.
+
 ## 51. 0.4.40-alpha zombie health cap — 2026-11-01
 
 - **Validated statically (not tested in-game):** ZOMBIE HEALTH CAP on the MORE OPTIONS page (`zmcp_health_cap`, OFF or round 1-255, typed row via `C.AttachCustomHealthCap`). GSC detours `ai_calculate_health` with the same formula limited to the cap round; installed from `main()` for every load, so resumed saves are covered. Page hints are now long plain-language explanations. Published: [GitHub release 0.4.40-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.40-alpha) (source commit `641857edcbb108f26cbb9e1e81199d5c7377a3a4`; 170,281-byte ZIP, 20 entries, no saves/caches, SHA-256 `5D815C57FA8621CAEDF80D165F10076F376156A31EAC8BEF10EFB03888E1507E`, matches GitHub). No local install was run. Next idea: zombie speed cap (zombies already top out at sprint, so it can only slow them).

@@ -4,6 +4,18 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.41-alpha — 2026-11-01
+
+### 2026-11-01 — Typed rows on MORE OPTIONS opened no keyboard (Claude Code)
+
+- Request: owner asked what "click to type 1-255" means, because clicking ZOMBIE HEALTH CAP just stepped through 20, 30, 40.
+- Change or investigation: **Failure (0.4.38-0.4.40, MORE OPTIONS page):** the typed STARTING POINTS and ZOMBIE HEALTH CAP rows relied on a hook of `CoD.LeftRightSelector.new` matching the row's label. On the MORE OPTIONS page that match did not take effect, so the stock selector stayed in charge: a click stepped to the next fixed choice (OFF, 20, 30, 40, 50, 75, 100) instead of opening the on-screen keyboard. The 0.4.38 typed points were seen working only from the lobby list, where the stock row hook applies (the owner's 0.4.39 screenshot showed 250,000, a value that is also in the fixed list, so it could not distinguish). **Cause (probable, not confirmed):** the label the page passes to the selector is not the plain string the hook compares. **Fix:** the page now attaches the typed behaviour directly to the two rows it builds (`typedRows` in `privateonlinegamelobby.lua`), after their choices are added, so it no longer depends on label matching. The label hook stays as a harmless fallback. Meaning of the phrase: on a typed row, a click or Enter opens the on-screen keyboard; type a number (1-255 for the cap) and confirm; left/right and the mouse wheel still step by 5 (cap) or 5,000 (points).
+- Files affected: `src/ui/ui/t6/menus/privateonlinegamelobby.lua`, `tools/Test-MoreOptions.lua`, `mod.json`, `README.md`, `CHANGELOG.md`, `PROJECT_HANDOFF.md`.
+- Validation: **Validated statically:** Build.ps1 passed; six T6 GSC parses; Lua suites pass; the page test now clicks both typed rows and asserts the keyboard command is issued and the stock cycle is not. The keyboard actually opening and its typed value reaching the page's rows are **expected, not verified in-game**.
+- Published: see the publication record below if present.
+- In-game result: 0.4.40: click stepped through the fixed list (the bug above). 0.4.41: not yet tested.
+- Remaining risk/next step: owner to click ZOMBIE HEALTH CAP and STARTING POINTS and confirm the keyboard opens and a typed number is applied. If it opens but the typed value is ignored, the keyboard result event is not reaching the popup page and needs routing.
+
 ## 0.4.40-alpha — 2026-11-01
 
 ### 2026-11-01 — Zombie health cap and plain-language option explanations (Claude Code)
