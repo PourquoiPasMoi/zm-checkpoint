@@ -325,6 +325,10 @@ zmcp_starting_world()
     {
         if ( flag_exists( "power_on" ) )
             flag_set( "power_on" );
+
+        // Powered doors and debris only start listening for a purchase after the
+        // power flag wakes them, so give them a moment before they are triggered.
+        wait 1;
     }
 
     if ( world == 2 || world == 3 )
@@ -333,31 +337,54 @@ zmcp_starting_world()
     println( "ZMCP: opening applied mode=" + world );
 }
 
-// Same triggers the stock open_sesame debug command uses; the third argument is
-// the stock "force" flag, so no points are taken.
+// Doors take the stock "force" flag (third notify argument) and are free, but a
+// forced debris purchase still charges its cost (Nuketown's custom debris handler
+// does the same). The stock unlock-all dvar, which the open_sesame debug command
+// also raises, makes both free, so it is held on while the triggers are sent and
+// restored afterwards. A few passes catch triggers that were not listening yet.
 zmcp_open_all_doors()
 {
-    players = get_players();
-    if ( players.size < 1 )
-        return;
-
-    who = players[0];
+    previous = getdvarint( "zombie_unlock_all" );
+    setdvar( "zombie_unlock_all", 1 );
+    level thread zmcp_unlock_all_restore( previous );
     names = array( "zombie_door", "zombie_debris" );
 
-    for ( n = 0; n < names.size; n++ )
+    for ( pass = 0; pass < 3; pass++ )
     {
-        entities = getentarray( names[n], "targetname" );
+        players = get_players();
+        if ( players.size < 1 )
+            break;
 
-        for ( i = 0; i < entities.size; i++ )
+        who = players[0];
+
+        for ( n = 0; n < names.size; n++ )
         {
-            entities[i] notify( "trigger", who, 1 );
+            entities = getentarray( names[n], "targetname" );
 
-            if ( is_true( entities[i].power_door_ignore_flag_wait ) )
-                entities[i] notify( "power_on" );
+            for ( i = 0; i < entities.size; i++ )
+            {
+                if ( !isdefined( entities[i] ) )
+                    continue;
 
-            wait 0.05;
+                entities[i] notify( "trigger", who, 1 );
+
+                if ( is_true( entities[i].power_door_ignore_flag_wait ) )
+                    entities[i] notify( "power_on" );
+
+                wait 0.05;
+            }
         }
+
+        wait 1;
     }
+
+    level notify( "zmcp_opening_done" );
+}
+
+zmcp_unlock_all_restore( previous )
+{
+    level waittill_any( "zmcp_opening_done", "end_game" );
+    setdvar( "zombie_unlock_all", previous );
 }
 
 // STARTING LOADOUT (lobby dvars zmcp_start_weapons = 0-2 random weapons and
