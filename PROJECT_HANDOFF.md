@@ -1300,9 +1300,13 @@ all results back into PROJECT_HANDOFF.md and CHANGELOG.md.
   match after publication. Unload/reload the mod after using the updater;
   Plutonium itself does not need restarting.
 
+## 48. 0.4.37-alpha solo save backup — 2026-11-01
+
+- **Verified in-game (owner):** 0.4.36 packed starting weapons work. **Validated statically (not tested in-game):** each solo Save copies the slot's previous complete checkpoint to `<slot file>_backup.sav` before overwriting (`zmcp_copy_save`), restores it automatically if the new write fails validation, and SOLO RESUME DELETE blanks the backup. Backups are never loaded by the game; manual recovery is copying the backup over the slot file. Co-op sessions and the one-use Resume lifecycle are unchanged. Next ideas: typed starting points, zombie tuning, autosave (riskiest).
+
 ## 47. 0.4.36-alpha Pack-a-Punched starting weapons — 2026-11-01
 
-- **Validated statically (not tested in-game):** STARTING WEAPONS now has 5 values: 0 NONE, 1 and 2 random weapons, 3 and 4 random weapons that are Pack-a-Punched (`zmcp_start_weapons`). GSC: values above 2 set `packed` and subtract 2; each pick is upgraded with stock `get_upgrade_weapon` when `can_upgrade_weapon` allows and the player does not already hold the upgrade, then given with `weapon_give( pick, 1, 0, 1 )`; otherwise the unpacked weapon is given. Lobby clamp max 4. No new lobby row (still 13). Published: [GitHub release 0.4.36-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.36-alpha) (source commit `250895adb039ae0c48a17fb9667ab4179516ec38`; 163,097-byte ZIP, 20 entries, no saves/caches, SHA-256 `37C9849665FAF8059152DDF905AA826215CEFEBDBD5AF9E751AF819DD70E8E35`, matches GitHub). No local install was run. Next ideas: save backup, typed starting points, zombie tuning.
+- **Verified in-game (owner): works.** STARTING WEAPONS now has 5 values: 0 NONE, 1 and 2 random weapons, 3 and 4 random weapons that are Pack-a-Punched (`zmcp_start_weapons`). GSC: values above 2 set `packed` and subtract 2; each pick is upgraded with stock `get_upgrade_weapon` when `can_upgrade_weapon` allows and the player does not already hold the upgrade, then given with `weapon_give( pick, 1, 0, 1 )`; otherwise the unpacked weapon is given. Lobby clamp max 4. No new lobby row (still 13). Published: [GitHub release 0.4.36-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.36-alpha) (source commit `250895adb039ae0c48a17fb9667ab4179516ec38`; 163,097-byte ZIP, 20 entries, no saves/caches, SHA-256 `37C9849665FAF8059152DDF905AA826215CEFEBDBD5AF9E751AF819DD70E8E35`, matches GitHub). No local install was run. Next ideas: save backup, typed starting points, zombie tuning.
 
 ## 46. 0.4.35-alpha lobby hint overlap — 2026-11-01
 

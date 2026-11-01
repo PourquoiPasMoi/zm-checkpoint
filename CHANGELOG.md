@@ -4,6 +4,18 @@ All notable ZM Checkpoint changes and important test results are recorded here.
 The package is experimental, so versions before a stable release use alpha
 semantics.
 
+## 0.4.37-alpha — 2026-11-01
+
+### 2026-11-01 — Solo save backup (Claude Code)
+
+- Request: owner said the Pack-a-Punch option worked and to move to the next item, save backup.
+- Change or investigation: every solo Save now first copies the slot's existing complete checkpoint (must contain its `END` record) to `<slot file>_backup.sav` (`zm_checkpoint_<map>_backup.sav` for slot 1, `zm_checkpoint_<map>_slotN_backup.sav` for 2-4) using new `zmcp_copy_save`/`zmcp_solo_backup_path`. If the new write then fails read-back validation ("Checkpoint write failed"), the backup is copied back over the slot and the player is told. SOLO RESUME DELETE also overwrites the slot's backup with `EMPTY`, so a deleted slot keeps nothing. Backups are not read by the game; to return to an earlier save, close the game and copy the backup over the slot file. Not done on purpose: no change to the one-use Resume lifecycle (a consumed save is not backed up, since it is no longer a complete checkpoint), no backup of co-op sessions (they already keep generations), no loader change.
+- Files affected: `src/scripts/zm/zm_checkpoint_slots.gsc`, `src/scripts/zm/zm_nuked/zm_checkpoint.gsc`, `mod.json`, `README.md`, `CHANGELOG.md`, `PROJECT_HANDOFF.md`.
+- Validation: **Validated statically:** Build.ps1 passed; six T6 GSC parses (helpers present in all six); nine Lua suites pass. No save file touched by build or tests.
+- Published: see the publication record below if present.
+- In-game result: Not yet tested. **Expected, unverified:** `fs_fopen` accepts the `_backup.sav` name; `fs_readline` lines copy back identically; the backup appears next to the slot file after a second Save in the same slot.
+- Remaining risk/next step: owner to Save twice in one slot on any map and check `scriptdata` for the `_backup.sav` file.
+
 ## 0.4.36-alpha — 2026-11-01
 
 ### 2026-11-01 — Pack-a-Punched starting weapons (Claude Code)
@@ -13,7 +25,7 @@ semantics.
 - Files affected: `src/scripts/zm/zm_checkpoint_slots.gsc`, `src/ui/ui/t6/menus/privateonlinegamelobby.lua`, `zmcheckpointloadout.lua`, `tools/Test-Loadout.lua`, `mod.json`, `README.md`, `CHANGELOG.md`, `PROJECT_HANDOFF.md`.
 - Validation: **Validated statically:** Build.ps1 passed; six T6 GSC parses; nine Lua suites pass (loadout test extended to five labels and clamp 4). Stock `get_upgrade_weapon`, `can_upgrade_weapon` and `weapon_give` were read from the Core source in `.cache`.
 - Published: [GitHub release 0.4.36-alpha](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.36-alpha) (source commit `250895adb039ae0c48a17fb9667ab4179516ec38`; 163,097-byte ZIP, 20 entries, no saves/caches, SHA-256 `37C9849665FAF8059152DDF905AA826215CEFEBDBD5AF9E751AF819DD70E8E35`, matches GitHub). No local install was run.
-- In-game result: Not yet tested. **Expected, unverified:** the upgraded weapon appears with its Pack-a-Punch camo and full ammo; the `+attachment` suffix for weapons with a default attachment gives a valid weapon; the label fits the selector.
+- In-game result: **Verified in-game (owner, 2026-11-01): "it worked"** for the packed starting weapons. Original expectations: the upgraded weapon appears with its Pack-a-Punch camo and full ammo; the `+attachment` suffix for weapons with a default attachment gives a valid weapon; the label fits the selector.
 - Remaining risk/next step: owner to start a match with 1 and 2 PACKED WEAPONS on a map and report the weapons received and any error text in the log.
 
 ## 0.4.35-alpha — 2026-11-01

@@ -2,7 +2,7 @@
 
 Experimental save and resume checkpoints for Call of Duty: Black Ops II Zombies on Plutonium T6.
 
-The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.36-alpha). Download `zm_checkpoint-0.4.36-alpha.zip` and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
+The current shareable build is available from the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/tag/0.4.37-alpha). Download `zm_checkpoint-0.4.37-alpha.zip` and extract its contents into a `zm_checkpoint` folder in your Plutonium T6 `mods` directory. The package is experimental; check the release notes for supported behavior and known limits.
 
 The source, build scripts, test guidance, and project history are in this repository. The user-facing setup and feature details live in [README.md](README.md); contributors should read [AGENTS.md](AGENTS.md) and [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md) first.
 
@@ -119,7 +119,7 @@ console log in 4 KB blocks, so a small update request could sit unseen for about
 the updater page now prints enough harmless console lines after each request to write it out at
 once. The speedup applies from the update after this one, because the page code comes from the
 installed version.
-Version 0.4.36-alpha adds **1 PACKED WEAPON** and **2 PACKED WEAPONS** to STARTING WEAPONS (random weapons given Pack-a-Punched). Version 0.4.35-alpha shortens the lobby row descriptions so they no longer overlap ESC Back. Version 0.4.34-alpha fixes OPENING leaving debris in place (it now clears it for free). Version 0.4.33-alpha adds two more Custom Games rows for new matches: **STARTING POINTS**
+Version 0.4.37-alpha keeps one backup of the previous solo save in each slot (`..._backup.sav` in `scriptdata`) and restores it if a new save fails. Version 0.4.36-alpha adds **1 PACKED WEAPON** and **2 PACKED WEAPONS** to STARTING WEAPONS (random weapons given Pack-a-Punched). Version 0.4.35-alpha shortens the lobby row descriptions so they no longer overlap ESC Back. Version 0.4.34-alpha fixes OPENING leaving debris in place (it now clears it for free). Version 0.4.33-alpha adds two more Custom Games rows for new matches: **STARTING POINTS**
 (DEFAULT, or 5,000 up to 1,000,000; it also overrides the points a custom starting round
 would give) and **OPENING** (NORMAL, POWER ON, DOORS OPEN or POWER + DOORS; doors and
 debris are opened for free with the same triggers the stock debug command uses, a second

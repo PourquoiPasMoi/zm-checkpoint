@@ -325,6 +325,7 @@ zmcp_save_checkpoint( player, exit_after_save )
     player freezecontrols( 1 );
     player enableinvulnerability();
     player iprintlnbold( "^3Saving checkpoint..." );
+    backed_up = zmcp_copy_save( path, zmcp_solo_backup_path( slot ) );
     file = fs_fopen( path, "write" );
 
     if ( !isdefined( file ) )
@@ -377,7 +378,12 @@ zmcp_save_checkpoint( player, exit_after_save )
         }
     }
     else
+    {
         player iprintlnbold( "^1Checkpoint write failed" );
+
+        if ( backed_up && zmcp_copy_save( zmcp_solo_backup_path( slot ), path ) )
+            player iprintln( "^3Your previous save in this slot was restored." );
+    }
 
     player disableinvulnerability();
     level.zmcp_busy = 0;
