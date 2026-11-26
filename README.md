@@ -2,228 +2,199 @@
 
 # ZM Checkpoint
 
-**Save your Black Ops II Zombies match. Come back later. Keep going.**
-
-A mod for [Plutonium T6](https://plutonium.pw) that adds Save & Exit, Resume, autosave and extra lobby options to Zombies.
+Save a Black Ops II Zombies game on [Plutonium T6](https://plutonium.pw) and pick it back up later.
 
 [![Latest release](https://img.shields.io/github/v/release/PourquoiPasMoi/zm-checkpoint?include_prereleases&label=latest&color=f97316)](https://github.com/PourquoiPasMoi/zm-checkpoint/releases)
 [![Downloads](https://img.shields.io/github/downloads/PourquoiPasMoi/zm-checkpoint/total?color=f97316)](https://github.com/PourquoiPasMoi/zm-checkpoint/releases)
 ![Status](https://img.shields.io/badge/status-alpha-yellow)
 
-[**Download**](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/download/0.4.45-alpha/zm_checkpoint-0.4.45-alpha.zip) · [Install](#install) · [How to use it](#how-to-use-it) · [What is tested](#what-is-tested)
+[Download](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/download/0.4.45-alpha/zm_checkpoint-0.4.45-alpha.zip) · [Install](#install) · [How to use it](#how-to-use-it) · [What works](#what-works-and-what-doesnt)
 
 </div>
 
-<p align="center"><img src="docs/screenshots/04-solo-resume.jpg" alt="The SOLO RESUME page: eight save slots with a preview of points, weapons and perks" width="820"></p>
-
----
+<p align="center"><img src="docs/screenshots/04-solo-resume.jpg" alt="The Solo Resume page with eight save slots and a preview of points, weapons and perks" width="820"></p>
 
 ## What it does
 
-| | |
-|---|---|
-| **Save & Exit** | Leave a solo match from the pause menu and keep your round, points, weapons and perks. |
-| **Resume** | Pick a save in the lobby and continue from the same round. |
-| **8 save slots per map** | Each slot shows a preview of what is inside before you load it. |
-| **Autosave** | Optional. Saves into a slot you choose at the end of every round. |
-| **More lobby options** | Starting round, points, weapons, perk, power and doors, unlimited perks, zombie health cap. |
-| **Zombies left counter** | A small counter in the top-left corner shows how many zombies remain in the round. Press **0** to hide it. |
-| **In-game updater** | Check for new versions and install them from inside the game (Windows). |
+The mod adds a SAVE & EXIT button to the pause menu and a SOLO RESUME page to the Custom Games lobby. Resuming puts you back on the round you saved, with your points, weapons and perks.
 
-> **This is an alpha.** The core save and resume works. Not every feature has been tested on every map yet. See [What is tested](#what-is-tested).
+It also adds a few things around that:
 
----
+- 8 save slots per map, each with a preview of what's inside
+- optional autosave at the end of every round
+- a MORE OPTIONS page for new games: starting round, points, weapons and perk, power and doors, unlimited perks, and a cap on zombie health
+- a counter showing how many zombies are left in the round
+- an updater you can run from the game menu (Windows)
+
+This is an alpha. Saving and resuming works on the maps I've tested, but some maps and some of the newer features haven't been tested properly yet. The details are under [What works and what doesn't](#what-works-and-what-doesnt).
 
 ## Install
 
-1. **Download** [`zm_checkpoint-0.4.45-alpha.zip`](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/download/0.4.45-alpha/zm_checkpoint-0.4.45-alpha.zip).
-2. **Create** a folder named `zm_checkpoint` here (paste the path into File Explorer):
+1. Download [`zm_checkpoint-0.4.45-alpha.zip`](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/download/0.4.45-alpha/zm_checkpoint-0.4.45-alpha.zip).
+2. Open this folder (you can paste the path into File Explorer) and make a new folder in it called `zm_checkpoint`:
    ```
    %localappdata%\Plutonium\storage\t6\mods
    ```
-3. **Extract** the ZIP into that `zm_checkpoint` folder. `mod.json` must sit directly inside it.
-4. **Start** BO2 Zombies in Plutonium, open **Mods**, and load **zm_checkpoint**. The top-right corner shows `Mod Loaded: mods/zm_checkpoint`, and the menu gains a **CHECK FOR UPDATES** row.
+3. Extract the zip into `zm_checkpoint`. `mod.json` should end up directly inside that folder.
+4. Start BO2 Zombies in Plutonium, open Mods and load zm_checkpoint.
+
+When it's loaded, the top right corner says `Mod Loaded: mods/zm_checkpoint` and the menu has a CHECK FOR UPDATES row.
 
 <p align="center"><img src="docs/screenshots/01-main-menu.jpg" alt="The Zombies main menu with the mod loaded" width="820"></p>
 
-That is all you need to save and resume.
-
 <details>
-<summary><b>Optional: turn on the in-game updater</b></summary>
+<summary>Optional: the in-game updater</summary>
 
 <br>
 
-The updater needs a small helper running in the background. Before you use **CHECK FOR UPDATES**, double-click `Launch-UpdateBridge.vbs` inside the `zm_checkpoint` folder.
+The updater needs a small helper running in the background. Before you use CHECK FOR UPDATES, double-click `Launch-UpdateBridge.vbs` in the `zm_checkpoint` folder.
 
-It starts a hidden PowerShell script (`Watch-ZMCheckpointUpdates.ps1`) that waits for the game's update request, downloads the new release from this repository, and copies it into the mod folder. Your saves are never touched. Both files are plain text, so you can read them first.
+That starts a hidden PowerShell script (`Watch-ZMCheckpointUpdates.ps1`). It waits for the game to ask for an update, downloads the new release from this repository and copies it into the mod folder. It doesn't touch your saves. Both files are plain text if you want to read them first.
 
-If you skip this, the mod works the same. You just update by downloading the new ZIP yourself.
+If you'd rather not run it, the mod works the same and you update by downloading the new zip.
 
 </details>
 
----
-
 ## How to use it
 
-### 1. Save a match
+### Saving a game
 
-In a **solo** match, open the pause menu and choose **SAVE & EXIT**. Pick one of the eight slots.
+In a solo game, open the pause menu and choose SAVE & EXIT, then pick one of the eight slots.
 
-<p align="center"><img src="docs/screenshots/07-pause-menu.jpg" alt="The pause menu with SAVE & EXIT" width="820"></p>
+<p align="center"><img src="docs/screenshots/07-pause-menu.jpg" alt="The pause menu with Save & Exit" width="820"></p>
 
-- An empty slot is used straight away.
-- A slot that already has a save asks you to select it a second time before it is replaced.
-- The previous save in that slot is kept as a backup and comes back if the new save fails.
+An empty slot is used right away. If the slot already has a save, you have to select it a second time to overwrite it. The old save is kept as a backup and comes back if the new save fails.
 
-You are returned to the lobby when the save is done.
+When the save is done you're sent back to the lobby.
 
-### 2. Resume a match
+### Resuming
 
-In the **Custom Games** lobby, pick the same map and choose **SOLO RESUME**.
+In the Custom Games lobby, pick the same map and choose SOLO RESUME.
 
-<p align="center"><img src="docs/screenshots/02-custom-games.jpg" alt="The Custom Games lobby with SOLO RESUME, CO-OP RESUME and MORE OPTIONS" width="820"></p>
+<p align="center"><img src="docs/screenshots/02-custom-games.jpg" alt="The Custom Games lobby with Solo Resume, Co-op Resume and More Options" width="820"></p>
 
-- Slots are shown in two columns. Empty slots are greyed out.
-- Highlight a slot to see its **round, points, weapons, perks and match settings**.
-- Click a slot to select it, then choose **START**.
+The slots are laid out in two columns and empty ones are greyed out. Highlight a slot to see its round, points, weapons, perks and match settings. Click it to select it, then choose START.
 
-<p align="center"><img src="docs/screenshots/05-slot-selected.jpg" alt="A selected slot, ready to START or change with OPTIONS" width="820"></p>
+<p align="center"><img src="docs/screenshots/05-slot-selected.jpg" alt="A selected slot, with Options and Start available" width="820"></p>
 
-A save is **used up when you resume it**. Save & Exit again before you quit, or turn on autosave.
+A save is used up when you resume it. If you want to keep it for another day, Save & Exit again before you quit, or turn on autosave.
 
-### 3. Change a save before loading it
+### Changing a save before you load it
 
-On the SOLO RESUME page, select a slot and choose **OPTIONS**. You can change, for that save only:
+Select a slot on the SOLO RESUME page and choose OPTIONS. For that save only, you can change:
 
-| Option | What it does |
-|---|---|
-| Difficulty, Magic, Headshots Only, Target Assist, Cheats | The normal match settings, applied when the save loads. |
-| Unlimited Perks | Removes the four-perk limit. |
-| Zombie Health Cap | Zombies stop getting tougher after the round you pick. |
-| Autosave | Keeps saving into a slot at the end of each round. |
+- difficulty, Magic, Headshots Only, Target Assist and Cheats
+- Unlimited Perks, which removes the four perk limit
+- Zombie Health Cap, so zombies stop getting tougher after the round you pick
+- Autosave, to keep saving into a slot at the end of each round
 
-<p align="center"><img src="docs/screenshots/06-slot-options.jpg" alt="The per-save options page" width="820"></p>
+<p align="center"><img src="docs/screenshots/06-slot-options.jpg" alt="The options page for a single save" width="820"></p>
 
-Choose **APPLY CHANGES** to keep them. The save file itself is not modified.
+Choose APPLY CHANGES to keep them. The save file itself isn't modified.
 
-### 4. Delete a save
+### Deleting a save
 
-On the SOLO RESUME page, highlight a slot and press **DEL**. A confirmation asks first, and **NO, KEEP** is selected by default.
+Highlight a slot on the SOLO RESUME page and press DEL. It asks you to confirm, and "NO, KEEP" is selected by default.
 
-### 5. Set up a new match with MORE OPTIONS
+### More options for new games
 
-In Custom Games, open **MORE OPTIONS**. These apply to **new** matches. A resumed save keeps its own state.
+Open MORE OPTIONS in Custom Games. These only apply when you start a new game. A resumed save keeps what it had.
 
-<p align="center"><img src="docs/screenshots/03-more-options.jpg" alt="The MORE OPTIONS page" width="820"></p>
+<p align="center"><img src="docs/screenshots/03-more-options.jpg" alt="The More Options page" width="820"></p>
 
-| Option | Choices | In simple terms |
+| Option | Choices | What it does |
 |---|---|---|
-| **Unlimited Perks** | On / Off | Buy every perk on the map. |
-| **Starting Weapons** | None, 1 or 2 random, 1 or 2 Pack-a-Punched | Spawn with random guns from that map's wall buys and Mystery Box. |
-| **Starting Perk** | None / 1 random | Spawn with a random perk from that map's machines. |
-| **Starting Points** | Default, or any amount up to 1,000,000 | Click the row and type a number. |
-| **Opening** | Normal, Power On, Doors Open, Power + Doors | Start with the power on and/or every door and debris pile opened for free. |
-| **Zombie Health Cap** | Off, or any round 1 to 255 | Zombies stop getting tougher after that round. Rounds and zombie numbers keep growing. |
-| **Autosave** | Off, or a solo slot | Saves into that slot when each round ends. |
+| Unlimited Perks | On / Off | Lets you buy every perk on the map. |
+| Starting Weapons | None, 1 or 2 random, 1 or 2 Pack-a-Punched | You spawn with random guns from that map's wall buys and Mystery Box. |
+| Starting Perk | None / 1 random | You spawn with a random perk from that map's machines. |
+| Starting Points | Default, or any amount up to 1,000,000 | Click the row and type a number. |
+| Opening | Normal, Power On, Doors Open, Power + Doors | Starts with the power on, or every door and debris pile opened for free, or both. |
+| Zombie Health Cap | Off, or any round from 1 to 255 | Zombies stop getting tougher after that round. Rounds and zombie counts keep growing. |
+| Autosave | Off, or a solo slot | Saves into that slot when each round ends. |
 
-In the **Survival** lobby, the starting round row becomes **CUSTOM STARTING ROUND**: use left and right to change it, or click it and type any round from 1 to 255.
+In the Survival lobby the starting round row is called CUSTOM STARTING ROUND. Use left and right to change it, or click it and type any round from 1 to 255.
 
 Wonder weapons you have to build or earn (Jet Gun, Sliquifier, Paralyzer, the staffs) are never given as starting weapons.
 
-### 6. Zombies left counter
+### Zombie counter
 
-During a match, the red number in the top-left corner is how many zombies are left in the current round. Press **0** (or numpad 0) to show or hide it.
+During a game, the red number in the top left corner is how many zombies are left in the round. Press 0 (or numpad 0) to show or hide it.
 
-<p align="center"><img src="docs/screenshots/08-in-game.jpg" alt="In a match: the zombies-left counter in the top-left corner" width="820"></p>
+<p align="center"><img src="docs/screenshots/08-in-game.jpg" alt="In a game, with the zombie counter in the top left corner" width="820"></p>
 
-### 7. Update the mod
+### Updating
 
-On the Zombies main menu, choose **CHECK FOR UPDATES** (needs the optional helper from [Install](#install)).
+On the Zombies main menu, choose CHECK FOR UPDATES. This needs the helper described under [Install](#install).
 
-<p align="center"><img src="docs/screenshots/09-updater.jpg" alt="The in-game updater with the latest release notes" width="820"></p>
+<p align="center"><img src="docs/screenshots/09-updater.jpg" alt="The in-game updater showing the latest release notes" width="820"></p>
 
-- The **LATEST CHANGES** panel shows the newest release notes. Use **PREV PAGE** and **NEXT PAGE** for long notes.
-- If a new version exists, choose **INSTALL UPDATE** or **NOT NOW**.
-- When the install finishes, choose **UNLOAD** (or press **U**), then load the mod again from the Mods menu.
-- Press **R** to check again.
+The panel on the right shows the latest release notes, with PREV PAGE and NEXT PAGE for long ones. If there's a new version you can choose INSTALL UPDATE or NOT NOW. After an install, choose UNLOAD (or press U) and load the mod again from the Mods menu. Press R to check again.
 
-Updates replace the mod's files only. Saves are left alone.
+Updating only replaces the mod's own files, so your saves stay where they are.
 
----
+## What works and what doesn't
 
-## What is tested
+All six maps are included. This is what has been tested so far:
 
 | Map | Status |
 |---|---|
-| **Nuketown** | Full Save & Exit, then Resume into an active round. **Works.** |
-| **TranZit** | Round, weapons, points, position, round HUD and zombie spawning restore. **Works.** |
-| **Buried** | The above, plus opened doors and debris. **Works.** |
-| **Die Rise** | Included. Not properly tested yet. |
-| **Mob of the Dead** | Included. Not properly tested yet. |
-| **Origins** | Included. Not properly tested yet. |
+| Nuketown | Full save and resume works. |
+| TranZit | Round, weapons, points, position, round HUD and zombie spawning all come back. |
+| Buried | Same as TranZit, plus the doors and debris you opened. |
+| Die Rise | Included, not properly tested yet. |
+| Mob of the Dead | Included, not properly tested yet. |
+| Origins | Included, not properly tested yet. |
 
-Some of the newest menu features (the 8-slot grid, autosave, per-save options, save preview and delete) have been checked by the build tools but have had little in-game testing.
+The newer menu features (the 8 slot grid, autosave, per-save options, save preview and delete) haven't had much in-game testing either.
 
-### Known limits
+Known limits:
 
-- **Easter egg and quest progress is not saved.**
-- **Solo is the supported mode.** Co-op team saves (host-stored, 2 to 4 players) are in the mod as an experiment, but a full co-op save and resume has not been confirmed working. See [COOP_TEST_PLAN.md](COOP_TEST_PLAN.md) if you want to help test it.
+- Easter egg and quest progress is not saved.
+- Solo is the supported mode. Co-op saving (2 to 4 players, stored on the host) is in the mod as an experiment, but a full co-op save and resume hasn't worked yet. If you want to help test it, see [COOP_TEST_PLAN.md](COOP_TEST_PLAN.md).
 - Dedicated servers are not supported.
-- On the in-game SAVE & EXIT slot page, weapon pictures show as blank boxes (names are still shown). They display correctly on SOLO RESUME.
-- A few weapons have no menu picture in the game files (for example the M27, LSAT, AN-94 and Ray Gun Mark II). They show as text in the save preview.
-- Round 255 is the engine's own limit, and very high rounds are heavy on the game.
-
----
+- On the in-game save page, weapon pictures show up as blank boxes. The names are still there, and the pictures show correctly on SOLO RESUME.
+- A few weapons have no menu picture in the game files (the M27, LSAT, AN-94 and Ray Gun Mark II, for example), so the preview shows their names only.
+- Round 255 is the engine's limit, and very high rounds are heavy on the game.
 
 ## Troubleshooting
 
 <details>
-<summary><b>SOLO RESUME shows no saves</b></summary>
+<summary>SOLO RESUME shows no saves</summary>
 
 <br>
 
-Make sure the mod is loaded (the top right of the menu shows `Mod Loaded: mods/zm_checkpoint`) and that you selected the same map the save was made on. A save you already resumed is gone by design.
+Check that the mod is loaded (top right corner of the menu) and that you picked the same map the save was made on. A save you've already resumed is gone, which is how it's meant to work.
 
 </details>
 
 <details>
-<summary><b>The updater stays on "Waiting for the update companion"</b></summary>
+<summary>The updater stays on "Waiting for the update companion"</summary>
 
 <br>
 
-The background helper is not running. Double-click `Launch-UpdateBridge.vbs` in the mod folder, then press **R** on the updater page.
+The background helper isn't running. Double-click `Launch-UpdateBridge.vbs` in the mod folder, then press R on the updater page.
 
 </details>
 
 <details>
-<summary><b>The menus did not change after an update</b></summary>
+<summary>The menus didn't change after an update</summary>
 
 <br>
 
-Unload the mod and load it again from the Mods menu. Plutonium itself does not need a restart.
+Unload the mod and load it again from the Mods menu. You don't need to restart Plutonium.
 
 </details>
-
----
 
 ## Feedback
 
-Found a bug, or tested a map that is not confirmed yet? [Open an issue](https://github.com/PourquoiPasMoi/zm-checkpoint/issues) with:
-
-- the map and the round,
-- what did or did not come back after Resume,
-- a screenshot, and `console_zm.log` from `%localappdata%\Plutonium\storage\t6\main` if you can.
-
----
+If you find a bug, or you've tried a map that isn't confirmed yet, please [open an issue](https://github.com/PourquoiPasMoi/zm-checkpoint/issues). It helps to include the map and the round, what did or didn't come back after resuming, and a screenshot. If you can, also attach `console_zm.log` from `%localappdata%\Plutonium\storage\t6\main`.
 
 ## For developers
 
-The GSC and Lua sources are in [`src/`](src), and the build and install scripts are in [`tools/`](tools). Notes on what each map saves are in [MAP_STATE_AUDIT.md](MAP_STATE_AUDIT.md). Release notes for every version are on the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases).
+The GSC and Lua sources are in [`src/`](src) and the build and install scripts are in [`tools/`](tools). Notes on what each map saves are in [MAP_STATE_AUDIT.md](MAP_STATE_AUDIT.md). Release notes for every version are on the [Releases page](https://github.com/PourquoiPasMoi/zm-checkpoint/releases).
 
 ## Credits and license
 
-- **[ZPause](https://github.com/Xeptix/ZPause)** by Xeptix (MIT): the LUI loading approach and stock-menu wrapper pattern were adapted from it.
-- The **Plutonium** team, for the client and the T6 modding documentation.
-- Perk icons come from the game's own artwork, which belongs to Activision.
+The LUI loading and menu wrapper approach was adapted from [ZPause](https://github.com/Xeptix/ZPause) by Xeptix (MIT). Thanks to the Plutonium team for the client and the T6 modding documentation. The perk icons are the game's own artwork and belong to Activision.
 
 No general license has been chosen for this project yet. See [LICENSE-NOTICE.md](LICENSE-NOTICE.md) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
