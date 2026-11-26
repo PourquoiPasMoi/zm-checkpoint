@@ -50,7 +50,11 @@ C.SoloSlotMeta = function ( map, slot )
 	}
 end
 
-local function slotHint( meta )
+local function slotHint( meta, saving )
+	if saving then
+		if not meta.has then return "Empty slot. Select it to save here." end
+		return "Select this slot twice to replace its save."
+	end
 	if not meta.has then return "Empty slot." end
 	if not meta.settings then return "Older checkpoint: current lobby settings will be used." end
 	return "Select this checkpoint, then use START or OPTIONS."
@@ -112,6 +116,13 @@ end
 
 local function weaponMaterial( name )
 	return weaponMaterials[weaponBase( name )]
+end
+
+-- The weapon materials belong to the front-end fastfile and are not loaded
+-- during a match, where they would draw as blank boxes. In a match the preview
+-- lists weapon names only.
+local function inGame()
+	return UIExpression ~= nil and UIExpression.IsInGame ~= nil and UIExpression.IsInGame() == 1
 end
 
 local function addText( parent, value, left, right, top, bottom, orange )
@@ -180,7 +191,7 @@ local function addPreview( menu, list )
 		for i, name in ipairs( meta.weapons ) do
 			local top = 132 + (i - 1) * 43
 			local label = weaponName( name )
-			local material = weaponMaterial( name )
+			local material = not inGame() and weaponMaterial( name ) or nil
 			if material then addImage( content, material, 18, top - 2, 76, 38 ) end
 			addText( content, label, material and 107 or 18, 445, top + 5, top + 31 )
 		end
@@ -356,6 +367,15 @@ end
 LUI.createMenu.ZMCheckpointSoloSave = function ( controller )
 	local menu, status = pageBase( "ZMCheckpointSoloSave", "SAVE SOLO CHECKPOINT",
 		"Choose a slot. Select an occupied slot twice to replace it.", nil, true )
+	-- The stock popup backing is see-through in a match, so the page dims the
+	-- screen itself. The pause menu behind it is hidden by ZMCheckpointInGame.
+	local dim = LUI.UIImage.new()
+	dim:setLeftRight( false, false, -1280, 1280 )
+	dim:setTopBottom( false, false, -720, 720 )
+	dim:setRGB( 0, 0, 0 )
+	dim:setAlpha( 0.55 )
+	dim:setPriority( -20 )
+	menu:addElement( dim )
 	local grid = newSlotGrid( menu )
 	local map = C.CurrentMap( true )
 	local pending = 0
@@ -364,7 +384,7 @@ LUI.createMenu.ZMCheckpointSoloSave = function ( controller )
 		local chosenSlot = slot
 		local meta = C.SoloSlotMeta( map, chosenSlot )
 		local title = "SLOT " .. chosenSlot .. (meta.has and (" - ROUND " .. meta.round) or " - EMPTY")
-		local button = addGridButton( grid, chosenSlot, title, slotHint( meta ) )
+		local button = addGridButton( grid, chosenSlot, title, slotHint( meta, true ) )
 		watch( button, chosenSlot, meta )
 		button:setActionEventName( "zmcp_save_slot_" .. chosenSlot )
 		menu:registerEventHandler( "zmcp_save_slot_" .. chosenSlot, function ()

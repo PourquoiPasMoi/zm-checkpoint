@@ -46,6 +46,19 @@ if not C.InGameHooked then
 			menu:registerEventHandler( "zmcp_hello", hello )
 			menu:addElement( LUI.UITimer.new( 1000, "zmcp_hello", false ) )
 			menu:registerEventHandler( "zmcp_save_exit", C.SaveAndExit )
+			-- The slot page is a popup over the pause menu and its backing is
+			-- see-through in a match, so the pause rows would show behind it.
+			-- Hide the pause menu while that page is open and show it again
+			-- when the page is backed out of.
+			menu:registerEventHandler( "occlusion_change", function ( self, event )
+				CoD.Menu.OcclusionChange( self, event )
+				if event.occluded and event.occludedBy ~= nil and
+					event.occludedBy.menuName == "ZMCheckpointSoloSave" then
+					self:setAlpha( 0 )
+				elseif not event.occluded then
+					self:setAlpha( 1 )
+				end
+			end )
 			if C.IsSupportedMap( true ) and not menu.zmcpButtonAdded then
 				C.AddFallbackButton( menu, controller )
 			end

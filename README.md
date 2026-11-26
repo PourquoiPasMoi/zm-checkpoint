@@ -8,7 +8,7 @@ Save a Black Ops II Zombies game on [Plutonium T6](https://plutonium.pw) and pic
 [![Downloads](https://img.shields.io/github/downloads/PourquoiPasMoi/zm-checkpoint/total?color=f97316)](https://github.com/PourquoiPasMoi/zm-checkpoint/releases)
 ![Status](https://img.shields.io/badge/status-alpha-yellow)
 
-[Download](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/download/0.4.45-alpha/zm_checkpoint-0.4.45-alpha.zip) · [Install](#install) · [How to use it](#how-to-use-it) · [What works](#what-works-and-what-doesnt)
+[Download](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/download/0.4.46-alpha/zm_checkpoint-0.4.46-alpha.zip) · [Install](#install) · [How to use it](#how-to-use-it) · [What works](#what-works-and-what-doesnt)
 
 </div>
 
@@ -30,7 +30,7 @@ This is an alpha. Saving and resuming works on the maps I've tested, but some ma
 
 ## Install
 
-1. Download [`zm_checkpoint-0.4.45-alpha.zip`](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/download/0.4.45-alpha/zm_checkpoint-0.4.45-alpha.zip).
+1. Download [`zm_checkpoint-0.4.46-alpha.zip`](https://github.com/PourquoiPasMoi/zm-checkpoint/releases/download/0.4.46-alpha/zm_checkpoint-0.4.46-alpha.zip).
 2. Open this folder (you can paste the path into File Explorer) and make a new folder in it called `zm_checkpoint`:
    ```
    %localappdata%\Plutonium\storage\t6\mods
@@ -152,7 +152,7 @@ Known limits:
 - Easter egg and quest progress is not saved.
 - Solo is the supported mode. Co-op saving (2 to 4 players, stored on the host) is in the mod as an experiment, but a full co-op save and resume hasn't worked yet. If you want to help test it, see [COOP_TEST_PLAN.md](COOP_TEST_PLAN.md).
 - Dedicated servers are not supported.
-- On the in-game save page, weapon pictures show up as blank boxes. The names are still there, and the pictures show correctly on SOLO RESUME.
+- The in-game save page lists weapon names without pictures. The pictures are only available in the lobby, on SOLO RESUME.
 - A few weapons have no menu picture in the game files (the M27, LSAT, AN-94 and Ray Gun Mark II, for example), so the preview shows their names only.
 - Round 255 is the engine's limit, and very high rounds are heavy on the game.
 
