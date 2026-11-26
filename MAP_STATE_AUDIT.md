@@ -205,11 +205,6 @@ Recommended implementation order is Buried (current test map), Die Rise,
 TranZit, Mob of the Dead, then Origins. Mob and Origins are last because their
 quests have the largest coupled physical-state graphs.
 
-The executable roadmap, restore phases, format-extension rules, validation
-gates, and per-map test matrix are maintained in
-`EASTER_EGG_PERSISTENCE_PLAN.md`. Future work must follow that staged plan and
-must not implement multiple quest adapters in one untested change.
-
 ## Important limits
 
 This audit does not prove a full engine snapshot. The checkpoint deliberately
@@ -221,4 +216,4 @@ They require dedicated, map-specific reconstruction and in-game validation.
 
 When a new mismatch is reported, record the exact object and map here, trace the
 stock transition that produced it, add the narrowest map-only adapter, and keep
-the failure in `CHANGELOG.md` even after it is fixed.
+a record of the failure even after it is fixed.
